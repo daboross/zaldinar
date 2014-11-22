@@ -23,6 +23,7 @@ impl IrcClient {
         println!("Sending: {}", command)
         self.socket.write(command.as_bytes()).ok().expect("Failed to write to stream");
         self.socket.write(b"\n").ok().expect("Failed to write to stream");
+        self.socket.flush().ok().expect("Failed to flush stream");
     }
 
     pub fn init_reader(&mut self) {

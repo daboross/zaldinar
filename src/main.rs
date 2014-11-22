@@ -1,6 +1,7 @@
 extern crate irc;
 
 use irc::IrcClient;
+use std::ascii::AsciiExt;
 
 fn main() {
     let mut client = IrcClient::new("irc.spi.gt:6667");
@@ -21,18 +22,24 @@ fn main() {
             };
             println!("Received: {}", input.trim());
             let split: Vec<&str> = input.split(' ').collect();
-            let command = if split[0].starts_with(":") {
-                split[1]
+            let (command, args) = if split[0].starts_with(":") {
+                (split[1], split.slice_from(2))
             } else {
-                split[0]
+                (split[0], split.slice_from(1))
             };
             if command == "PING" {
-                reader.send(format!("PONG {}", split[1]).as_slice());
+                reader.send(format!("PONG {}", args[0]).as_slice());
             } else if command == "004" {
-                reader.send("JOIN #dabo");
-                reader.send("PRIVMSG #dabo :Hello!");
+                reader.send("JOIN #testbot");
+                reader.send("PRIVMSG #testbot :Hello!");
             } else if command == "PRIVMSG" {
-                reader.send("QUIT :Testing.");
+                if args[args.len() - 1].trim().eq_ignore_ascii_case(":quit") {
+                    reader.send("QUIT :Testing.");
+                    break;
+                } else {
+                    println!("{}", args[args.len() - 1]);
+                    reader.send(format!("PRIVMSG {}", args.connect(" ")).as_slice());
+                }
             }
         }
     });
