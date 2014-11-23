@@ -17,7 +17,7 @@ pub struct IrcClient {
     reader: Option<BufferedReader<TcpStream>>,
     reader_created: Arc<AtomicBool>,
     pub permitted: Regex,
-    listeners: Arc<RWLock<HashMap<String, Vec<|&mut IrcClient, &str, &[&str], Option<&str>|:'static>>>>
+    listeners: Arc<RWLock<HashMap<String, Vec<|&mut IrcEvent|:'static>>>>
 }
 
 impl IrcClient {
@@ -43,7 +43,7 @@ impl IrcClient {
         reader.spawn_reading_thread();
     }
 
-    pub fn add_listener(&mut self, command: &str, f: |&mut IrcClient, &str, &[&str], Option<&str>|:'static) {
+    pub fn add_listener(&mut self, command: &str, f: |&mut IrcEvent|:'static) {
         let command_string = command.into_string().to_ascii_lower();
         let mut listener_map = self.listeners.write();
         {
@@ -93,6 +93,7 @@ impl IrcClient {
                     None => println!("Received {}: {}", command, args.connect(" "))
                 }
                 let shared_self = &mut self.clone();
+                let event = &mut IrcEvent::new(shared_self, command, args, possible_mask);
                 let mut listener_map = self.listeners.write();
                 {
                     let mut command_listeners = match listener_map.get_mut(&command.to_ascii_lower()) {
@@ -101,7 +102,7 @@ impl IrcClient {
                     };
 
                     for listener in command_listeners.iter_mut() {
-                        (*listener)(shared_self, command, args, possible_mask);
+                        (*listener)(event);
                     }
                 }
                 listener_map.downgrade();
@@ -127,5 +128,24 @@ impl Clone for IrcClient {
         self.reader_created = source.reader_created.clone();
         self.permitted = source.permitted.clone();
         self.listeners = source.listeners.clone();
+    }
+}
+
+// TODO: Make all of these variables private and use methods to access them
+pub struct IrcEvent<'a> {
+    pub client: &'a mut IrcClient,
+    pub command: &'a str,
+    pub args: &'a [&'a str],
+    pub mask: Option<&'a str>
+}
+
+impl <'a> IrcEvent<'a> {
+    pub fn new<'b>(client: &'b mut IrcClient, command: &'b str, args: &'b [&'b str], mask: Option<&'b str>) -> IrcEvent<'b> {
+        return IrcEvent {
+            client: client,
+            command: command,
+            args: args,
+            mask: mask
+        }
     }
 }

@@ -1,6 +1,6 @@
 extern crate irc;
 
-use irc::IrcClient;
+use irc::{IrcClient, IrcEvent};
 use std::ascii::AsciiExt;
 
 fn main() {
@@ -8,20 +8,20 @@ fn main() {
     client.send("NICK bot");
     client.send("USER rust 0 * :Test");
     client.start_receiving();
-    client.add_listener("ping", |client: &mut IrcClient, cmd: &str, args: &[&str], mask: Option<&str>| {
-        client.send(format!("PONG {}", args[0]).as_slice());
+    client.add_listener("ping", |event: &mut IrcEvent| {
+        event.client.send(format!("PONG {}", event.args[0]).as_slice());
     });
-    client.add_listener("004", |client: &mut IrcClient, cmd: &str, args: &[&str], mask: Option<&str>| {
-        client.send("JOIN #bot");
+    client.add_listener("004", |event: &mut IrcEvent| {
+        event.client.send("JOIN #bot");
     });
-    client.add_listener("privmsg", |client: &mut IrcClient, cmd: &str, args: &[&str], possible_mask: Option<&str>| {
-        let mask = possible_mask.expect("PRIVMSG received without sender mask");
-        if args[1].eq_ignore_ascii_case(":quit") && client.permitted.is_match(mask) {
-            client.send("QUIT :Testing.");
-        } else if args[1].eq_ignore_ascii_case(":raw") && client.permitted.is_match(mask) {
-            client.send(args.slice_from(2).connect(" ").as_slice())
+    client.add_listener("privmsg", |event: &mut IrcEvent| {
+        let mask = event.mask.expect("PRIVMSG received without sender mask");
+        if event.args[1].eq_ignore_ascii_case(":quit") && event.client.permitted.is_match(mask) {
+            event.client.send("QUIT :Testing.");
+        } else if event.args[1].eq_ignore_ascii_case(":raw") && event.client.permitted.is_match(mask) {
+            event.client.send(event.args.slice_from(2).connect(" ").as_slice())
         } else {
-            client.send(format!("PRIVMSG {}", args.connect(" ")).as_slice());
+            event.client.send(format!("PRIVMSG {}", event.args.connect(" ")).as_slice());
         }
     });
 }
