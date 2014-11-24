@@ -140,7 +140,7 @@ pub struct IrcEvent<'a> {
 }
 
 impl <'a> IrcEvent<'a> {
-    pub fn new<'b>(client: &'b mut IrcClient, command: &'b str, args: &'b [&'b str], mask: Option<&'b str>) -> IrcEvent<'b> {
+    pub fn new(client: &'a mut IrcClient, command: &'a str, args: &'a [&'a str], mask: Option<&'a str>) -> IrcEvent<'a> {
         return IrcEvent {
             client: client,
             command: command,
