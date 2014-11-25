@@ -1,3 +1,8 @@
+#![feature(phase)]
+#[phase(plugin)]
+
+extern crate regex_macros;
+extern crate regex;
 extern crate irc;
 
 use irc::{IrcClient, IrcEvent};
@@ -15,10 +20,11 @@ fn main() {
         event.client.send("JOIN #bot");
     });
     client.add_listener("privmsg", |event: &mut IrcEvent| {
+        let permitted = regex!(r"^Dabo[^!]*![^@]*@me.dabo.guru$");
         let mask = event.mask.expect("PRIVMSG received without sender mask");
-        if event.args[1].eq_ignore_ascii_case(":quit") && event.client.permitted.is_match(mask) {
+        if event.args[1].eq_ignore_ascii_case(":quit") && permitted.is_match(mask) {
             event.client.send("QUIT :Testing.");
-        } else if event.args[1].eq_ignore_ascii_case(":raw") && event.client.permitted.is_match(mask) {
+        } else if event.args[1].eq_ignore_ascii_case(":raw") && permitted.is_match(mask) {
             event.client.send(event.args.slice_from(2).connect(" ").as_slice())
         } else {
             event.client.send(format!("PRIVMSG {}", event.args.connect(" ")).as_slice());

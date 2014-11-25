@@ -14,9 +14,7 @@ use std::collections::HashMap;
 
 pub struct IrcClient {
     socket: TcpStream,
-    reader: Option<BufferedReader<TcpStream>>,
-    reader_created: Arc<AtomicBool>,
-    pub permitted: Regex,
+    reader_started: Arc<AtomicBool>,
     listeners: Arc<RWLock<HashMap<String, Vec<|&mut IrcEvent|:'static>>>>
 }
 
@@ -24,9 +22,7 @@ impl IrcClient {
     pub fn new(addr: &str) -> IrcClient {
         return IrcClient {
             socket: TcpStream::connect(addr).unwrap(),
-            reader: None,
-            reader_created: Arc::new(AtomicBool::new(false)),
-            permitted: regex!(r"^Dabo[^!]*![^@]*@me.dabo.guru$"),
+            reader_started: Arc::new(AtomicBool::new(false)),
             listeners: Arc::new(RWLock::new(HashMap::new()))
         }
     }
@@ -50,7 +46,7 @@ impl IrcClient {
             // I can't use a match here because then I would be borrowing listener_map mutably twice?
             // Once for the match statement, and a second time inside the None branch
             if listener_map.contains_key(&command_string) {
-                listener_map.get_mut(&command_string).expect("Wat").push(f);
+                listener_map.get_mut(&command_string).expect("Honestly, this won't happen.").push(f);
             } else {
                 listener_map.insert(command_string, vec!(f));
             }
@@ -58,30 +54,21 @@ impl IrcClient {
         listener_map.downgrade();
     }
 
-    fn init_reader(&mut self) {
-        if self.reader_created.swap(true, Ordering::Relaxed) {
-            panic!("Reader already created");
-        }
-        self.reader = Some(BufferedReader::new(self.socket.clone()));
-    }
-
-    fn read_line(&mut self) -> Result<String, IoError> {
-        let reader = self.reader.as_mut().unwrap();
-        let whole_line = try!(reader.read_line());
-        return Ok(whole_line.trim_right().into_string())
-    }
-
     fn spawn_reading_thread(mut self) {
+        if self.reader_started.swap(true, Ordering::Relaxed) {
+            panic!("Reader already started");
+        }
         spawn(proc() {
-            self.init_reader();
+            let mut reader = BufferedReader::new(self.socket.clone());
             loop {
-                let input = match self.read_line() {
+                let whole_input = match reader.read_line() {
                     Ok(v) => v,
                     Err(e) => {
                         println!("Error: {}", e);
                         break;
                     }
                 };
+                let input = whole_input.trim_right();
                 let message_split: Vec<&str> = input.split(' ').collect();
                 let (command, args, possible_mask) = if message_split[0].starts_with(":") {
                     (message_split[1], message_split.slice_from(2), Some(message_split[0].slice_from(1)))
@@ -115,18 +102,14 @@ impl Clone for IrcClient {
     fn clone(&self) -> IrcClient {
         return IrcClient {
             socket: self.socket.clone(),
-            reader: None,
-            reader_created: self.reader_created.clone(),
-            permitted: self.permitted.clone(),
+            reader_started: self.reader_started.clone(),
             listeners: self.listeners.clone()
         }
     }
 
     fn clone_from(&mut self, source: &IrcClient) {
         self.socket = source.socket.clone();
-        self.reader = None;
-        self.reader_created = source.reader_created.clone();
-        self.permitted = source.permitted.clone();
+        self.reader_started = source.reader_started.clone();
         self.listeners = source.listeners.clone();
     }
 }
