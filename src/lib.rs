@@ -1,15 +1,11 @@
 #![feature(globs)]
-#![feature(phase)]
-#[phase(plugin)]
 
-extern crate regex_macros;
-extern crate regex;
+extern crate serialize;
 
 use std::io::*;
 use std::sync::atomic::*;
 use std::sync::{Arc, RWLock};
 use std::ascii::AsciiExt;
-use regex::Regex;
 use std::collections::HashMap;
 
 pub struct IrcClient {
@@ -39,8 +35,8 @@ impl IrcClient {
         reader.spawn_reading_thread();
     }
 
-    pub fn add_listener(&mut self, command: &str, f: |&mut IrcEvent|:'static) {
-        let command_string = command.into_string().to_ascii_lower();
+    pub fn add_listener(&mut self, irc_command: &str, f: |&mut IrcEvent|:'static) {
+        let command_string = irc_command.into_string().to_ascii_lower();
         let mut listener_map = self.listeners.write();
         {
             // I can't use a match here because then I would be borrowing listener_map mutably twice?
@@ -54,7 +50,7 @@ impl IrcClient {
         listener_map.downgrade();
     }
 
-    fn spawn_reading_thread(mut self) {
+    fn spawn_reading_thread(self) {
         if self.reader_started.swap(true, Ordering::Relaxed) {
             panic!("Reader already started");
         }
@@ -83,12 +79,12 @@ impl IrcClient {
                 let event = &mut IrcEvent::new(shared_self, command, args, possible_mask);
                 let mut listener_map = self.listeners.write();
                 {
-                    let mut command_listeners = match listener_map.get_mut(&command.to_ascii_lower()) {
+                    let mut listeners = match listener_map.get_mut(&EventType::IrcRaw(command.to_ascii_lower())) {
                         Some(v) => v,
                         None => continue
                     };
 
-                    for listener in command_listeners.iter_mut() {
+                    for listener in listeners.iter_mut() {
                         (*listener)(event);
                     }
                 }
@@ -114,15 +110,16 @@ impl Clone for IrcClient {
     }
 }
 
+
 // TODO: Make all of these variables private and use methods to access them
-pub struct IrcEvent<'a> {
+pub struct RawIrcEvent<'a> {
     pub client: &'a mut IrcClient,
     pub command: &'a str,
     pub args: &'a [&'a str],
     pub mask: Option<&'a str>
 }
 
-impl <'a> IrcEvent<'a> {
+impl <'a> RawIrcEvent<'a> {
     pub fn new(client: &'a mut IrcClient, command: &'a str, args: &'a [&'a str], mask: Option<&'a str>) -> IrcEvent<'a> {
         return IrcEvent {
             client: client,

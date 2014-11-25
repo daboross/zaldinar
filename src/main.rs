@@ -5,7 +5,7 @@ extern crate regex_macros;
 extern crate regex;
 extern crate irc;
 
-use irc::{IrcClient, IrcEvent};
+use irc::{IrcClient, RawIrcEvent};
 use std::ascii::AsciiExt;
 
 fn main() {
@@ -13,13 +13,13 @@ fn main() {
     client.send("NICK bot");
     client.send("USER rust 0 * :Test");
     client.start_receiving();
-    client.add_listener("ping", |event: &mut IrcEvent| {
+    client.add_listener("ping", |event: &mut RawIrcEvent| {
         event.client.send(format!("PONG {}", event.args[0]).as_slice());
     });
-    client.add_listener("004", |event: &mut IrcEvent| {
+    client.add_listener("004", |event: &mut RawIrcEvent| {
         event.client.send("JOIN #bot");
     });
-    client.add_listener("privmsg", |event: &mut IrcEvent| {
+    client.add_listener("privmsg", |event: &mut RawIrcEvent| {
         let permitted = regex!(r"^Dabo[^!]*![^@]*@me.dabo.guru$");
         let mask = event.mask.expect("PRIVMSG received without sender mask");
         if event.args[1].eq_ignore_ascii_case(":quit") && permitted.is_match(mask) {
