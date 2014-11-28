@@ -18,9 +18,9 @@ fn main() {
             std::os::set_exit_status(1);
             return
         }
-    }
+    };
 
-    let mut client = irc::Client::new();
+    let mut client = irc::Client::new(config);
 
     client.add_listener("004", |event: &mut irc::IrcMessageEvent| {
         for channel in event.client.config.channels.iter() {

@@ -140,8 +140,8 @@ impl Client {
 
         // Send NICK and USER, the initial IRC commands. Because an IrcConnection hasn't been created to receive these yet,
         //  they will just go on hold and get sent as soon as the IrcConnection connects.
-        client.interface.send_command("NICK".into_string(), &[&*client.interface.config.nick]);
-        client.interface.send_command("USER".into_string(), &[&*client.interface.config.user, "0", "*", &*format!(":{}", client.interface.config.real_name)]);
+        self.interface.send_command("NICK".into_string(), &[&*self.config.nick]);
+        self.interface.send_command("USER".into_string(), &[&*self.config.user, "0", "*", &*format!(":{}", self.config.real_name)]);
 
         match IrcConnection::create(self.config.address.as_slice(), connection_data_out, connection_data_in) {
             Ok(_) => (),
