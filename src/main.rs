@@ -1,37 +1,49 @@
+
+#![feature(phase)]
+
+#[phase(plugin)]
+extern crate regex_macros;
+
+extern crate regex;
 extern crate irc;
 
+// TODO: Add this to the config
+static PERMITTED: regex::Regex = regex!(r"^Dabo[^!]*![^@]*@me.dabo.guru$");
+
 fn main() {
-    irc::start_from_config(irc::load_config_from_file(&Path::new("config.json")).unwrap());
+    let mut client = irc::Client::new(irc::load_config_from_file(&Path::new("config.json")).unwrap());
+
+    client.add_listener("004", |event: &mut irc::IrcMessageEvent| {
+        // TODO: Give access to config data via IrcInterface so that we can join configured channels
+        // for channel in event.client.channels.iter() {
+        //     event.client.send(format!("JOIN {}", channel.as_slice()).as_slice());
+        // }
+        event.client.send_command("JOIN".into_string(), &["#bot"]);
+    });
+
+    client.add_command("say", |event: &mut irc::CommandEvent| {
+        event.client.send_raw(format!("PRIVMSG {} :{}", event.channel, event.args.connect(" ")));
+    });
+
+    client.add_command("quit", |event: &mut irc::CommandEvent| {
+        if event.mask.is_none() || !PERMITTED.is_match(event.mask.unwrap()) {
+            event.client.send_command("PRIVMSG".to_string(), &[event.channel, ":Permission denied."]);
+            return;
+        }
+        event.client.send_command("QUIT".to_string(), &[":See you!"]);
+    });
+
+    client.add_command("raw", |event: &mut irc::CommandEvent| {
+        if event.mask.is_none() || !PERMITTED.is_match(event.mask.unwrap()) {
+            event.client.send_command("PRIVMSG".to_string(), &[event.channel, ":Permission denied."]);
+            return;
+        }
+        event.client.send_raw(event.args.connect(" "));
+    });
+
+    // TODO: Add this to Client
+    client.interface.send_raw("NICK bot2".into_string());
+    client.interface.send_raw("USER rust 0 * :Test".into_string());
+
+    client.connect().ok().expect("Failed to connect!");
 }
-
-// #![feature(phase)]
-
-// #[phase(plugin)]
-// extern crate regex_macros;
-// extern crate regex;
-
-// use std::ascii::AsciiExt;
-
-// fn main() {
-//     let mut client = IrcClient::new("irc.spi.gt:6667");
-//     client.send("NICK bot");
-//     client.send("USER rust 0 * :Test");
-//     client.start_receiving();
-//     client.add_listener("ping", |event: &mut RawIrcEvent| {
-//         event.client.send(format!("PONG {}", event.args[0]).as_slice());
-//     });
-//     client.add_listener("004", |event: &mut RawIrcEvent| {
-//         event.client.send("JOIN #bot");
-//     });
-//     client.add_listener("privmsg", |event: &mut RawIrcEvent| {
-//         let permitted = regex!(r"^Dabo[^!]*![^@]*@me.dabo.guru$");
-//         let mask = event.mask.expect("PRIVMSG received without sender mask");
-//         if event.args[1].eq_ignore_ascii_case(":quit") && permitted.is_match(mask) {
-//             event.client.send("QUIT :Testing.");
-//         } else if event.args[1].eq_ignore_ascii_case(":raw") && permitted.is_match(mask) {
-//             event.client.send(event.args.slice_from(2).connect(" ").as_slice())
-//         } else {
-//             event.client.send(format!("PRIVMSG {}", event.args.connect(" ")).as_slice());
-//         }
-//     });
-// }

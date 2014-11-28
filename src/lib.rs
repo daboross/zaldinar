@@ -12,7 +12,7 @@ struct IrcConnection {
     name: String,
     socket: TcpStream,
     data_out: Option<Sender<IrcMessage>>,
-    data_in: Option<Receiver<String>>,
+    data_in: Option<Receiver<String>>
 }
 
 impl IrcConnection {
@@ -106,10 +106,10 @@ impl IrcMessage {
     }
 }
 
-struct Client {
+pub struct Client {
     data_out: Sender<String>,
     data_in: Receiver<IrcMessage>,
-    interface: IrcInterface,
+    pub interface: IrcInterface,
     commands: Arc<RWLock<HashMap<String, Vec<|&mut CommandEvent|:'static>>>>,
     raw_listeners: Arc<RWLock<HashMap<String, Vec<|&mut IrcMessageEvent|:'static>>>>,
     name: String,
@@ -145,13 +145,16 @@ impl Client {
         return client;
     }
 
-    pub fn connect(mut self) -> Result<(), &'static str> {
+    pub fn connect(mut self) -> Result<(), String> {
         let (connection_data_out, connection_data_in) = match self.irc_connection_channel {
             Some(v) => v,
-            None => return Err("Already connected")
+            None => return Err("Already connected".into_string())
         };
         self.irc_connection_channel = None;
-        IrcConnection::create(self.name.as_slice(), self.server_address.as_slice(), connection_data_out, connection_data_in);
+        match IrcConnection::create(self.name.as_slice(), self.server_address.as_slice(), connection_data_out, connection_data_in) {
+            Ok(_) => (),
+            Err(e) => return Err(format!("Error creating IrcConnection: {}", e))
+        };
         self.spawn_dispatch_thread();
         return Ok(())
     }
@@ -201,21 +204,45 @@ impl Client {
         let shared_mask: Option<&str> = message.mask.as_ref().map(|s| &**s);
         let shared_args = message.args.iter().map(|s| &**s).collect::<Vec<&'a str>>();
 
+        // PING
+        if message.command.as_slice().eq_ignore_ascii_case("PING") {
+            self.interface.send_command("PONG".into_string(), shared_args.as_slice());
+        }
+
         // Raw listeners
         let message_event = &mut IrcMessageEvent::new(&self.interface, message.command.as_slice(), shared_args.as_slice(), shared_mask);
         let mut listener_map = self.raw_listeners.write();
         // New scope so that listeners will go out of scope before we run listener_map.downgrade()
         {
-            let mut listeners = match listener_map.get_mut(&message.command.to_ascii_lower()) {
-                Some(v) => v,
-                None => return
-            };
-
-            for listener in listeners.iter_mut() {
-                (*listener)(message_event);
+            let listeners = listener_map.get_mut(&message.command.to_ascii_lower());
+            if listeners.is_some() {
+                for listener in listeners.unwrap().iter_mut() {
+                    (*listener)(message_event);
+                }
             }
         }
         listener_map.downgrade();
+
+        // Commands
+        if message.command.as_slice().eq_ignore_ascii_case("PRIVMSG") {
+            let channel = shared_args[0];
+            if shared_args[1].starts_with(format!(":{}", self.command_prefix.as_slice()).as_slice()) {
+                let command = shared_args[1].slice_from(2).into_string().to_ascii_lower();
+                let mut command_map = self.commands.write();
+                {
+                    let commands = command_map.get_mut(&command);
+                    if commands.is_some() {
+                        let args = shared_args.slice_from(2);
+                        let command_event = &mut CommandEvent::new(&self.interface, channel, args, shared_mask);
+
+                        for command in commands.unwrap().iter_mut() {
+                            (*command)(command_event);
+                        }
+                    }
+                }
+                command_map.downgrade();
+            }
+        }
     }
 }
 
@@ -249,47 +276,6 @@ impl Clone for IrcInterface {
     }
 }
 
-        // client.add_listener("ping", |event: &mut InternalIrcEvent| {
-        //     event.client.send(format!("PONG {}", event.args[0]).as_slice());
-        // });
-        // client.add_listener("004", |event: &mut InternalIrcEvent| {
-        //     // TODO: Merge IrcClient and IrcConnection to deal with all this
-        //     for channel in self.channels.iter() {
-        //         event.client.send(format!("JOIN {}", channel.as_slice()).as_slice());
-        //     }
-        //     event.client.send("JOIN #bot");
-        // });
-        // client.add_listener("privmsg", |event: &mut InternalIrcEvent| {
-        //     // let permitted = regex!(r"^Dabo[^!]*![^@]*@me.dabo.guru$");
-        //     // let mask = event.mask.expect("PRIVMSG received without sender mask");
-        //     let channel = event.args[0];
-        //     if event.args[1].starts_with(format!(":{}", self.command_prefix.as_slice()).as_slice()) {
-        //         let command = event.args[1].slice_from(2).into_string().to_ascii_lower();
-        //         let mut command_map = self.commands.write();
-        //         {
-        //             let mut commands = match command_map.get_mut(&command) {
-        //                 Some(v) => v,
-        //                 None => return
-        //             };
-
-        //             let args = event.args.slice_from(2);
-        //             let shared_self = &mut self.clone();
-        //             let event = &mut CommandEvent::new(shared_self, command.as_slice(), args, event.mask);
-
-        //             for command in commands.iter_mut() {
-        //                 (*command)(event);
-        //             }
-        //         }
-        //         command_map.downgrade();
-        //     }
-
-        // if event.args[1].eq_ignore_ascii_case(":quit") && permitted.is_match(mask) {
-        //     event.client.send("QUIT :Testing.");
-        // } else if event.args[1].eq_ignore_ascii_case(":raw") && permitted.is_match(mask) {
-        //     event.client.send(event.args.slice_from(2).connect(" ").as_slice())
-        // } else {
-        //     event.client.send(format!("PRIVMSG {}", event.args.connect(" ")).as_slice());
-        // }
 
 pub struct IrcMessageEvent<'a> {
     pub client: &'a IrcInterface,
@@ -349,12 +335,4 @@ pub fn load_config_from_file(path: &Path) -> Result<ClientConfiguration, String>
         Err(e) => return Err(format!("Failed to decode config file: {}", e))
     };
     return Ok(client_config)
-}
-
-pub fn start_from_config(config: ClientConfiguration) {
-    let mut client = Client::new(config);
-    client.add_command("say", |event: &mut CommandEvent| {
-        event.client.send_command("PRIVMSG".to_string(), event.args);
-    });
-    client.connect().ok().expect("Failed to connect!");
 }
