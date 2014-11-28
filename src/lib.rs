@@ -190,7 +190,7 @@ impl Client {
         spawn(proc() {
             loop {
                 let message: IrcMessage = self.data_in.recv();
-                self.process_message(message);
+                self.process_message(&message);
             }
         });
     }
@@ -198,13 +198,13 @@ impl Client {
     // Noting: This has to be a separate method from spawn_dispatch_thread, so that we can name an 'a lifetime.
     // This allows us to give the new &str slices a specific lifetime, which I don't know a way to do without making a new function.
     fn process_message<'a>(&self, message: &'a IrcMessage) {
-        let mask: Option<&'a str> = match message.mask {
-            Some(ref v) => Some(v.as_slice()),
-            None => None
-        };
-        let args_shared = message.args.iter().map(|s: &'a String| s.as_slice()).collect::<Vec<&'a str>>();
-        let event = &mut IrcMessageEvent::new(&self.interface, message.command.as_slice(), args_shared.as_slice(), None);
+        let shared_mask: Option<&str> = message.mask.as_ref().map(|s| &**s);
+        let shared_args = message.args.iter().map(|s| &**s).collect::<Vec<&'a str>>();
+
+        // Raw listeners
+        let message_event = &mut IrcMessageEvent::new(&self.interface, message.command.as_slice(), shared_args.as_slice(), shared_mask);
         let mut listener_map = self.raw_listeners.write();
+        // New scope so that listeners will go out of scope before we run listener_map.downgrade()
         {
             let mut listeners = match listener_map.get_mut(&message.command.to_ascii_lower()) {
                 Some(v) => v,
@@ -212,7 +212,7 @@ impl Client {
             };
 
             for listener in listeners.iter_mut() {
-                (*listener)(event);
+                (*listener)(message_event);
             }
         }
         listener_map.downgrade();
@@ -238,6 +238,14 @@ impl IrcInterface {
         line.push(' ');
         line.push_str(args.connect(" ").as_slice());
         self.send_raw(line);
+    }
+}
+
+impl Clone for IrcInterface {
+    fn clone(&self) -> IrcInterface {
+        return IrcInterface {
+            data_out: self.data_out.clone()
+        }
     }
 }
 
