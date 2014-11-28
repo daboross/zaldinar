@@ -27,8 +27,11 @@ impl IrcConnection {
             data_out: None,
             data_in: Some(data_in)
         };
-        connection_receiving.spawn_reading_thread().ok().expect("This was already setup to work");
-        connection_sending.spawn_writing_thread().ok().expect("This was already setup to work");
+
+        // Using unwrap() on these two because we know that data_out and data_in are Some() and not None
+        connection_receiving.spawn_reading_thread().unwrap();
+        connection_sending.spawn_writing_thread().unwrap();
+
         return Ok(())
     }
 
@@ -128,11 +131,18 @@ impl Client {
     }
 
     pub fn connect(mut self) -> Result<(), String> {
+        // Get connection data_out/data_in, and assure that we haven't already done this (ensure we aren't already connected)
         let (connection_data_out, connection_data_in) = match self.irc_connection_channel {
             Some(v) => v,
             None => return Err("Already connected".into_string())
         };
         self.irc_connection_channel = None;
+
+        // Send NICK and USER, the initial IRC commands. Because an IrcConnection hasn't been created to receive these yet,
+        //  they will just go on hold and get sent as soon as the IrcConnection connects.
+        client.interface.send_command("NICK".into_string(), &[&*client.interface.config.nick]);
+        client.interface.send_command("USER".into_string(), &[&*client.interface.config.user, "0", "*", &*format!(":{}", client.interface.config.real_name)]);
+
         match IrcConnection::create(self.config.address.as_slice(), connection_data_out, connection_data_in) {
             Ok(_) => (),
             Err(e) => return Err(format!("Error creating IrcConnection: {}", e))

@@ -11,10 +11,18 @@ extern crate irc;
 static PERMITTED: regex::Regex = regex!(r"^Dabo[^!]*![^@]*@me.dabo.guru$");
 
 fn main() {
-    let mut client = irc::Client::new(irc::load_config_from_file(&Path::new("config.json")).unwrap());
+    let config = match irc::load_config_from_file(&Path::new("config.json")) {
+        Ok(v) => v,
+        Err(e) => {
+            println!("Error loading configuration: {}", e);
+            std::os::set_exit_status(1);
+            return
+        }
+    }
+
+    let mut client = irc::Client::new();
 
     client.add_listener("004", |event: &mut irc::IrcMessageEvent| {
-        // TODO: Give access to config data via IrcInterface so that we can join configured channels
         for channel in event.client.config.channels.iter() {
             event.client.send_command("JOIN".into_string(), &[channel.as_slice()]);
         }
@@ -40,9 +48,13 @@ fn main() {
         event.client.send_raw(event.args.connect(" "));
     });
 
-    // TODO: Add this to Client
-    client.interface.send_command("NICK".into_string(), &[&*client.interface.config.nick]);
-    client.interface.send_command("USER".into_string(), &[&*client.interface.config.user, "0", "*", &*format!(":{}", client.interface.config.real_name)]);
-
-    client.connect().ok().expect("Failed to connect!");
+    match client.connect() {
+        Ok(()) => (),
+        Err(e) => {
+            println!("Error connecting: {}", e);
+            std::os::set_exit_status(1);
+            // There is no need to stop other tasks at this point, because the only time client.connect() returns Err is before any tasks are started
+            return
+        }
+    }
 }
