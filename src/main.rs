@@ -1,11 +1,15 @@
-// #![feature(phase)]
-// #[phase(plugin)]
+extern crate irc;
 
+fn main() {
+    irc::start_from_config(irc::load_config_from_file(&Path::new("config.json")).unwrap());
+}
+
+// #![feature(phase)]
+
+// #[phase(plugin)]
 // extern crate regex_macros;
 // extern crate regex;
-// extern crate irc;
 
-// use irc::{IrcClient, RawIrcEvent};
 // use std::ascii::AsciiExt;
 
 // fn main() {
@@ -31,6 +35,3 @@
 //         }
 //     });
 // }
-fn main() {
-
-}

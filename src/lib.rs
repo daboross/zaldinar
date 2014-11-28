@@ -147,12 +147,10 @@ impl Client {
 
     pub fn connect(mut self) -> Result<(), &'static str> {
         let (connection_data_out, connection_data_in) = match self.irc_connection_channel {
-            Some(v) => {
-                self.irc_connection_channel = None;
-                v
-            },
+            Some(v) => v,
             None => return Err("Already connected")
         };
+        self.irc_connection_channel = None;
         IrcConnection::create(self.name.as_slice(), self.server_address.as_slice(), connection_data_out, connection_data_in);
         self.spawn_dispatch_thread();
         return Ok(())
@@ -192,26 +190,32 @@ impl Client {
         spawn(proc() {
             loop {
                 let message: IrcMessage = self.data_in.recv();
-                // let mask: Option<&str> = match message.mask {
-                //     Some(v) => Some(v.as_slice()),
-                //     None => None
-                // };
-                let args_shared = &[];//message.args.iter().map(|s: &String| s.as_slice()).collect::<Vec<&str>>();
-                let event = &mut IrcMessageEvent::new(&self.interface, message.command.as_slice(), args_shared.as_slice(), None);
-                let mut listener_map = self.raw_listeners.write();
-                {
-                    let mut listeners = match listener_map.get_mut(&message.command.to_ascii_lower()) {
-                        Some(v) => v,
-                        None => continue
-                    };
-
-                    for listener in listeners.iter_mut() {
-                        (*listener)(event);
-                    }
-                }
-                listener_map.downgrade();
+                self.process_message(message);
             }
         });
+    }
+
+    // Noting: This has to be a separate method from spawn_dispatch_thread, so that we can name an 'a lifetime.
+    // This allows us to give the new &str slices a specific lifetime, which I don't know a way to do without making a new function.
+    fn process_message<'a>(&self, message: &'a IrcMessage) {
+        let mask: Option<&'a str> = match message.mask {
+            Some(ref v) => Some(v.as_slice()),
+            None => None
+        };
+        let args_shared = message.args.iter().map(|s: &'a String| s.as_slice()).collect::<Vec<&'a str>>();
+        let event = &mut IrcMessageEvent::new(&self.interface, message.command.as_slice(), args_shared.as_slice(), None);
+        let mut listener_map = self.raw_listeners.write();
+        {
+            let mut listeners = match listener_map.get_mut(&message.command.to_ascii_lower()) {
+                Some(v) => v,
+                None => return
+            };
+
+            for listener in listeners.iter_mut() {
+                (*listener)(event);
+            }
+        }
+        listener_map.downgrade();
     }
 }
 
