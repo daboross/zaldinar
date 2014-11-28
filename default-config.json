@@ -1,0 +1,9 @@
+{
+    "name": "server",
+    "nick": "bot",
+    "user": "bot",
+    "real_name": "bot - by Dabo",
+    "channels": ["#bot"],
+    "address": "irc.spi.gt:6667",
+    "command_prefix": "."
+}
