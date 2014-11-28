@@ -42,7 +42,7 @@ fn main() {
 
     // TODO: Add this to Client
     client.interface.send_command("NICK".into_string(), &[&*client.interface.config.nick]);
-    client.interface.send_command("USER".into_string(), &["rust 0 *", &*format!(":{}", client.interface.config.real_name)]);
+    client.interface.send_command("USER".into_string(), &[&*client.interface.config.user, "0", "*", &*format!(":{}", client.interface.config.real_name)]);
 
     client.connect().ok().expect("Failed to connect!");
 }
