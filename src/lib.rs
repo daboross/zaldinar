@@ -9,23 +9,20 @@ use std::collections::HashMap;
 use serialize::json;
 
 struct IrcConnection {
-    name: String,
     socket: TcpStream,
     data_out: Option<Sender<IrcMessage>>,
     data_in: Option<Receiver<String>>
 }
 
 impl IrcConnection {
-    pub fn create(name: &str, addr: &str, data_out: Sender<IrcMessage>, data_in: Receiver<String>) -> Result<(), IoError> {
+    pub fn create(addr: &str, data_out: Sender<IrcMessage>, data_in: Receiver<String>) -> Result<(), IoError> {
         let socket = try!(TcpStream::connect(addr));
         let connection_receiving = IrcConnection {
-            name: name.into_string(),
             socket: socket.clone(),
             data_out: Some(data_out),
             data_in: None
         };
         let connection_sending = IrcConnection {
-            name: name.into_string(),
             socket: socket, // No need to clone a second time, as this is the last time we are using this socket
             data_out: None,
             data_in: Some(data_in)
@@ -62,7 +59,7 @@ impl IrcConnection {
                     None => println!("Received {}: {}", command, args.connect(" "))
                 }
                 let args_owned: Vec<String> = args.iter().map(|s: &&str| s.to_string()).collect();
-                let message = IrcMessage::new(self.name.clone(), command.into_string(), args_owned, possible_mask);
+                let message = IrcMessage::new(command.into_string(), args_owned, possible_mask);
                 data_out.send(message);
             }
         });
@@ -89,16 +86,14 @@ impl IrcConnection {
 
 
 struct IrcMessage {
-    server: String,
     command: String,
     args: Vec<String>,
     mask: Option<String>
 }
 
 impl IrcMessage {
-    fn new(server: String, command: String, args: Vec<String>, mask: Option<String>) -> IrcMessage {
+    fn new(command: String, args: Vec<String>, mask: Option<String>) -> IrcMessage {
         return IrcMessage {
-            server: server,
             command: command,
             args: args,
             mask: mask
@@ -106,40 +101,27 @@ impl IrcMessage {
     }
 }
 
+// TODO: Store channels joined
 pub struct Client {
-    data_out: Sender<String>,
     data_in: Receiver<IrcMessage>,
     pub interface: IrcInterface,
     commands: Arc<RWLock<HashMap<String, Vec<|&mut CommandEvent|:'static>>>>,
     raw_listeners: Arc<RWLock<HashMap<String, Vec<|&mut IrcMessageEvent|:'static>>>>,
-    name: String,
-    bot_nick: String,
-    bot_username: String,
-    bot_real_name: String,
-    server_address: String,
-    command_prefix: String,
-    // TODO: Update channels with channels actually joined, not just configured.
-    channels: Vec<String>,
+    config: Arc<ClientConfiguration>,
     irc_connection_channel: Option<(Sender<IrcMessage>, Receiver<String>)>,
 }
 
 impl Client {
     pub fn new(config: ClientConfiguration) -> Client {
+        let rc_config = Arc::new(config);
         let (data_out, connection_data_in) = channel();
         let (connection_data_out, data_in) = channel();
         let client = Client {
-            interface: IrcInterface::new(data_out.clone()),
-            data_out: data_out,
+            interface: IrcInterface::new(data_out, rc_config.clone()),
             data_in: data_in,
             commands: Arc::new(RWLock::new(HashMap::new())),
             raw_listeners: Arc::new(RWLock::new(HashMap::new())),
-            name: config.name,
-            bot_nick: config.nick,
-            bot_username: config.user,
-            bot_real_name: config.real_name,
-            channels: config.channels,
-            server_address: config.address,
-            command_prefix: config.command_prefix,
+            config: rc_config,
             irc_connection_channel: Some((connection_data_out, connection_data_in))
         };
         return client;
@@ -151,7 +133,7 @@ impl Client {
             None => return Err("Already connected".into_string())
         };
         self.irc_connection_channel = None;
-        match IrcConnection::create(self.name.as_slice(), self.server_address.as_slice(), connection_data_out, connection_data_in) {
+        match IrcConnection::create(self.config.address.as_slice(), connection_data_out, connection_data_in) {
             Ok(_) => (),
             Err(e) => return Err(format!("Error creating IrcConnection: {}", e))
         };
@@ -226,8 +208,9 @@ impl Client {
         // Commands
         if message.command.as_slice().eq_ignore_ascii_case("PRIVMSG") {
             let channel = shared_args[0];
-            if shared_args[1].starts_with(format!(":{}", self.command_prefix.as_slice()).as_slice()) {
-                let command = shared_args[1].slice_from(2).into_string().to_ascii_lower();
+            let prefix = format!(":{}", self.config.command_prefix.as_slice());
+            if shared_args[1].starts_with(prefix.as_slice()) {
+                let command = shared_args[1].slice_from(prefix.len()).into_string().to_ascii_lower();
                 let mut command_map = self.commands.write();
                 {
                     let commands = command_map.get_mut(&command);
@@ -247,13 +230,15 @@ impl Client {
 }
 
 pub struct IrcInterface {
-    data_out: Sender<String>
+    data_out: Sender<String>,
+    pub config: Arc<ClientConfiguration>
 }
 
 impl IrcInterface {
-    fn new(data_out: Sender<String>) -> IrcInterface {
+    fn new(data_out: Sender<String>, config: Arc<ClientConfiguration>) -> IrcInterface {
         return IrcInterface {
-            data_out: data_out
+            data_out: data_out,
+            config: config
         }
     }
     pub fn send_raw(&self, line: String) {
@@ -271,7 +256,8 @@ impl IrcInterface {
 impl Clone for IrcInterface {
     fn clone(&self) -> IrcInterface {
         return IrcInterface {
-            data_out: self.data_out.clone()
+            data_out: self.data_out.clone(),
+            config: self.config.clone()
         }
     }
 }
@@ -316,13 +302,13 @@ impl <'a> CommandEvent<'a> {
 
 #[deriving(Decodable, Encodable)]
 pub struct ClientConfiguration {
-    name: String,
-    nick: String,
-    user: String,
-    real_name: String,
-    channels: Vec<String>,
-    address: String,
-    command_prefix: String
+    pub name: String,
+    pub nick: String,
+    pub user: String,
+    pub real_name: String,
+    pub channels: Vec<String>,
+    pub address: String,
+    pub command_prefix: String
 }
 
 pub fn load_config_from_file(path: &Path) -> Result<ClientConfiguration, String> {
@@ -334,5 +320,6 @@ pub fn load_config_from_file(path: &Path) -> Result<ClientConfiguration, String>
         Ok(v) => v,
         Err(e) => return Err(format!("Failed to decode config file: {}", e))
     };
+
     return Ok(client_config)
 }

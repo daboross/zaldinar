@@ -15,10 +15,9 @@ fn main() {
 
     client.add_listener("004", |event: &mut irc::IrcMessageEvent| {
         // TODO: Give access to config data via IrcInterface so that we can join configured channels
-        // for channel in event.client.channels.iter() {
-        //     event.client.send(format!("JOIN {}", channel.as_slice()).as_slice());
-        // }
-        event.client.send_command("JOIN".into_string(), &["#bot"]);
+        for channel in event.client.config.channels.iter() {
+            event.client.send_command("JOIN".into_string(), &[channel.as_slice()]);
+        }
     });
 
     client.add_command("say", |event: &mut irc::CommandEvent| {
@@ -42,8 +41,8 @@ fn main() {
     });
 
     // TODO: Add this to Client
-    client.interface.send_raw("NICK bot2".into_string());
-    client.interface.send_raw("USER rust 0 * :Test".into_string());
+    client.interface.send_command("NICK".into_string(), &[&*client.interface.config.nick]);
+    client.interface.send_command("USER".into_string(), &["rust 0 *", &*format!(":{}", client.interface.config.real_name)]);
 
     client.connect().ok().expect("Failed to connect!");
 }
