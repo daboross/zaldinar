@@ -5,5 +5,8 @@
     "real_name": "bot - by Dabo",
     "channels": ["#bot"],
     "address": "irc.spi.gt:6667",
-    "command_prefix": "."
+    "command_prefix": ".",
+    "admins": [
+        "Dabo!.*@me.dabo.guru"
+    ]
 }

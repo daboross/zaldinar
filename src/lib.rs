@@ -1,12 +1,58 @@
 #![feature(globs)]
 
 extern crate serialize;
+extern crate regex;
 
 use std::io::*;
 use std::sync::{Arc, RWLock};
 use std::ascii::AsciiExt;
 use std::collections::HashMap;
 use serialize::json;
+use regex::Regex;
+use std::error::Error;
+use serialize::json::DecoderError;
+
+pub enum InitializationError {
+    Io(IoError),
+    Regex(regex::Error),
+    Decoder(DecoderError),
+    Other(String)
+}
+
+impl InitializationError {
+    fn new(detail: &str) -> InitializationError {
+        InitializationError::Other(detail.to_string())
+    }
+}
+
+impl std::error::FromError<IoError> for InitializationError {
+    fn from_error(error: IoError) -> InitializationError {
+        InitializationError::Io(error)
+    }
+}
+
+impl std::error::FromError<regex::Error> for InitializationError {
+    fn from_error(error: regex::Error) -> InitializationError {
+        InitializationError::Regex(error)
+    }
+}
+
+impl std::error::FromError<DecoderError> for InitializationError {
+    fn from_error(error: DecoderError) -> InitializationError {
+        InitializationError::Decoder(error)
+    }
+}
+
+impl std::fmt::Show for InitializationError {
+    fn fmt(&self, formatter: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
+        match *self {
+            InitializationError::Io(ref v) => v.fmt(formatter),
+            InitializationError::Regex(ref v) => v.fmt(formatter),
+            InitializationError::Decoder(ref v) => v.fmt(formatter),
+            InitializationError::Other(ref v) => v.fmt(formatter)
+        }
+    }
+}
 
 struct IrcConnection {
     socket: TcpStream,
@@ -35,10 +81,10 @@ impl IrcConnection {
         return Ok(())
     }
 
-    fn spawn_reading_thread(self) -> Result<(), &'static str> {
+    fn spawn_reading_thread(self) -> Result<(), InitializationError> {
         let data_out = match self.data_out {
             Some(ref v) => v.clone(),
-            None => return Err("Can't start reading thread without data_out")
+            None => return Err(InitializationError::new("Can't start reading thread without data_out"))
         };
         spawn(proc() {
             let mut reader = BufferedReader::new(self.socket.clone());
@@ -69,9 +115,9 @@ impl IrcConnection {
         return Ok(())
     }
 
-    fn spawn_writing_thread(mut self) -> Result<(), &'static str> {
+    fn spawn_writing_thread(mut self) -> Result<(), InitializationError> {
         if (&self.data_in).is_none() {
-            return Err("Can't start writing thread without data_in")
+            return Err(InitializationError::new("Can't start writing thread without data_in"))
         };
         spawn(proc() {
             let data_in = self.data_in.expect("Already confirmed above");
@@ -115,26 +161,26 @@ pub struct Client {
 }
 
 impl Client {
-    pub fn new(config: ClientConfiguration) -> Client {
+    pub fn new(config: ClientConfiguration) -> Result<Client, InitializationError> {
         let rc_config = Arc::new(config);
         let (data_out, connection_data_in) = channel();
         let (connection_data_out, data_in) = channel();
         let client = Client {
-            interface: IrcInterface::new(data_out, rc_config.clone()),
+            interface: try!(IrcInterface::new(data_out, rc_config.clone())),
             data_in: data_in,
             commands: Arc::new(RWLock::new(HashMap::new())),
             raw_listeners: Arc::new(RWLock::new(HashMap::new())),
             config: rc_config,
             irc_connection_channel: Some((connection_data_out, connection_data_in))
         };
-        return client;
+        return Ok(client);
     }
 
-    pub fn connect(mut self) -> Result<(), String> {
+    pub fn connect(mut self) -> Result<(), InitializationError> {
         // Get connection data_out/data_in, and assure that we haven't already done this (ensure we aren't already connected)
         let (connection_data_out, connection_data_in) = match self.irc_connection_channel {
             Some(v) => v,
-            None => return Err("Already connected".into_string())
+            None => return Err(InitializationError::new("Already connected"))
         };
         self.irc_connection_channel = None;
 
@@ -143,10 +189,7 @@ impl Client {
         self.interface.send_command("NICK".into_string(), &[&*self.config.nick]);
         self.interface.send_command("USER".into_string(), &[&*self.config.user, "0", "*", &*format!(":{}", self.config.real_name)]);
 
-        match IrcConnection::create(self.config.address.as_slice(), connection_data_out, connection_data_in) {
-            Ok(_) => (),
-            Err(e) => return Err(format!("Error creating IrcConnection: {}", e))
-        };
+        try!(IrcConnection::create(self.config.address.as_slice(), connection_data_out, connection_data_in));
         self.spawn_dispatch_thread();
         return Ok(())
     }
@@ -241,15 +284,22 @@ impl Client {
 
 pub struct IrcInterface {
     data_out: Sender<String>,
-    pub config: Arc<ClientConfiguration>
+    pub config: Arc<ClientConfiguration>,
+    admins: Arc<Vec<Regex>>
 }
 
 impl IrcInterface {
-    fn new(data_out: Sender<String>, config: Arc<ClientConfiguration>) -> IrcInterface {
-        return IrcInterface {
-            data_out: data_out,
-            config: config
+    fn new(data_out: Sender<String>, config: Arc<ClientConfiguration>) -> Result<IrcInterface, InitializationError> {
+        let mut admins: Vec<Regex> = Vec::new();
+        for admin_str in config.admins.iter() {
+            admins.push(try!(Regex::new(format!("^{}$", admin_str.as_slice()).as_slice())));
         }
+        let interface = IrcInterface {
+            data_out: data_out,
+            config: config,
+            admins: Arc::new(admins)
+        };
+        return Ok(interface)
     }
     pub fn send_raw(&self, line: String) {
         self.data_out.send(line);
@@ -261,13 +311,30 @@ impl IrcInterface {
         line.push_str(args.connect(" ").as_slice());
         self.send_raw(line);
     }
+
+    pub fn send_message(&self, target: &str, message: &str) {
+        let line = format!("PRIVMSG {} :{}", target, message);
+        self.send_raw(line);
+    }
+
+    pub fn is_admin(&self, event: &CommandEvent) -> bool {
+        if event.mask.is_some() {
+            let mask = event.mask.unwrap().as_slice();
+            if self.admins.iter().any(|r| r.is_match(mask)) {
+                return true
+            }
+        }
+        self.send_message(event.channel, "Permission denied");
+        return false;
+    }
 }
 
 impl Clone for IrcInterface {
     fn clone(&self) -> IrcInterface {
         return IrcInterface {
             data_out: self.data_out.clone(),
-            config: self.config.clone()
+            config: self.config.clone(),
+            admins: self.admins.clone()
         }
     }
 }
@@ -310,7 +377,7 @@ impl <'a> CommandEvent<'a> {
     }
 }
 
-#[deriving(Decodable, Encodable)]
+#[deriving(Decodable)]
 pub struct ClientConfiguration {
     pub name: String,
     pub nick: String,
@@ -318,18 +385,13 @@ pub struct ClientConfiguration {
     pub real_name: String,
     pub channels: Vec<String>,
     pub address: String,
-    pub command_prefix: String
+    pub command_prefix: String,
+    pub admins: Vec<String>
 }
 
-pub fn load_config_from_file(path: &Path) -> Result<ClientConfiguration, String> {
-    let config_contents = match File::open(path).read_to_string() {
-        Ok(v) => v,
-        Err(e) => return Err(format!("Failed to read config file: {}", e))
-    };
-    let client_config = match json::decode::<ClientConfiguration>(config_contents.as_slice()) {
-        Ok(v) => v,
-        Err(e) => return Err(format!("Failed to decode config file: {}", e))
-    };
+pub fn load_config_from_file(path: &Path) -> Result<ClientConfiguration, InitializationError> {
+    let config_contents = try!(File::open(path).read_to_string());
+    let client_config = try!(json::decode::<ClientConfiguration>(config_contents.as_slice()));
 
     return Ok(client_config)
 }
