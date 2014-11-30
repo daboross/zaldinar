@@ -1,4 +1,4 @@
-extern crate irc;
+extern crate "zaldinar" as irc;
 
 mod plugins {
     pub mod control;

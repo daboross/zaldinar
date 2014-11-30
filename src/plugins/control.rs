@@ -24,6 +24,10 @@ fn raw(event: &mut CommandEvent) {
     event.client.send_raw(event.args.connect(" "));
 }
 
+fn join(event &mut CommandEvent) {
+    event.client.send_command("JOIN".to_string(), &[":"])
+}
+
 pub fn register(client: &mut Client) {
     client.add_command("say", say);
     client.add_command("quit", quit);

@@ -1,9 +1,9 @@
 {
-    "nick": "bot",
-    "user": "bot",
-    "real_name": "bot - by Dabo",
+    "nick": "ZaldinarBot",
+    "user": "zaldinar",
+    "real_name": "ZaldinarBot - by Dabo",
     "address": "irc.spi.gt:6667",
-    "channels": ["#bot"],
+    "channels": ["#zaldinar"],
     "command_prefix": ".",
     "admins": [
         "Dabo!.*@me.dabo.guru"
