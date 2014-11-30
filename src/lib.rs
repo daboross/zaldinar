@@ -136,6 +136,15 @@ impl Client {
 
         // Add initial channel join listener
         client.add_listener("004", |event: &mut IrcMessageEvent| {
+            let nickserv = &event.client.config.nickserv;
+            if nickserv.enabled {
+                if nickserv.account.len() != 0 {
+                    event.client.send_message(nickserv.name.as_slice(), format!("{} {} {}", nickserv.command, nickserv.account, nickserv.password).as_slice());
+                } else {
+                    event.client.send_message(nickserv.name.as_slice(), format!("{} {}", nickserv.command, nickserv.password).as_slice());
+                }
+            }
+
             for channel in event.client.config.channels.iter() {
                 event.client.send_command("JOIN".into_string(), &[channel.as_slice()]);
             }

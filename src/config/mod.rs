@@ -9,12 +9,22 @@ use serialize::json::DecoderError;
 use serialize::json::ParserError;
 
 #[deriving(Decodable)]
+pub struct NickServConf {
+    pub name: String,
+    pub command: String,
+    pub account: String,
+    pub password: String,
+    pub enabled: bool
+}
+
+#[deriving(Decodable)]
 pub struct ClientConfiguration {
     pub nick: String,
     pub user: String,
     pub real_name: String,
-    pub channels: Vec<String>,
     pub address: String,
+    pub nickserv: NickServConf,
+    pub channels: Vec<String>,
     pub command_prefix: String,
     pub admins: Vec<String>
 }
