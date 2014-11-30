@@ -10,7 +10,6 @@ use serialize::json::ParserError;
 
 #[deriving(Decodable)]
 pub struct ClientConfiguration {
-    pub name: String,
     pub nick: String,
     pub user: String,
     pub real_name: String,
