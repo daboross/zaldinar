@@ -1,6 +1,4 @@
 /// This file contains commands to generally control and administer the bot.
-extern crate irc;
-
 use irc::Client;
 use irc::interface::CommandEvent;
 
