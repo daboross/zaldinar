@@ -1,63 +1,18 @@
-#![feature(globs)]
-
 extern crate serialize;
 extern crate regex;
 
-use std::io::*;
+use std::io::{TcpStream, IoError, BufferedReader};
 use std::sync::{Arc, RWLock};
 use std::ascii::AsciiExt;
 use std::collections::HashMap;
-use serialize::json;
-use regex::Regex;
-use std::error::Error;
-use serialize::json::DecoderError;
-use serialize::json::ParserError;
 
-pub enum InitializationError {
-    Io(IoError),
-    Regex(regex::Error),
-    Decoder(DecoderError),
-    Other(String)
-}
+use errors::InitializationError;
+use config::ClientConfiguration;
+use interface::{CommandEvent, IrcMessageEvent, IrcInterface};
 
-impl InitializationError {
-    fn new(detail: &str) -> InitializationError {
-        InitializationError::Other(detail.to_string())
-    }
-
-    fn from_string(detail: String) -> InitializationError {
-        InitializationError::Other(detail)
-    }
-}
-
-impl std::error::FromError<IoError> for InitializationError {
-    fn from_error(error: IoError) -> InitializationError {
-        InitializationError::Io(error)
-    }
-}
-
-impl std::error::FromError<regex::Error> for InitializationError {
-    fn from_error(error: regex::Error) -> InitializationError {
-        InitializationError::Regex(error)
-    }
-}
-
-impl std::error::FromError<DecoderError> for InitializationError {
-    fn from_error(error: DecoderError) -> InitializationError {
-        InitializationError::Decoder(error)
-    }
-}
-
-impl std::fmt::Show for InitializationError {
-    fn fmt(&self, formatter: &mut std::fmt::Formatter) -> Result<(), std::fmt::Error> {
-        match *self {
-            InitializationError::Io(ref v) => v.fmt(formatter),
-            InitializationError::Regex(ref v) => v.fmt(formatter),
-            InitializationError::Decoder(ref v) => v.fmt(formatter),
-            InitializationError::Other(ref v) => v.fmt(formatter)
-        }
-    }
-}
+pub mod errors;
+pub mod config;
+pub mod interface;
 
 struct IrcConnection {
     socket: TcpStream,
@@ -170,7 +125,7 @@ impl Client {
         let rc_config = Arc::new(config);
         let (data_out, connection_data_in) = channel();
         let (connection_data_out, data_in) = channel();
-        let client = Client {
+        let mut client = Client {
             interface: try!(IrcInterface::new(data_out, rc_config.clone())),
             data_in: data_in,
             commands: Arc::new(RWLock::new(HashMap::new())),
@@ -178,6 +133,14 @@ impl Client {
             config: rc_config,
             irc_connection_channel: Some((connection_data_out, connection_data_in))
         };
+
+        // Add initial channel join listener
+        client.add_listener("004", |event: &mut IrcMessageEvent| {
+            for channel in event.client.config.channels.iter() {
+                event.client.send_command("JOIN".into_string(), &[channel.as_slice()]);
+            }
+        });
+
         return Ok(client);
     }
 
@@ -285,130 +248,4 @@ impl Client {
             }
         }
     }
-}
-
-pub struct IrcInterface {
-    data_out: Sender<String>,
-    pub config: Arc<ClientConfiguration>,
-    admins: Arc<Vec<Regex>>
-}
-
-impl IrcInterface {
-    fn new(data_out: Sender<String>, config: Arc<ClientConfiguration>) -> Result<IrcInterface, InitializationError> {
-        let mut admins: Vec<Regex> = Vec::new();
-        for admin_str in config.admins.iter() {
-            admins.push(try!(Regex::new(format!("^{}$", admin_str.as_slice()).as_slice())));
-        }
-        let interface = IrcInterface {
-            data_out: data_out,
-            config: config,
-            admins: Arc::new(admins)
-        };
-        return Ok(interface)
-    }
-    pub fn send_raw(&self, line: String) {
-        self.data_out.send(line);
-    }
-
-    pub fn send_command<'a>(&self, command: String, args: &[&str]) {
-        let mut line = command;
-        line.push(' ');
-        line.push_str(args.connect(" ").as_slice());
-        self.send_raw(line);
-    }
-
-    pub fn send_message(&self, target: &str, message: &str) {
-        let line = format!("PRIVMSG {} :{}", target, message);
-        self.send_raw(line);
-    }
-
-    pub fn is_admin(&self, event: &CommandEvent) -> bool {
-        if event.mask.is_some() {
-            let mask = event.mask.unwrap().as_slice();
-            if self.admins.iter().any(|r| r.is_match(mask)) {
-                return true
-            }
-        }
-        self.send_message(event.channel, "Permission denied");
-        return false;
-    }
-}
-
-impl Clone for IrcInterface {
-    fn clone(&self) -> IrcInterface {
-        return IrcInterface {
-            data_out: self.data_out.clone(),
-            config: self.config.clone(),
-            admins: self.admins.clone()
-        }
-    }
-}
-
-
-pub struct IrcMessageEvent<'a> {
-    pub client: &'a IrcInterface,
-    pub command: &'a str,
-    pub args: &'a [&'a str],
-    pub mask: Option<&'a str>
-}
-
-pub struct CommandEvent<'a> {
-    pub client: &'a IrcInterface,
-    pub channel: &'a str,
-    pub args: &'a [&'a str],
-    pub mask: Option<&'a str>
-}
-
-
-impl <'a> IrcMessageEvent<'a> {
-    fn new(client: &'a IrcInterface, command: &'a str, args: &'a [&'a str], mask: Option<&'a str>) -> IrcMessageEvent<'a> {
-        return IrcMessageEvent {
-            client: client,
-            command: command,
-            args: args,
-            mask: mask
-        }
-    }
-}
-
-impl <'a> CommandEvent<'a> {
-    fn new(client: &'a IrcInterface, channel: &'a str, args: &'a [&'a str], mask: Option<&'a str>) -> CommandEvent<'a> {
-        return CommandEvent {
-            client: client,
-            channel: channel,
-            args: args,
-            mask: mask
-        }
-    }
-}
-
-#[deriving(Decodable)]
-pub struct ClientConfiguration {
-    pub name: String,
-    pub nick: String,
-    pub user: String,
-    pub real_name: String,
-    pub channels: Vec<String>,
-    pub address: String,
-    pub command_prefix: String,
-    pub admins: Vec<String>
-}
-
-pub fn load_config_from_file(path: &Path) -> Result<ClientConfiguration, InitializationError> {
-    let config_contents = try!(File::open(path).read_to_string());
-    let client_config = try!(match json::decode::<ClientConfiguration>(config_contents.as_slice()) {
-        Ok(v) => Ok(v),
-        Err(e) => {
-            match e {
-                DecoderError::ParseError(parse_error) => match parse_error {
-                    ParserError::SyntaxError(error_code, line, col) => return Err(InitializationError::from_string(format!("Syntax error ({}) on line {} column {} in {}", error_code, line, col, path.display()))),
-                    ParserError::IoError(kind, desc) => return Err(InitializationError::Io(IoError{ kind: kind, desc: desc, detail: None}))
-                },
-                DecoderError::MissingFieldError(s) => return Err(InitializationError::from_string(format!("Field {} not found in {}", s.as_slice(), path.display()))),
-                _ => Err(e)
-            }
-        }
-    });
-
-    return Ok(client_config)
 }
