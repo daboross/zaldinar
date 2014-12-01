@@ -40,6 +40,11 @@ impl IrcInterface {
         self.send_raw(line);
     }
 
+    pub fn join(&self, channel: &str) {
+        let line = format!("JOIN :{}", channel);
+        self.send_raw(line);
+    }
+
     pub fn is_admin(&self, event: &CommandEvent) -> bool {
         if event.mask.is_some() {
             let mask = event.mask.unwrap().as_slice();
