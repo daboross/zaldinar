@@ -52,7 +52,7 @@ impl IrcConnection {
                 let whole_input = match reader.read_line() {
                     Ok(v) => v,
                     Err(e) => {
-                        println!("Error: {}", e);
+                        println!("Error in reading thread: {}", e);
                         break;
                     }
                 };

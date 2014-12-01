@@ -8,7 +8,7 @@ fn main() {
     let config = match irc::config::load_config_from_file(&Path::new("config.json")) {
         Ok(v) => v,
         Err(e) => {
-            println!("Error: {}", e);
+            println!("Error loading configuration: {}", e);
             std::os::set_exit_status(1);
             return
         }
@@ -17,7 +17,7 @@ fn main() {
     let mut client = match irc::Client::new(config) {
         Ok(v) => v,
         Err(e) => {
-            println!("Error: {}", e);
+            println!("Error initializing Client: {}", e);
             std::os::set_exit_status(1);
             return
         }
