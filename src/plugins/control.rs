@@ -3,13 +3,13 @@ use irc::Client;
 use irc::interface::CommandEvent;
 
 fn say(event: &CommandEvent) {
+    if !event.client.is_admin(event) {
+        return;
+    }
     if event.args[0].starts_with("#") {
-        if !event.client.is_admin(event) {
-            return;
-        }
-        event.client.send_message(event.args[0], &*event.args.slice_from(1).connect(" "));
+        event.client.send_message(event.args[0], event.args.slice_from(1).connect(" ").as_slice());
     } else {
-        event.client.send_message(event.channel, &*event.args.connect(" "));
+        event.client.send_message(event.channel, event.args.connect(" ").as_slice());
     }
 }
 
