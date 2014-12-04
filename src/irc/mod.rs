@@ -1,5 +1,11 @@
+extern crate regex;
+#[phase(plugin)]
+extern crate regex_macros;
+
 use errors::InitializationError;
 use std::io::{TcpStream, IoError, BufferedReader};
+
+static IRC_COLOR_REGEX: regex::Regex = regex!("\x03(?:\\d{1,2}(?:,\\d{1,2})?)?");
 
 pub struct IrcConnection {
     socket: TcpStream,
@@ -43,7 +49,7 @@ impl IrcConnection {
                         break;
                     }
                 };
-                let input = whole_input.trim_right();
+                let input = IRC_COLOR_REGEX.replace_all(whole_input.trim_right(), "");
                 let message_split: Vec<&str> = input.split(' ').collect();
                 let (command, args, possible_mask): (&str, &[&str], Option<String>) = if message_split[0].starts_with(":") {
                     (message_split[1], message_split.slice_from(2), Some(message_split[0].slice_from(1).into_string()))

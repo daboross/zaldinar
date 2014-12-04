@@ -1,3 +1,5 @@
+#![feature(phase)]
+
 extern crate serialize;
 extern crate regex;
 
