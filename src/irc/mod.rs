@@ -3,7 +3,9 @@ extern crate regex;
 extern crate regex_macros;
 
 use std::ascii::AsciiExt;
+use std::io;
 use std::io::{TcpStream, IoError, BufferedReader};
+use std::task::TaskBuilder;
 
 use errors::InitializationError;
 
@@ -11,45 +13,49 @@ static IRC_COLOR_REGEX: regex::Regex = regex!("(\x03(\\d+,\\d+|\\d)|[\x0f\x02\x1
 
 pub struct IrcConnection {
     socket: TcpStream,
-    data_out: Option<Sender<IrcMessage>>,
-    data_in: Option<Receiver<String>>
+    data_out: Option<Sender<Option<IrcMessage>>>,
+    data_in: Option<Receiver<Option<String>>>,
 }
 
 impl IrcConnection {
-    pub fn create(addr: &str, data_out: Sender<IrcMessage>, data_in: Receiver<String>) -> Result<(), IoError> {
+    pub fn create(addr: &str, data_out: Sender<Option<IrcMessage>>, data_in: Receiver<Option<String>>) -> Result<(), IoError> {
         let socket = try!(TcpStream::connect(addr));
         let connection_receiving = IrcConnection {
             socket: socket.clone(),
             data_out: Some(data_out),
-            data_in: None
+            data_in: None,
         };
         let connection_sending = IrcConnection {
             socket: socket, // No need to clone a second time, as this is the last time we are using this socket
             data_out: None,
-            data_in: Some(data_in)
+            data_in: Some(data_in),
         };
 
         // Using unwrap() on these two because we know that data_out and data_in are Some() and not None
         connection_receiving.spawn_reading_thread().unwrap();
         connection_sending.spawn_writing_thread().unwrap();
 
-        return Ok(())
+        return Ok(());
     }
 
     fn spawn_reading_thread(self) -> Result<(), InitializationError> {
         let data_out = match self.data_out {
             Some(ref v) => v.clone(),
-            None => return Err(InitializationError::new("Can't start reading thread without data_out"))
+            None => return Err(InitializationError::new("Can't start reading thread without data_out")),
         };
-        spawn(proc() {
+        TaskBuilder::new().named("socket_reading_task").spawn(proc() {
             let mut reader = BufferedReader::new(self.socket.clone());
             loop {
                 let whole_input = match reader.read_line() {
                     Ok(v) => v,
                     Err(e) => {
-                        println!("Error in reading thread: {}", e);
+                        match e.kind {
+                            io::IoErrorKind::EndOfFile => (),
+                            _ => println!("Error in reading thread: {}", e)
+                        }
+                        data_out.send(None);
                         break;
-                    }
+                    },
                 };
                 let input = IRC_COLOR_REGEX.replace_all(whole_input.trim_right(), "");
                 let message_split: Vec<&str> = input.split(' ').collect();
@@ -58,38 +64,42 @@ impl IrcConnection {
                 } else {
                     (message_split[0], message_split.slice_from(1), None)
                 };
-                let ctcp =
-                if command.eq_ignore_ascii_case("PRIVMSG") && args[1].starts_with(":\x01") && args[args.len() -1].ends_with("\x01") {
+                let ctcp = if command.eq_ignore_ascii_case("PRIVMSG")
+                              && args[1].starts_with(":\x01")
+                              && args[args.len() -1].ends_with("\x01") {
                     let ctcp_command;
                     let mut ctcp_message;
                     if args.len() > 2 {
-                        ctcp_command = args[1].slice_from(2).to_string(); // to remove :\x01
+                        ctcp_command = args[1].slice_from(2).into_string(); // to remove :\x01
                         ctcp_message = args.slice_from(2).connect(" ");
                         ctcp_message.pop(); // to remove last \x01
                     } else {
-                        ctcp_command = args[1].slice(2, args[1].len() - 1).to_string(); // remove starting :\x01 and ending \x01
+                        ctcp_command = args[1].slice(2, args[1].len() - 1).into_string(); // remove starting :\x01 and ending \x01
                         ctcp_message = "".into_string();
                     }
                     Some((ctcp_command, ctcp_message))
                 } else {
                     None
                 };
-                let args_owned: Vec<String> = args.iter().map(|s: &&str| s.to_string()).collect();
+                let args_owned: Vec<String> = args.iter().map(|s: &&str| s.into_string()).collect();
                 let message = IrcMessage::new(command.into_string(), args_owned, possible_mask, ctcp);
-                data_out.send(message);
+                data_out.send(Some(message));
             }
         });
-        return Ok(())
+        return Ok(());
     }
 
     fn spawn_writing_thread(mut self) -> Result<(), InitializationError> {
         if (&self.data_in).is_none() {
-            return Err(InitializationError::new("Can't start writing thread without data_in"))
-        };
-        spawn(proc() {
+            return Err(InitializationError::new("Can't start writing thread without data_in"));
+        }
+        TaskBuilder::new().named("socket_writing_task").spawn(proc() {
             let data_in = self.data_in.expect("Already confirmed above");
             loop {
-                let command = data_in.recv();
+                let command = match data_in.recv() {
+                    Some(v) => v,
+                    None => break,
+                };
                 if !command.starts_with("PONG ") {
                     println!(">>> {}", command);
                 }
@@ -98,7 +108,7 @@ impl IrcConnection {
                 self.socket.flush().ok().expect("Failed to flush stream");
             }
         });
-        return Ok(())
+        return Ok(());
     }
 }
 
@@ -117,7 +127,7 @@ impl IrcMessage {
             command: command,
             args: args,
             mask: mask,
-            ctcp: ctcp
-        }
+            ctcp: ctcp,
+        };
     }
 }

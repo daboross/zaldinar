@@ -5,13 +5,13 @@ use config::ClientConfiguration;
 use errors::InitializationError;
 
 pub struct IrcInterface {
-    data_out: Sender<String>,
+    data_out: Sender<Option<String>>,
     pub config: Arc<ClientConfiguration>,
-    admins: Arc<Vec<Regex>>
+    admins: Arc<Vec<Regex>>,
 }
 
 impl IrcInterface {
-    pub fn new(data_out: Sender<String>, config: Arc<ClientConfiguration>) -> Result<IrcInterface, InitializationError> {
+    pub fn new(data_out: Sender<Option<String>>, config: Arc<ClientConfiguration>) -> Result<IrcInterface, InitializationError> {
         let mut admins: Vec<Regex> = Vec::new();
         for admin_str in config.admins.iter() {
             admins.push(try!(Regex::new(format!("^{}$", admin_str.as_slice()).as_slice())));
@@ -19,13 +19,13 @@ impl IrcInterface {
         let interface = IrcInterface {
             data_out: data_out,
             config: config,
-            admins: Arc::new(admins)
+            admins: Arc::new(admins),
         };
-        return Ok(interface)
+        return Ok(interface);
     }
 
     pub fn send_raw(&self, line: String) {
-        self.data_out.send(line);
+        self.data_out.send(Some(line));
     }
 
     pub fn send_command<'a>(&self, command: String, args: &[&str]) {
@@ -48,21 +48,31 @@ impl IrcInterface {
     pub fn part(&self, channel: &str, message: Option<&str>) {
         let line = match message {
             Some(m) => format!("PART {} :{}", channel, m),
-            None => format!("PART {}", channel)
+            None => format!("PART {}", channel),
         };
         self.send_raw(line);
+    }
+
+    pub fn quit(&self, message: Option<&str>) {
+        let line = match message {
+            Some(m) => format!("QUIT :{}", m),
+            None => format!("QUIT"),
+        };
+        self.send_raw(line);
+        self.data_out.send(None);
     }
 
     pub fn is_admin(&self, event: &CommandEvent) -> bool {
         if event.mask.is_some() {
             let mask = event.mask.unwrap().as_slice();
             if self.admins.iter().any(|r| r.is_match(mask)) {
-                return true
+                return true;
             }
         }
         self.send_message(event.channel, "Permission denied");
         return false;
     }
+
 }
 
 impl Clone for IrcInterface {
@@ -70,8 +80,8 @@ impl Clone for IrcInterface {
         return IrcInterface {
             data_out: self.data_out.clone(),
             config: self.config.clone(),
-            admins: self.admins.clone()
-        }
+            admins: self.admins.clone(),
+        };
     }
 }
 
@@ -89,7 +99,7 @@ pub struct CommandEvent<'a> {
     pub client: &'a IrcInterface,
     pub channel: &'a str,
     pub args: &'a [&'a str],
-    pub mask: Option<&'a str>
+    pub mask: Option<&'a str>,
 }
 
 
@@ -100,8 +110,8 @@ impl <'a> IrcMessageEvent<'a> {
             command: command,
             args: args,
             mask: mask,
-            ctcp: ctcp
-        }
+            ctcp: ctcp,
+        };
     }
 }
 
@@ -111,8 +121,8 @@ impl <'a> CommandEvent<'a> {
             client: client,
             channel: channel,
             args: args,
-            mask: mask
-        }
+            mask: mask,
+        };
     }
 }
 

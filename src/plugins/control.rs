@@ -15,9 +15,13 @@ fn say(event: &CommandEvent) {
 
 fn quit(event: &CommandEvent) {
     if !event.client.is_admin(event) {
-        return
+        return;
     }
-    event.client.send_command("QUIT".to_string(), &[]);
+    if event.args.len() != 0 {
+        event.client.quit(Some(event.args.connect(" ").as_slice()));
+    } else {
+        event.client.quit(None);
+    }
 }
 
 fn raw(event: &CommandEvent) {

@@ -7,10 +7,11 @@ extern crate regex;
 use std::sync::{Arc, RWLock};
 use std::ascii::AsciiExt;
 use std::collections::HashMap;
+use std::task::TaskBuilder;
 
-use errors::InitializationError;
-use config::ClientConfiguration;
-use interface::{CommandEvent, IrcMessageEvent, IrcInterface};
+pub use errors::InitializationError;
+pub use config::ClientConfiguration;
+pub use interface::{CommandEvent, IrcMessageEvent, IrcInterface};
 use irc::{IrcConnection, IrcMessage};
 
 pub mod errors;
@@ -21,13 +22,13 @@ mod irc;
 
 // TODO: Store channels joined
 pub struct Client {
-    data_in: Receiver<IrcMessage>,
+    data_in: Receiver<Option<IrcMessage>>,
     pub interface: IrcInterface,
     commands: Arc<RWLock<HashMap<String, Vec<|&CommandEvent|:Send + Sync>>>>,
     raw_listeners: Arc<RWLock<HashMap<String, Vec<|&IrcMessageEvent|:Send + Sync>>>>,
     catch_all: Arc<RWLock<Vec<|&IrcMessageEvent|:Send + Sync>>>,
     config: Arc<ClientConfiguration>,
-    irc_connection_channel: Option<(Sender<IrcMessage>, Receiver<String>)>,
+    irc_connection_channel: Option<(Sender<Option<IrcMessage>>, Receiver<Option<String>>)>,
 }
 
 impl Client {
@@ -68,7 +69,7 @@ impl Client {
         // Get connection data_out/data_in, and assure that we haven't already done this (ensure we aren't already connected)
         let (connection_data_out, connection_data_in) = match self.irc_connection_channel {
             Some(v) => v,
-            None => return Err(InitializationError::new("Already connected"))
+            None => return Err(InitializationError::new("Already connected")),
         };
         self.irc_connection_channel = None;
 
@@ -79,7 +80,7 @@ impl Client {
 
         try!(IrcConnection::create(self.config.address.as_slice(), connection_data_out, connection_data_in));
         self.spawn_dispatch_thread();
-        return Ok(())
+        return Ok(());
     }
 
     pub fn add_listener(&mut self, irc_command: &str, f: |&IrcMessageEvent|:Send + Sync) {
@@ -121,9 +122,12 @@ impl Client {
     }
 
     fn spawn_dispatch_thread(self) {
-        spawn(proc() {
+        TaskBuilder::new().named("client_dispatch_task").spawn(proc() {
             loop {
-                let message: IrcMessage = self.data_in.recv();
+                let message = match self.data_in.recv() {
+                    Some(v) => v,
+                    None => break,
+                };
                 self.process_message(&message);
             }
         });
@@ -134,7 +138,6 @@ impl Client {
     fn process_message<'a>(&self, message: &'a IrcMessage) {
         let shared_mask: Option<&str> = message.mask.as_ref().map(|s| &**s);
         let shared_args = message.args.iter().map(|s| &**s).collect::<Vec<&'a str>>();
-        // let shared_ctcp = message.ctcp.as_ref().map(|t| t.iter().map(|s| &**s).collect::<(&'a str, &'a str)>());
         let shared_ctcp = message.ctcp.as_ref().map(|t| (t.0.as_slice(), t.1.as_slice()));
 
         // PING

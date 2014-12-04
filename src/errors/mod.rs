@@ -15,7 +15,7 @@ pub enum InitializationError {
 
 impl InitializationError {
     pub fn new(detail: &str) -> InitializationError {
-        InitializationError::Other(detail.to_string())
+        InitializationError::Other(detail.into_string())
     }
 
     pub fn from_string(detail: String) -> InitializationError {
@@ -47,7 +47,7 @@ impl fmt::Show for InitializationError {
             InitializationError::Io(ref v) => v.fmt(formatter),
             InitializationError::Regex(ref v) => v.fmt(formatter),
             InitializationError::Decoder(ref v) => v.fmt(formatter),
-            InitializationError::Other(ref v) => v.fmt(formatter)
+            InitializationError::Other(ref v) => v.fmt(formatter),
         }
     }
 }

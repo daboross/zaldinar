@@ -6,13 +6,13 @@ mod plugins {
 }
 
 fn main() {
-    let config = match irc::config::load_config_from_file(&Path::new("config.json")) {
+    let config = match irc::ClientConfiguration::load_from_file(&Path::new("config.json")) {
         Ok(v) => v,
         Err(e) => {
             println!("Error loading configuration: {}", e);
             std::os::set_exit_status(1);
-            return
-        }
+            return;
+        },
     };
 
     let mut client = match irc::Client::new(config) {
@@ -20,8 +20,8 @@ fn main() {
         Err(e) => {
             println!("Error initializing Client: {}", e);
             std::os::set_exit_status(1);
-            return
-        }
+            return;
+        },
     };
 
     plugins::control::register(&mut client);
@@ -33,7 +33,7 @@ fn main() {
             println!("Error connecting: {}", e);
             std::os::set_exit_status(1);
             // There is no need to stop other tasks at this point, because the only time client.connect() returns Err is before any tasks are started
-            return
-        }
+            return;
+        },
     }
 }
