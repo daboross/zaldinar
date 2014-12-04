@@ -5,7 +5,7 @@ extern crate regex_macros;
 use errors::InitializationError;
 use std::io::{TcpStream, IoError, BufferedReader};
 
-static IRC_COLOR_REGEX: regex::Regex = regex!("\x03(?:\\d{1,2}(?:,\\d{1,2})?)?");
+static IRC_COLOR_REGEX: regex::Regex = regex!("(\x03(\\d+,\\d+|\\d)|[\x0f\x02\x16\x1f])");
 
 pub struct IrcConnection {
     socket: TcpStream,
