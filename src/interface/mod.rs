@@ -92,7 +92,7 @@ pub struct IrcMessageEvent<'a> {
     pub args: &'a [&'a str],
     pub mask: Option<&'a str>,
     /// (ctcp_command, ctcp_message)
-    pub ctcp: Option<(&'a str, &'a str)>
+    pub ctcp: Option<(&'a str, &'a str)>,
 }
 
 pub struct CommandEvent<'a> {

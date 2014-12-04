@@ -44,7 +44,7 @@ fn part(event: &CommandEvent) {
     if event.args.len() > 1 {
         event.client.part(event.args[0], Some(event.args.slice_from(1).connect(" ").as_slice()));
     } else {
-        event.client.part(event.args[0], None)
+        event.client.part(event.args[0], None);
     }
 
     event.client.send_message(event.channel, format!("Parted {}.", event.args[0]).as_slice());

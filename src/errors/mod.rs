@@ -10,7 +10,7 @@ pub enum InitializationError {
     Io(IoError),
     Regex(regex::Error),
     Decoder(DecoderError),
-    Other(String)
+    Other(String),
 }
 
 impl InitializationError {

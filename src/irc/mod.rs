@@ -51,7 +51,7 @@ impl IrcConnection {
                     Err(e) => {
                         match e.kind {
                             io::IoErrorKind::EndOfFile => (),
-                            _ => println!("Error in reading thread: {}", e)
+                            _ => println!("Error in reading thread: {}", e),
                         }
                         data_out.send(None);
                         break;
