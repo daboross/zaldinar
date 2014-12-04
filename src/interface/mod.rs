@@ -45,6 +45,14 @@ impl IrcInterface {
         self.send_raw(line);
     }
 
+    pub fn part(&self, channel: &str, message: Option<&str>) {
+        let line = match message {
+            Some(m) => format!("PART {} :{}", channel, m),
+            None => format!("PART {}", channel)
+        };
+        self.send_raw(line);
+    }
+
     pub fn is_admin(&self, event: &CommandEvent) -> bool {
         if event.mask.is_some() {
             let mask = event.mask.unwrap().as_slice();

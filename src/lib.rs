@@ -63,10 +63,6 @@ impl IrcConnection {
                 } else {
                     (message_split[0], message_split.slice_from(1), None)
                 };
-                match possible_mask {
-                    Some(ref v) => println!("Received {} from {}: {}", command, v, args.connect(" ")),
-                    None => println!("Received {}: {}", command, args.connect(" "))
-                }
                 let args_owned: Vec<String> = args.iter().map(|s: &&str| s.to_string()).collect();
                 let message = IrcMessage::new(command.into_string(), args_owned, possible_mask);
                 data_out.send(message);
@@ -83,7 +79,9 @@ impl IrcConnection {
             let data_in = self.data_in.expect("Already confirmed above");
             loop {
                 let command = data_in.recv();
-                println!("Sending: {}", command);
+                if !command.starts_with("PONG ") {
+                    println!(">>> {}", command);
+                }
                 self.socket.write(command.as_bytes()).ok().expect("Failed to write to stream");
                 self.socket.write(b"\n").ok().expect("Failed to write to stream");
                 self.socket.flush().ok().expect("Failed to flush stream");
@@ -114,8 +112,9 @@ impl IrcMessage {
 pub struct Client {
     data_in: Receiver<IrcMessage>,
     pub interface: IrcInterface,
-    commands: Arc<RWLock<HashMap<String, Vec<|&mut CommandEvent|:'static>>>>,
-    raw_listeners: Arc<RWLock<HashMap<String, Vec<|&mut IrcMessageEvent|:'static>>>>,
+    commands: Arc<RWLock<HashMap<String, Vec<|&CommandEvent|:Send + Sync>>>>,
+    raw_listeners: Arc<RWLock<HashMap<String, Vec<|&IrcMessageEvent|:Send + Sync>>>>,
+    catch_all: Arc<RWLock<Vec<|&IrcMessageEvent|:Send + Sync>>>,
     config: Arc<ClientConfiguration>,
     irc_connection_channel: Option<(Sender<IrcMessage>, Receiver<String>)>,
 }
@@ -130,12 +129,13 @@ impl Client {
             data_in: data_in,
             commands: Arc::new(RWLock::new(HashMap::new())),
             raw_listeners: Arc::new(RWLock::new(HashMap::new())),
+            catch_all: Arc::new(RWLock::new(Vec::new())),
             config: rc_config,
             irc_connection_channel: Some((connection_data_out, connection_data_in))
         };
 
         // Add initial channel join listener
-        client.add_listener("004", |event: &mut IrcMessageEvent| {
+        client.add_listener("004", |event: &IrcMessageEvent| {
             let nickserv = &event.client.config.nickserv;
             if nickserv.enabled {
                 if nickserv.account.len() != 0 {
@@ -171,7 +171,7 @@ impl Client {
         return Ok(())
     }
 
-    pub fn add_listener(&mut self, irc_command: &str, f: |&mut IrcMessageEvent|:'static) {
+    pub fn add_listener(&mut self, irc_command: &str, f: |&IrcMessageEvent|:Send + Sync) {
         let command_string = irc_command.into_string().to_ascii_lower();
         let mut listener_map = self.raw_listeners.write();
         {
@@ -186,7 +186,15 @@ impl Client {
         listener_map.downgrade();
     }
 
-    pub fn add_command(&mut self, command: &str, f: |&mut CommandEvent|:'static) {
+    pub fn add_catch_all_listener(&mut self, f: |&IrcMessageEvent|:Send + Sync) {
+        let mut listeners = self.catch_all.write();
+        {
+            listeners.push(f);
+        }
+        listeners.downgrade();
+    }
+
+    pub fn add_command(&mut self, command: &str, f: |&CommandEvent|:Send + Sync) {
         let command_lower = command.into_string().to_ascii_lower();
         let mut command_map = self.commands.write();
         {
@@ -221,8 +229,18 @@ impl Client {
             self.interface.send_command("PONG".into_string(), shared_args.as_slice());
         }
 
-        // Raw listeners
         let message_event = &mut IrcMessageEvent::new(&self.interface, message.command.as_slice(), shared_args.as_slice(), shared_mask);
+
+        // Catch all listeners
+        let mut catch_all = self.catch_all.write();
+        {
+            for listener in catch_all.iter_mut() {
+                (*listener)(message_event);
+            }
+        }
+        catch_all.downgrade();
+
+        // Raw listeners
         let mut listener_map = self.raw_listeners.write();
         // New scope so that listeners will go out of scope before we run listener_map.downgrade()
         {

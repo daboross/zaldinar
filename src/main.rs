@@ -2,6 +2,7 @@ extern crate "zaldinar" as irc;
 
 mod plugins {
     pub mod control;
+    pub mod log;
 }
 
 fn main() {
@@ -24,6 +25,7 @@ fn main() {
     };
 
     plugins::control::register(&mut client);
+    plugins::log::register(&mut client);
 
     match client.connect() {
         Ok(()) => (),
