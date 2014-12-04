@@ -1,4 +1,5 @@
 #![feature(phase)]
+#![feature(tuple_indexing)]
 
 extern crate serialize;
 extern crate regex;
@@ -133,13 +134,15 @@ impl Client {
     fn process_message<'a>(&self, message: &'a IrcMessage) {
         let shared_mask: Option<&str> = message.mask.as_ref().map(|s| &**s);
         let shared_args = message.args.iter().map(|s| &**s).collect::<Vec<&'a str>>();
+        // let shared_ctcp = message.ctcp.as_ref().map(|t| t.iter().map(|s| &**s).collect::<(&'a str, &'a str)>());
+        let shared_ctcp = message.ctcp.as_ref().map(|t| (t.0.as_slice(), t.1.as_slice()));
 
         // PING
         if message.command.as_slice().eq_ignore_ascii_case("PING") {
             self.interface.send_command("PONG".into_string(), shared_args.as_slice());
         }
 
-        let message_event = &mut IrcMessageEvent::new(&self.interface, message.command.as_slice(), shared_args.as_slice(), shared_mask);
+        let message_event = &mut IrcMessageEvent::new(&self.interface, message.command.as_slice(), shared_args.as_slice(), shared_mask, shared_ctcp);
 
         // Catch all listeners
         let mut catch_all = self.catch_all.write();

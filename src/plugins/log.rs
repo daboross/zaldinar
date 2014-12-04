@@ -4,16 +4,23 @@ use irc::interface::IrcMessageEvent;
 use std::ascii::AsciiExt;
 
 fn log_message(event: &IrcMessageEvent) {
+    let mask = event.mask.unwrap_or("*unknown*");
     let message = match event.command.to_ascii_upper().as_slice() {
-        "PRIVMSG" => format!("[{}] <{}> {}", event.args[0], event.mask.unwrap_or("*unknown*"), event.args.slice_from(1).connect(" ").slice_from(1)),
-        "NOTICE" => format!("[{}] -{}- {}", event.args[0], event.mask.unwrap_or("*unknown*"), event.args.slice_from(1).connect(" ").slice_from(1)),
-        "JOIN" => format!("[{}] *** {} joined", event.args[0], event.mask.unwrap_or("*unknown*")),
+        "PRIVMSG" => match event.ctcp {
+            Some((ctcp_command, ctcp_message)) => match ctcp_command {
+                "ACTION" => format!("[{}] * {} {}", event.args[0], mask, ctcp_message),
+                _ => format!("[{}] <{}> CTCP {} {}", event.args[0], mask, ctcp_command, ctcp_message)
+            },
+            None => format!("[{}] <{}> {}", event.args[0], mask, event.args.slice_from(1).connect(" ").slice_from(1)),
+        },
+        "NOTICE" => format!("[{}] -{}- {}", event.args[0], mask, event.args.slice_from(1).connect(" ").slice_from(1)),
+        "JOIN" => format!("[{}] *** {} joined", event.args[0], mask),
         "PART" => format!("[{}] *** {} left ({})", event.args[0], event.mask, event.args[1]),
         "KICK" => {
             if event.args.len() > 2 {
-                format!("[{}] *** {} kicked {} ({})", event.args[0], event.mask.unwrap_or("*unknown*"), event.args[1], event.args.slice_from(2).connect(" ").slice_from(1))
+                format!("[{}] *** {} kicked {} ({})", event.args[0], mask, event.args[1], event.args.slice_from(2).connect(" ").slice_from(1))
             } else {
-                format!("[{}] *** {} kicked {}", event.args[0], event.mask.unwrap_or("*unknown*"), event.args[1])
+                format!("[{}] *** {} kicked {}", event.args[0], mask, event.args[1])
             }
         },
         "TOPIC" => format!("[{}] *** {} changed the topic to \"{}\"", event.args[0], event.mask.unwrap(), event.args.slice_from(1).connect(" ").slice_from(1)),
