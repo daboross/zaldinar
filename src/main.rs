@@ -3,6 +3,7 @@ extern crate "zaldinar" as irc;
 mod plugins {
     pub mod control;
     pub mod log;
+    pub mod ctcp;
 }
 
 fn main() {
@@ -26,6 +27,7 @@ fn main() {
 
     plugins::control::register(&mut client);
     plugins::log::register(&mut client);
+    plugins::ctcp::register(&mut client);
 
     match client.connect() {
         Ok(()) => (),

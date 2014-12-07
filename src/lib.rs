@@ -18,6 +18,9 @@ pub mod config;
 pub mod interface;
 mod irc;
 
+pub fn get_version() -> String {
+    return format!("{}.{}.{}", env!("CARGO_PKG_VERSION_MAJOR"), env!("CARGO_PKG_VERSION_MINOR"), env!("CARGO_PKG_VERSION_PATCH"));
+}
 
 // TODO: Store channels joined
 pub struct Client {
