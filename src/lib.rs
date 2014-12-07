@@ -10,7 +10,7 @@ use std::task::TaskBuilder;
 
 pub use errors::InitializationError;
 pub use config::ClientConfiguration;
-pub use interface::{CommandEvent, IrcMessageEvent, IrcInterface};
+pub use interface::{CommandEvent, IrcMessageEvent, CtcpEvent, IrcInterface};
 use irc::{IrcConnection, IrcMessage};
 
 pub mod errors;
@@ -24,6 +24,7 @@ pub struct Client {
     data_in: Receiver<Option<IrcMessage>>,
     pub interface: IrcInterface,
     commands: Arc<RWLock<HashMap<String, Vec<|&CommandEvent|:Send + Sync>>>>,
+    ctcp_listeners: Arc<RWLock<HashMap<String, Vec<|&CtcpEvent|:Send + Sync>>>>,
     raw_listeners: Arc<RWLock<HashMap<String, Vec<|&IrcMessageEvent|:Send + Sync>>>>,
     catch_all: Arc<RWLock<Vec<|&IrcMessageEvent|:Send + Sync>>>,
     config: Arc<ClientConfiguration>,
@@ -40,6 +41,7 @@ impl Client {
             data_in: data_in,
             commands: Arc::new(RWLock::new(HashMap::new())),
             raw_listeners: Arc::new(RWLock::new(HashMap::new())),
+            ctcp_listeners: Arc::new(RWLock::new(HashMap::new())),
             catch_all: Arc::new(RWLock::new(Vec::new())),
             config: rc_config,
             irc_connection_channel: Some((connection_data_out, connection_data_in))
@@ -95,6 +97,20 @@ impl Client {
         }
     }
 
+    pub fn add_ctcp_listener(&mut self, ctcp_command: &str, f: |&CtcpEvent|:Send + Sync) {
+        let command_string = ctcp_command.into_string().to_ascii_lower();
+
+        let mut listener_map = self.ctcp_listeners.write();
+        // I can't use a match here because then I would be borrowing listener_map mutably twice:
+        // Once for the match statement, and a second time inside the None branch
+        if listener_map.contains_key(&command_string) {
+            listener_map.get_mut(&command_string).expect("Honestly, this won't happen.").push(f);
+        } else {
+            listener_map.insert(command_string, vec!(f));
+        }
+    }
+
+
     pub fn add_catch_all_listener(&mut self, f: |&IrcMessageEvent|:Send + Sync) {
         let mut listeners = self.catch_all.write();
         listeners.push(f);
@@ -149,7 +165,7 @@ impl Client {
         }
 
         // Raw listeners
-        { // New scope so that listeners will go out of scope after we use it
+        { // New scope so that listener_map will go out of scope after we use it
             let mut listener_map = self.raw_listeners.write();
 
             let listeners = listener_map.get_mut(&message.command.to_ascii_lower());
@@ -160,8 +176,27 @@ impl Client {
             }
         }
 
-        // Commands
         if message.command.as_slice().eq_ignore_ascii_case("PRIVMSG") {
+
+            // CTCP
+            match message.ctcp {
+                Some(ref t) => {
+                    let ctcp_event = CtcpEvent::new(&self.interface, message.args[0].as_slice(), t.0.as_slice(), t.1.as_slice(), shared_mask);
+                    { // New scope so that ctcp_map will go out of scope after we use it
+                        let mut ctcp_map = self.ctcp_listeners.write();
+                        let ctcp_listeners = ctcp_map.get_mut(&ctcp_event.command.to_ascii_lower());
+                        if ctcp_listeners.is_some() {
+                            for ctcp_listener in ctcp_listeners.unwrap().iter_mut() {
+                                (*ctcp_listener)(&ctcp_event);
+                            }
+                        }
+                    }
+                },
+                None => (),
+            }
+
+
+            // Commands
             let channel = shared_args[0];
             let prefix = format!(":{}", self.config.command_prefix.as_slice());
             if shared_args[1].starts_with(prefix.as_slice()) {

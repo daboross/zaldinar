@@ -41,6 +41,16 @@ impl IrcInterface {
         self.send_raw(line);
     }
 
+    pub fn send_notice(&self, target: &str, message: &str) {
+        let line = format!("NOTICE {} :{}", target, message);
+        self.send_raw(line);
+    }
+
+    pub fn send_ctcp_reply(&self, target: &str, command: &str, content: &str) {
+        let line = format!("NOTICE {} :\x01{} {}\x01", target, command, content);
+        self.send_raw(line);
+    }
+
     pub fn join(&self, channel: &str) {
         let line = format!("JOIN :{}", channel);
         self.send_raw(line);
@@ -169,6 +179,14 @@ pub struct CommandEvent<'a> {
     pub mask: &'a IrcMask<'a>,
 }
 
+pub struct CtcpEvent<'a> {
+    pub client: &'a IrcInterface,
+    pub channel: &'a str,
+    pub command: &'a str,
+    pub content: &'a str,
+    pub mask: &'a IrcMask<'a>,
+}
+
 
 impl <'a> IrcMessageEvent<'a> {
     pub fn new(client: &'a IrcInterface, command: &'a str, args: &'a [&'a str], mask: &'a IrcMask, ctcp: Option<(&'a str, &'a str)>) -> IrcMessageEvent<'a> {
@@ -178,6 +196,18 @@ impl <'a> IrcMessageEvent<'a> {
             args: args,
             mask: mask,
             ctcp: ctcp,
+        };
+    }
+}
+
+impl <'a> CtcpEvent<'a> {
+    pub fn new(client: &'a IrcInterface, channel: &'a str, command: &'a str, content: &'a str, mask: &'a IrcMask) -> CtcpEvent<'a> {
+        return CtcpEvent {
+            client: client,
+            channel: channel,
+            command: command,
+            content: content,
+            mask: mask,
         };
     }
 }
