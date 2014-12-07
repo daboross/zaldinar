@@ -9,7 +9,11 @@ fn log_message(event: &IrcMessageEvent) {
         "PRIVMSG" => match event.ctcp {
             Some((ctcp_command, ctcp_message)) => match ctcp_command {
                 "ACTION" => format!("[{}] * {} {}", event.args[0], nick, ctcp_message),
-                _ => format!("[{}] <{}> CTCP {} {}", event.args[0], nick, ctcp_command, ctcp_message),
+                _ => if ctcp_message.len() == 0 {
+                    format!("[{}] CTCP {} from {}", event.args[0], ctcp_command, nick)
+                } else {
+                    format!("[{}] CTCP {} from {}: {}", event.args[0], ctcp_command, nick, ctcp_message)
+                },
             },
             None => format!("[{}] <{}> {}", event.args[0], nick, event.args.slice_from(1).connect(" ").slice_from(1)),
         },
