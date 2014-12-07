@@ -1,5 +1,4 @@
 #![feature(phase)]
-#![feature(tuple_indexing)]
 
 extern crate serialize;
 extern crate regex;
@@ -85,40 +84,33 @@ impl Client {
 
     pub fn add_listener(&mut self, irc_command: &str, f: |&IrcMessageEvent|:Send + Sync) {
         let command_string = irc_command.into_string().to_ascii_lower();
+
         let mut listener_map = self.raw_listeners.write();
-        {
-            // I can't use a match here because then I would be borrowing listener_map mutably twice:
-            // Once for the match statement, and a second time inside the None branch
-            if listener_map.contains_key(&command_string) {
-                listener_map.get_mut(&command_string).expect("Honestly, this won't happen.").push(f);
-            } else {
-                listener_map.insert(command_string, vec!(f));
-            }
+        // I can't use a match here because then I would be borrowing listener_map mutably twice:
+        // Once for the match statement, and a second time inside the None branch
+        if listener_map.contains_key(&command_string) {
+            listener_map.get_mut(&command_string).expect("Honestly, this won't happen.").push(f);
+        } else {
+            listener_map.insert(command_string, vec!(f));
         }
-        listener_map.downgrade();
     }
 
     pub fn add_catch_all_listener(&mut self, f: |&IrcMessageEvent|:Send + Sync) {
         let mut listeners = self.catch_all.write();
-        {
-            listeners.push(f);
-        }
-        listeners.downgrade();
+        listeners.push(f);
     }
 
     pub fn add_command(&mut self, command: &str, f: |&CommandEvent|:Send + Sync) {
         let command_lower = command.into_string().to_ascii_lower();
+
         let mut command_map = self.commands.write();
-        {
-            // I can't use a match here because then I would be borrowing the command_map mutably twice:
-            // Once for the match statement, and a second time inside the None branch
-            if command_map.contains_key(&command_lower) {
-                command_map.get_mut(&command_lower).expect("Honestly, this won't happen.").push(f);
-            } else {
-                command_map.insert(command_lower, vec!(f));
-            }
+        // I can't use a match here because then I would be borrowing the command_map mutably twice:
+        // Once for the match statement, and a second time inside the None branch
+        if command_map.contains_key(&command_lower) {
+            command_map.get_mut(&command_lower).expect("Honestly, this won't happen.").push(f);
+        } else {
+            command_map.insert(command_lower, vec!(f));
         }
-        command_map.downgrade();
     }
 
     fn spawn_dispatch_thread(self) {
@@ -148,18 +140,17 @@ impl Client {
         let message_event = &mut IrcMessageEvent::new(&self.interface, message.command.as_slice(), shared_args.as_slice(), shared_mask, shared_ctcp);
 
         // Catch all listeners
-        let mut catch_all = self.catch_all.write();
         {
+            let mut catch_all = self.catch_all.write();
             for listener in catch_all.iter_mut() {
                 (*listener)(message_event);
             }
         }
-        catch_all.downgrade();
 
         // Raw listeners
-        let mut listener_map = self.raw_listeners.write();
-        // New scope so that listeners will go out of scope before we run listener_map.downgrade()
-        {
+        { // New scope so that listeners will go out of scope after we use it
+            let mut listener_map = self.raw_listeners.write();
+
             let listeners = listener_map.get_mut(&message.command.to_ascii_lower());
             if listeners.is_some() {
                 for listener in listeners.unwrap().iter_mut() {
@@ -167,7 +158,6 @@ impl Client {
                 }
             }
         }
-        listener_map.downgrade();
 
         // Commands
         if message.command.as_slice().eq_ignore_ascii_case("PRIVMSG") {
@@ -175,8 +165,8 @@ impl Client {
             let prefix = format!(":{}", self.config.command_prefix.as_slice());
             if shared_args[1].starts_with(prefix.as_slice()) {
                 let command = shared_args[1].slice_from(prefix.len()).into_string().to_ascii_lower();
-                let mut command_map = self.commands.write();
-                {
+                { // New scope so that command_map will go out of scope after we use it
+                    let mut command_map = self.commands.write();
                     let commands = command_map.get_mut(&command);
                     if commands.is_some() {
                         let args = shared_args.slice_from(2);
@@ -187,7 +177,6 @@ impl Client {
                         }
                     }
                 }
-                command_map.downgrade();
             }
         }
     }
