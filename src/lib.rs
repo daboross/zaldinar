@@ -128,7 +128,8 @@ impl Client {
     // Noting: This has to be a separate method from spawn_dispatch_thread, so that we can name an 'a lifetime.
     // This allows us to give the new &str slices a specific lifetime, which I don't know a way to do without making a new function.
     fn process_message<'a>(&self, message: &'a IrcMessage) {
-        let shared_mask: Option<&str> = message.mask.as_ref().map(|s| &**s);
+        // let shared_mask: Option<&str> = message.mask.as_ref().map(|s| &**s);
+        let shared_mask = &interface::IrcMask::from_internal(&message.mask);
         let shared_args = message.args.iter().map(|s| &**s).collect::<Vec<&'a str>>();
         let shared_ctcp = message.ctcp.as_ref().map(|t| (t.0.as_slice(), t.1.as_slice()));
 

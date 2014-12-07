@@ -59,10 +59,10 @@ impl IrcConnection {
                 };
                 let input = IRC_COLOR_REGEX.replace_all(whole_input.trim_right(), "");
                 let message_split: Vec<&str> = input.split(' ').collect();
-                let (command, args, possible_mask): (&str, &[&str], Option<String>) = if message_split[0].starts_with(":") {
-                    (message_split[1], message_split.slice_from(2), Some(message_split[0].slice_from(1).into_string()))
+                let (command, args, possible_mask): (&str, &[&str], IrcMask) = if message_split[0].starts_with(":") {
+                    (message_split[1], message_split.slice_from(2), IrcMask::parse_from_str(message_split[0].slice_from(1)))
                 } else {
-                    (message_split[0], message_split.slice_from(1), None)
+                    (message_split[0], message_split.slice_from(1), IrcMask::Nonexistent)
                 };
                 let ctcp = if command.eq_ignore_ascii_case("PRIVMSG")
                               && args[1].starts_with(":\x01")
@@ -112,22 +112,65 @@ impl IrcConnection {
     }
 }
 
+pub enum IrcMask {
+    Full(FullIrcMask),
+    Unparseable(String),
+    Nonexistent,
+}
+
+pub struct FullIrcMask {
+    pub mask: String,
+    pub nick: String,
+    pub user: String,
+    pub host: String,
+}
 
 pub struct IrcMessage {
     pub command: String,
     pub args: Vec<String>,
-    pub mask: Option<String>,
+    pub mask: IrcMask,
     /// Option<(command, message)>
     pub ctcp: Option<(String, String)>,
 }
 
 impl IrcMessage {
-    fn new(command: String, args: Vec<String>, mask: Option<String>, ctcp: Option<(String, String)>) -> IrcMessage {
+    fn new(command: String, args: Vec<String>, mask: IrcMask, ctcp: Option<(String, String)>) -> IrcMessage {
         return IrcMessage {
             command: command,
             args: args,
             mask: mask,
             ctcp: ctcp,
         };
+    }
+}
+
+impl IrcMask {
+    fn new_full(mask: String, nick: String, user: String, host: String) -> IrcMask {
+        return IrcMask::Full(FullIrcMask {
+            mask: mask,
+            nick: nick,
+            user: user,
+            host: host,
+        });
+    }
+
+    fn new_mask_only(mask: String) -> IrcMask {
+        return IrcMask::Unparseable(mask);
+    }
+
+    fn parse_from_str(mask: &str) -> IrcMask {
+        let mask_split = mask.splitn(1, '!').collect::<Vec<&str>>();
+        if mask_split.len() < 2 {
+            return IrcMask::new_mask_only(mask.into_string());
+        }
+        let nick = mask_split[0];
+        let user_and_host = mask_split[1];
+        let user_and_host_split = user_and_host.splitn(1, '@').collect::<Vec<&str>>();
+        if user_and_host_split.len() < 2 {
+            return IrcMask::new_mask_only(mask.into_string());
+        }
+        let user = user_and_host_split[0];
+        let host = user_and_host_split[1];
+        return IrcMask::new_full(mask.into_string(), nick.into_string(), user.into_string(), host.into_string());
     }
 }

@@ -1,6 +1,6 @@
 /// This file contains commands to generally control and administer the bot.
 use irc::Client;
-use irc::interface::CommandEvent;
+use irc::CommandEvent;
 
 fn say(event: &CommandEvent) {
     if !event.client.is_admin(event) {
