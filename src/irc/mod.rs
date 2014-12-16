@@ -9,7 +9,7 @@ use std::task::TaskBuilder;
 
 use errors::InitializationError;
 
-static IRC_COLOR_REGEX: regex::Regex = regex!("(\x03(\\d+,\\d+|\\d)|[\x0f\x02\x16\x1f])");
+static IRC_COLOR_REGEX: regex::Regex = regex!("(\x03(\\d+,\\d+|\\d)|[\x0f\x02\x16\x1f\x02])");
 
 pub struct IrcConnection {
     socket: TcpStream,
