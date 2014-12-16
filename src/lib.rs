@@ -1,4 +1,5 @@
 #![feature(phase)]
+#![feature(unboxed_closures)]
 
 extern crate serialize;
 extern crate regex;
@@ -30,10 +31,10 @@ pub fn get_version() -> String {
 pub struct Client {
     data_in: Receiver<Option<IrcMessage>>,
     pub interface: IrcInterface,
-    commands: Arc<RWLock<HashMap<String, Vec<|&CommandEvent|:Send + Sync>>>>,
-    ctcp_listeners: Arc<RWLock<HashMap<String, Vec<|&CtcpEvent|:Send + Sync>>>>,
-    raw_listeners: Arc<RWLock<HashMap<String, Vec<|&IrcMessageEvent|:Send + Sync>>>>,
-    catch_all: Arc<RWLock<Vec<|&IrcMessageEvent|:Send + Sync>>>,
+    commands: Arc<RWLock<HashMap<String, Vec<Box<Fn(&CommandEvent) + Send + Sync>>>>>,
+    ctcp_listeners: Arc<RWLock<HashMap<String, Vec<Box<Fn(&CtcpEvent) + Send + Sync>>>>>,
+    raw_listeners: Arc<RWLock<HashMap<String, Vec<Box<Fn(&IrcMessageEvent) + Send + Sync>>>>>,
+    catch_all: Arc<RWLock<Vec<Box<Fn(&IrcMessageEvent) + Send + Sync>>>>,
     config: Arc<ClientConfiguration>,
     irc_connection_channel: Option<(Sender<Option<IrcMessage>>, Receiver<Option<String>>)>,
 }
@@ -91,48 +92,50 @@ impl Client {
         return Ok(());
     }
 
-    pub fn add_listener(&mut self, irc_command: &str, f: |&IrcMessageEvent|:Send + Sync) {
+    pub fn add_listener<T: Fn(&IrcMessageEvent) + Send + Sync>(&mut self, irc_command: &str, f: T) {
+        let boxed = box f as Box<Fn(&IrcMessageEvent) + Send + Sync>;
         let command_string = irc_command.into_string().to_ascii_lower();
 
         let mut listener_map = self.raw_listeners.write();
         // I can't use a match here because then I would be borrowing listener_map mutably twice:
         // Once for the match statement, and a second time inside the None branch
         if listener_map.contains_key(&command_string) {
-            listener_map.get_mut(&command_string).expect("Honestly, this won't happen.").push(f);
+            listener_map.get_mut(&command_string).expect("Honestly, this won't happen.").push(boxed);
         } else {
-            listener_map.insert(command_string, vec!(f));
+            listener_map.insert(command_string, vec!(boxed));
         }
     }
 
-    pub fn add_ctcp_listener(&mut self, ctcp_command: &str, f: |&CtcpEvent|:Send + Sync) {
+    pub fn add_ctcp_listener<T: Fn(&CtcpEvent) + Send + Sync>(&mut self, ctcp_command: &str, f: T) {
+        let boxed = box f as Box<Fn(&CtcpEvent) + Send + Sync>;
         let command_string = ctcp_command.into_string().to_ascii_lower();
 
         let mut listener_map = self.ctcp_listeners.write();
         // I can't use a match here because then I would be borrowing listener_map mutably twice:
         // Once for the match statement, and a second time inside the None branch
         if listener_map.contains_key(&command_string) {
-            listener_map.get_mut(&command_string).expect("Honestly, this won't happen.").push(f);
+            listener_map.get_mut(&command_string).expect("Honestly, this won't happen.").push(boxed);
         } else {
-            listener_map.insert(command_string, vec!(f));
+            listener_map.insert(command_string, vec!(boxed));
         }
     }
 
 
-    pub fn add_catch_all_listener(&mut self, f: |&IrcMessageEvent|:Send + Sync) {
-        let mut listeners = self.catch_all.write();
-        listeners.push(f);
+    pub fn add_catch_all_listener<T: Fn(&IrcMessageEvent) + Send + Sync>(&mut self, f: T) {
+        self.catch_all.write().push(box f as Box<Fn(&IrcMessageEvent) + Send + Sync>);
     }
 
-    pub fn add_command(&mut self, command: &str, f: |&CommandEvent|:Send + Sync) {
+    pub fn add_command<T: Fn(&CommandEvent) + Send + Sync>(&mut self, command: &str, f: T) {
+        let boxed = box f as Box<Fn(&CommandEvent) + Send + Sync>;
         let command_lower = command.into_string().to_ascii_lower();
 
         let mut command_map = self.commands.write();
         // I can't use a match here because then I would be borrowing the command_map mutably twice:
         // Once for the match statement, and a second time inside the None branch
         if command_map.contains_key(&command_lower) {
-            command_map.get_mut(&command_lower).expect("Honestly, this won't happen.").push(f);
+            command_map.get_mut(&command_lower).expect("Honestly, this won't happen.").push(boxed);
         } else {
-            command_map.insert(command_lower, vec!(f));
+            command_map.insert(command_lower, vec!(boxed));
         }
     }
 
@@ -165,21 +168,24 @@ impl Client {
 
         // Catch all listeners
         {
-            let mut catch_all = self.catch_all.write();
-            for listener in catch_all.iter_mut() {
-                (*listener)(message_event);
+            let catch_all = self.catch_all.read();
+            for listener in catch_all.iter() {
+                listener.call((message_event,));
             }
         }
 
         // Raw listeners
         { // New scope so that listener_map will go out of scope after we use it
-            let mut listener_map = self.raw_listeners.write();
+            let listener_map = self.raw_listeners.read();
 
-            let listeners = listener_map.get_mut(&message.command.to_ascii_lower());
-            if listeners.is_some() {
-                for listener in listeners.unwrap().iter_mut() {
-                    (*listener)(message_event);
-                }
+            let listeners = listener_map.get(&message.command.to_ascii_lower());
+            match listeners {
+                Some(list) => {
+                    for listener in list.iter() {
+                        listener.call((message_event,));
+                    }
+                },
+                None => (),
             }
         }
 
@@ -190,12 +196,15 @@ impl Client {
                 Some(ref t) => {
                     let ctcp_event = CtcpEvent::new(&self.interface, message.args[0].as_slice(), t.0.as_slice(), t.1.as_slice(), shared_mask);
                     { // New scope so that ctcp_map will go out of scope after we use it
-                        let mut ctcp_map = self.ctcp_listeners.write();
-                        let ctcp_listeners = ctcp_map.get_mut(&ctcp_event.command.to_ascii_lower());
-                        if ctcp_listeners.is_some() {
-                            for ctcp_listener in ctcp_listeners.unwrap().iter_mut() {
-                                (*ctcp_listener)(&ctcp_event);
-                            }
+                        let ctcp_map = self.ctcp_listeners.read();
+                        let ctcp_listeners = ctcp_map.get(&ctcp_event.command.to_ascii_lower());
+                        match ctcp_listeners {
+                            Some(list) => {
+                                for ctcp_listener in list.iter() {
+                                    ctcp_listener.call((&ctcp_event,));
+                                }
+                            },
+                            None => (),
                         }
                     }
                 },
@@ -209,15 +218,17 @@ impl Client {
             if shared_args[1].starts_with(prefix.as_slice()) {
                 let command = shared_args[1].slice_from(prefix.len()).into_string().to_ascii_lower();
                 { // New scope so that command_map will go out of scope after we use it
-                    let mut command_map = self.commands.write();
-                    let commands = command_map.get_mut(&command);
-                    if commands.is_some() {
-                        let args = shared_args.slice_from(2);
-                        let command_event = &mut CommandEvent::new(&self.interface, channel, args, shared_mask);
-
-                        for command in commands.unwrap().iter_mut() {
-                            (*command)(command_event);
-                        }
+                    let command_map = self.commands.read();
+                    let commands = command_map.get(&command);
+                    match commands {
+                        Some(list) => {
+                            let args = shared_args.slice_from(2);
+                            let command_event = &mut CommandEvent::new(&self.interface, channel, args, shared_mask);
+                            for command in list.iter() {
+                                command.call((command_event,));
+                            }
+                        },
+                        None => (),
                     }
                 }
             }
