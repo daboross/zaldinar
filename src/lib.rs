@@ -137,7 +137,7 @@ impl Client {
     }
 
     fn spawn_dispatch_thread(self) {
-        TaskBuilder::new().named("client_dispatch_task").spawn(proc() {
+        TaskBuilder::new().named("client_dispatch_task").spawn(move || {
             loop {
                 let message = match self.data_in.recv() {
                     Some(v) => v,

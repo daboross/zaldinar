@@ -147,7 +147,7 @@ impl <'a> IrcMask<'a> {
 
     pub fn mask(&self) -> Option<&str> {
         match self {
-            &IrcMask::Full(m) => Some(m.mask),
+            &IrcMask::Full(ref m) => Some(m.mask),
             &IrcMask::Unparseable(m) => Some(m),
             &IrcMask::Nonexistent => None
         }
@@ -155,7 +155,7 @@ impl <'a> IrcMask<'a> {
 
     pub fn nick(&self) -> Option<&str> {
         match self {
-            &IrcMask::Full(m) => Some(m.nick),
+            &IrcMask::Full(ref m) => Some(m.nick),
             &IrcMask::Unparseable(_) => None,
             &IrcMask::Nonexistent => None
         }

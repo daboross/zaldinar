@@ -43,7 +43,7 @@ impl IrcConnection {
             Some(ref v) => v.clone(),
             None => return Err(InitializationError::new("Can't start reading thread without data_out")),
         };
-        TaskBuilder::new().named("socket_reading_task").spawn(proc() {
+        TaskBuilder::new().named("socket_reading_task").spawn(move || {
             let mut reader = BufferedReader::new(self.socket.clone());
             loop {
                 let whole_input = match reader.read_line() {
@@ -93,7 +93,7 @@ impl IrcConnection {
         if (&self.data_in).is_none() {
             return Err(InitializationError::new("Can't start writing thread without data_in"));
         }
-        TaskBuilder::new().named("socket_writing_task").spawn(proc() {
+        TaskBuilder::new().named("socket_writing_task").spawn(move || {
             let data_in = self.data_in.expect("Already confirmed above");
             loop {
                 let command = match data_in.recv() {
