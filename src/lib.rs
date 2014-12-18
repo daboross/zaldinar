@@ -3,6 +3,7 @@
 
 extern crate serialize;
 extern crate regex;
+extern crate chrono;
 #[phase(plugin)]
 extern crate regex_macros;
 
@@ -20,6 +21,7 @@ pub mod errors;
 pub mod config;
 pub mod interface;
 mod irc;
+mod plugins;
 
 pub fn get_version() -> String {
     return format!("{}.{}.{}{}",
@@ -72,6 +74,9 @@ impl Client {
                 event.client.send_command("JOIN".into_string(), &[channel.as_slice()]);
             }
         });
+
+        // Add built-in plugins to the Client
+        plugins::register_plugins(&mut client);
 
         return Ok(client);
     }

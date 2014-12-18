@@ -1,17 +1,15 @@
 /// File containing responses for CTCP messages
-extern crate chrono;
+use chrono::Local;
 
-use self::chrono::Local;
-
-use irc;
-use irc::Client;
-use irc::CtcpEvent;
+use Client;
+use CtcpEvent;
+use get_version;
 
 fn ctcp_version(event: &CtcpEvent) {
     if !event.mask.has_nick() {
         return; // CTCP must come from a user
     }
-    let message = format!("zaldinar - by Dabo - https://github.com/daboross/zaldinar - version {}", irc::get_version());
+    let message = format!("zaldinar - by Dabo - https://github.com/daboross/zaldinar - version {}", get_version());
     event.client.send_ctcp_reply(event.mask.nick().unwrap(), event.command, message.as_slice());
 }
 

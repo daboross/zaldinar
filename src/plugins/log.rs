@@ -1,5 +1,5 @@
-use irc::Client;
-use irc::IrcMessageEvent;
+use Client;
+use IrcMessageEvent;
 use std::ascii::AsciiExt;
 
 fn log_message(event: &IrcMessageEvent) {
