@@ -33,7 +33,7 @@ fn log_message(event: &IrcMessageEvent) {
             None => format!("{} {}", event.command, event.args.connect(" ")),
         }
     };
-    println!("{}", message);
+    info!("{}", message);
 }
 
 pub fn register(client: &mut Client) {

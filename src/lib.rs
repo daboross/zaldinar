@@ -4,6 +4,9 @@
 extern crate serialize;
 extern crate regex;
 extern crate chrono;
+extern crate "simple-logging" as logging;
+#[phase(plugin, link)]
+extern crate "simple-logging-macros" as logging_macros;
 #[phase(plugin)]
 extern crate regex_macros;
 
@@ -11,6 +14,7 @@ use std::sync::{Arc, RWLock};
 use std::ascii::AsciiExt;
 use std::collections::HashMap;
 use std::task::TaskBuilder;
+use logging::IntoLogger;
 
 pub use errors::InitializationError;
 pub use config::ClientConfiguration;
@@ -41,6 +45,7 @@ pub struct Client {
     catch_all: Arc<RWLock<Vec<Box<Fn(&IrcMessageEvent) + Send + Sync>>>>,
     config: Arc<ClientConfiguration>,
     irc_connection_channel: Option<(Sender<Option<IrcMessage>>, Receiver<Option<String>>)>,
+    logger: Arc<Box<logging::Logger + Sync + Send>>,
 }
 
 impl Client {
@@ -48,6 +53,13 @@ impl Client {
         let rc_config = Arc::new(config);
         let (data_out, connection_data_in) = channel();
         let (connection_data_out, data_in) = channel();
+        let logger = try!(logging::LoggerConfig {
+            format: box |msg: &str, level: &logging::Level| {
+                return format!("[{}][{}] {}", chrono::Local::now().format("%Y-%m-%d][%H:%M:%S"), level, msg);
+            },
+            output: vec![logging::LoggerOutput::Stdout, logging::LoggerOutput::File(Path::new("zaldinar.log"))],
+            level: logging::Level::Debug,
+        }.into_logger());
         let mut client = Client {
             interface: try!(IrcInterface::new(data_out, rc_config.clone())),
             data_in: data_in,
@@ -56,9 +68,9 @@ impl Client {
             ctcp_listeners: Arc::new(RWLock::new(HashMap::new())),
             catch_all: Arc::new(RWLock::new(Vec::new())),
             config: rc_config,
-            irc_connection_channel: Some((connection_data_out, connection_data_in))
+            irc_connection_channel: Some((connection_data_out, connection_data_in)),
+            logger: Arc::new(logger),
         };
-
         // Add initial channel join listener
         client.add_listener("004", |event: &IrcMessageEvent| {
             let nickserv = &event.client.config.nickserv;
@@ -94,7 +106,7 @@ impl Client {
         self.interface.send_command("NICK".into_string(), &[&*self.config.nick]);
         self.interface.send_command("USER".into_string(), &[&*self.config.user, "0", "*", &*format!(":{}", self.config.real_name)]);
 
-        try!(IrcConnection::create(self.config.address.as_slice(), connection_data_out, connection_data_in));
+        try!(IrcConnection::create(self.config.address.as_slice(), connection_data_out, connection_data_in, self.logger.clone()));
         self.spawn_dispatch_thread();
         return Ok(());
     }
@@ -148,6 +160,7 @@ impl Client {
 
     fn spawn_dispatch_thread(self) {
         TaskBuilder::new().named("client_dispatch_task").spawn(move || {
+            logging_macros::init_thread_logger(self.logger.clone());
             loop {
                 let message = match self.data_in.recv() {
                     Some(v) => v,

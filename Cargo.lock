@@ -3,6 +3,8 @@ name = "zaldinar"
 version = "0.0.1"
 dependencies = [
  "chrono 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "simple-logging 0.0.1 (git+https://github.com/daboross/simple-logging-rs.git)",
+ "simple-logging-macros 0.0.1 (git+https://github.com/daboross/simple-logging-macros-rs.git)",
 ]
 
 [[package]]
@@ -17,6 +19,19 @@ dependencies = [
 name = "gcc"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "simple-logging"
+version = "0.0.1"
+source = "git+https://github.com/daboross/simple-logging-rs.git#2cf8c527c910f0b67e1a4e592f35e95496b85bdc"
+
+[[package]]
+name = "simple-logging-macros"
+version = "0.0.1"
+source = "git+https://github.com/daboross/simple-logging-macros-rs.git#2364d01960241f537b90cb8d55ed38602d7f1408"
+dependencies = [
+ "simple-logging 0.0.1 (git+https://github.com/daboross/simple-logging-rs.git)",
+]
 
 [[package]]
 name = "time"

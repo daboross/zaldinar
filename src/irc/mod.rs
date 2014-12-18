@@ -3,6 +3,9 @@ use std::ascii::AsciiExt;
 use std::io;
 use std::io::{TcpStream, IoError, BufferedReader};
 use std::task::TaskBuilder;
+use std::sync::Arc;
+use logging;
+use logging_macros;
 
 use errors::InitializationError;
 
@@ -12,20 +15,23 @@ pub struct IrcConnection {
     socket: TcpStream,
     data_out: Option<Sender<Option<IrcMessage>>>,
     data_in: Option<Receiver<Option<String>>>,
+    logger: Arc<Box<logging::Logger + Sync + Send>>
 }
 
 impl IrcConnection {
-    pub fn create(addr: &str, data_out: Sender<Option<IrcMessage>>, data_in: Receiver<Option<String>>) -> Result<(), IoError> {
+    pub fn create(addr: &str, data_out: Sender<Option<IrcMessage>>, data_in: Receiver<Option<String>>, logger: Arc<Box<logging::Logger + Sync + Send>>) -> Result<(), IoError> {
         let socket = try!(TcpStream::connect(addr));
         let connection_receiving = IrcConnection {
             socket: socket.clone(),
             data_out: Some(data_out),
             data_in: None,
+            logger: logger.clone(),
         };
         let connection_sending = IrcConnection {
             socket: socket, // No need to clone a second time, as this is the last time we are using this socket
             data_out: None,
             data_in: Some(data_in),
+            logger: logger,
         };
 
         // Using unwrap() on these two because we know that data_out and data_in are Some() and not None
@@ -41,6 +47,7 @@ impl IrcConnection {
             None => return Err(InitializationError::new("Can't start reading thread without data_out")),
         };
         TaskBuilder::new().named("socket_reading_task").spawn(move || {
+            logging_macros::init_thread_logger(self.logger);
             let mut reader = BufferedReader::new(self.socket.clone());
             loop {
                 let whole_input = match reader.read_line() {
@@ -48,7 +55,7 @@ impl IrcConnection {
                     Err(e) => {
                         match e.kind {
                             io::IoErrorKind::EndOfFile => (),
-                            _ => println!("Error in reading thread: {}", e),
+                            _ => severe!("Error in reading thread: {}", e),
                         }
                         data_out.send(None);
                         break;
@@ -91,6 +98,7 @@ impl IrcConnection {
             return Err(InitializationError::new("Can't start writing thread without data_in"));
         }
         TaskBuilder::new().named("socket_writing_task").spawn(move || {
+            logging_macros::init_thread_logger(self.logger);
             let data_in = self.data_in.expect("Already confirmed above");
             loop {
                 let command = match data_in.recv() {
@@ -98,7 +106,7 @@ impl IrcConnection {
                     None => break,
                 };
                 if !command.starts_with("PONG ") {
-                    println!(">>> {}", command);
+                    info!(">>> {}", command);
                 }
                 self.socket.write(command.as_bytes()).ok().expect("Failed to write to stream");
                 self.socket.write(b"\n").ok().expect("Failed to write to stream");
