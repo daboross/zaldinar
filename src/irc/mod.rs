@@ -1,7 +1,4 @@
-extern crate regex;
-#[phase(plugin)]
-extern crate regex_macros;
-
+use regex;
 use std::ascii::AsciiExt;
 use std::io;
 use std::io::{TcpStream, IoError, BufferedReader};

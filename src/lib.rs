@@ -3,6 +3,8 @@
 
 extern crate serialize;
 extern crate regex;
+#[phase(plugin)]
+extern crate regex_macros;
 
 use std::sync::{Arc, RWLock};
 use std::ascii::AsciiExt;

@@ -110,7 +110,7 @@ pub struct FullIrcMask<'a> {
 }
 
 impl <'a> IrcMask<'a> {
-    pub fn from_internal<'a>(mask: &'a irc::IrcMask) -> IrcMask<'a> {
+    pub fn from_internal(mask: &'a irc::IrcMask) -> IrcMask<'a> {
         return match mask {
             &irc::IrcMask::Full(ref full_mask) => {
                 IrcMask::Full(FullIrcMask {
