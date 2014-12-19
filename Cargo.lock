@@ -3,7 +3,7 @@ name = "zaldinar"
 version = "0.0.1"
 dependencies = [
  "chrono 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "fern 0.0.1 (git+https://github.com/daboross/fern-rs.git)",
+ "fern 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "fern_macros 0.0.1 (git+https://github.com/daboross/fern-macros-rs.git)",
 ]
 
@@ -17,15 +17,15 @@ dependencies = [
 
 [[package]]
 name = "fern"
-version = "0.0.1"
-source = "git+https://github.com/daboross/fern-rs.git#8447a6daf44895d26c35d6ccd33b3493dfa8586a"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "fern_macros"
 version = "0.0.1"
-source = "git+https://github.com/daboross/fern-macros-rs.git#b9109d61224f4689f72e5a90f555b91997afafee"
+source = "git+https://github.com/daboross/fern-macros-rs.git#5fd561478cc59f0197c1d9699c987256785811fb"
 dependencies = [
- "fern 0.0.1 (git+https://github.com/daboross/fern-rs.git)",
+ "fern 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
