@@ -83,8 +83,14 @@ impl IrcConnection {
                     }
                     Some((ctcp_command, ctcp_message))
                 } else { None };
+                let channel = match command {
+                    "353" => Some(args[2].into_string()),
+                    "PRIVMSG" | "NOTICE" | "JOIN" | "PART" | "KICK" | "TOPIC" => Some(args[0].into_string()),
+                    _ => None,
+                };
+                // TODO: Change channel to sender nick if channel is our current nick.
                 let args_owned: Vec<String> = args.iter().map(|s: &&str| s.into_string()).collect();
-                let message = IrcMessage::new(command.into_string(), args_owned, possible_mask, ctcp);
+                let message = IrcMessage::new(command.into_string(), args_owned, possible_mask, ctcp, channel);
                 data_out.send(Some(message));
             }
         });
@@ -134,15 +140,17 @@ pub struct IrcMessage {
     pub mask: IrcMask,
     /// Option<(command, message)>
     pub ctcp: Option<(String, String)>,
+    pub channel: Option<String>,
 }
 
 impl IrcMessage {
-    fn new(command: String, args: Vec<String>, mask: IrcMask, ctcp: Option<(String, String)>) -> IrcMessage {
+    fn new(command: String, args: Vec<String>, mask: IrcMask, ctcp: Option<(String, String)>, channel: Option<String>) -> IrcMessage {
         return IrcMessage {
             command: command,
             args: args,
             mask: mask,
             ctcp: ctcp,
+            channel: channel,
         };
     }
 }
