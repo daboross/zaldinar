@@ -36,6 +36,7 @@ pub fn get_version() -> String {
 }
 
 // TODO: Store channels joined
+// TODO: Make a 'ClientState' object which holds current state like channels joined, current nick, etc. and share it in a Arc<RWLock<>> between all interfaces and connections
 pub struct Client {
     data_in: Receiver<Option<IrcMessage>>,
     pub interface: IrcInterface,

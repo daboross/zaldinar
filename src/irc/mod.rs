@@ -82,9 +82,7 @@ impl IrcConnection {
                         ctcp_message = "".into_string();
                     }
                     Some((ctcp_command, ctcp_message))
-                } else {
-                    None
-                };
+                } else { None };
                 let args_owned: Vec<String> = args.iter().map(|s: &&str| s.into_string()).collect();
                 let message = IrcMessage::new(command.into_string(), args_owned, possible_mask, ctcp);
                 data_out.send(Some(message));
@@ -108,9 +106,9 @@ impl IrcConnection {
                 if !command.starts_with("PONG ") {
                     info!(">>> {}", command);
                 }
-                self.socket.write(command.as_bytes()).ok().expect("Failed to write to stream");
-                self.socket.write(b"\n").ok().expect("Failed to write to stream");
-                self.socket.flush().ok().expect("Failed to flush stream");
+                log_error_then!(self.socket.write(command.as_bytes()), return, "Failed to write to stream: {e}");
+                log_error_then!(self.socket.write(b"\n"), return, "Failed to write to stream: {e}");
+                log_error_then!(self.socket.flush(), return, "Failed to write to stream: {e}");
             }
         });
         return Ok(());

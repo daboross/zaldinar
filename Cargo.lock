@@ -17,7 +17,7 @@ dependencies = [
 
 [[package]]
 name = "gcc"
-version = "0.1.1"
+version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -28,7 +28,7 @@ source = "git+https://github.com/daboross/simple-logging-rs.git#2cf8c527c910f0b6
 [[package]]
 name = "simple-logging-macros"
 version = "0.0.1"
-source = "git+https://github.com/daboross/simple-logging-macros-rs.git#2364d01960241f537b90cb8d55ed38602d7f1408"
+source = "git+https://github.com/daboross/simple-logging-macros-rs.git#2c6d5c313abf638f03767c5fcecd32ef3614f99a"
 dependencies = [
  "simple-logging 0.0.1 (git+https://github.com/daboross/simple-logging-rs.git)",
 ]
@@ -38,6 +38,6 @@ name = "time"
 version = "0.1.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "gcc 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "gcc 0.1.2 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
