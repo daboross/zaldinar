@@ -4,8 +4,8 @@ use std::io;
 use std::io::{TcpStream, IoError, BufferedReader};
 use std::task::TaskBuilder;
 use std::sync::Arc;
-use logging;
-use logging_macros;
+use fern;
+use fern_macros;
 
 use errors::InitializationError;
 
@@ -15,11 +15,11 @@ pub struct IrcConnection {
     socket: TcpStream,
     data_out: Option<Sender<Option<IrcMessage>>>,
     data_in: Option<Receiver<Option<String>>>,
-    logger: Arc<Box<logging::Logger + Sync + Send>>
+    logger: Arc<Box<fern::Logger + Sync + Send>>
 }
 
 impl IrcConnection {
-    pub fn create(addr: &str, data_out: Sender<Option<IrcMessage>>, data_in: Receiver<Option<String>>, logger: Arc<Box<logging::Logger + Sync + Send>>) -> Result<(), IoError> {
+    pub fn create(addr: &str, data_out: Sender<Option<IrcMessage>>, data_in: Receiver<Option<String>>, logger: Arc<Box<fern::Logger + Sync + Send>>) -> Result<(), IoError> {
         let socket = try!(TcpStream::connect(addr));
         let connection_receiving = IrcConnection {
             socket: socket.clone(),
@@ -47,7 +47,7 @@ impl IrcConnection {
             None => return Err(InitializationError::new("Can't start reading thread without data_out")),
         };
         TaskBuilder::new().named("socket_reading_task").spawn(move || {
-            logging_macros::init_thread_logger(self.logger);
+            fern_macros::init_thread_logger(self.logger);
             let mut reader = BufferedReader::new(self.socket.clone());
             loop {
                 let whole_input = match reader.read_line() {
@@ -102,7 +102,7 @@ impl IrcConnection {
             return Err(InitializationError::new("Can't start writing thread without data_in"));
         }
         TaskBuilder::new().named("socket_writing_task").spawn(move || {
-            logging_macros::init_thread_logger(self.logger);
+            fern_macros::init_thread_logger(self.logger);
             let data_in = self.data_in.expect("Already confirmed above");
             loop {
                 let command = match data_in.recv() {

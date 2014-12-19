@@ -7,8 +7,8 @@ authors = ["Dabo Ross <daboross@daboross.net>"]
 [dependencies]
 chrono = "~0.1.3"
 
-[dependencies.simple-logging]
-git = 'https://github.com/daboross/simple-logging-rs.git'
+[dependencies.fern]
+git = 'https://github.com/daboross/fern-rs.git'
 
-[dependencies.simple-logging-macros]
-git = 'https://github.com/daboross/simple-logging-macros-rs.git'
+[dependencies.fern_macros]
+git = 'https://github.com/daboross/fern-macros-rs.git'

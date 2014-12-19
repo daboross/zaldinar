@@ -4,9 +4,9 @@
 extern crate serialize;
 extern crate regex;
 extern crate chrono;
-extern crate "simple-logging" as logging;
+extern crate fern;
 #[phase(plugin, link)]
-extern crate "simple-logging-macros" as logging_macros;
+extern crate fern_macros;
 #[phase(plugin)]
 extern crate regex_macros;
 
@@ -14,7 +14,6 @@ use std::sync::{Arc, RWLock};
 use std::ascii::AsciiExt;
 use std::collections::HashMap;
 use std::task::TaskBuilder;
-use logging::IntoLogger;
 
 pub use errors::InitializationError;
 pub use config::ClientConfiguration;
@@ -46,7 +45,7 @@ pub struct Client {
     catch_all: Arc<RWLock<Vec<Box<Fn(&IrcMessageEvent) + Send + Sync>>>>,
     config: Arc<ClientConfiguration>,
     irc_connection_channel: Option<(Sender<Option<IrcMessage>>, Receiver<Option<String>>)>,
-    logger: Arc<Box<logging::Logger + Sync + Send>>,
+    logger: Arc<Box<fern::Logger + Sync + Send>>,
 }
 
 impl Client {
@@ -54,12 +53,12 @@ impl Client {
         let rc_config = Arc::new(config);
         let (data_out, connection_data_in) = channel();
         let (connection_data_out, data_in) = channel();
-        let logger = try!(logging::LoggerConfig {
-            format: box |msg: &str, level: &logging::Level| {
+        let logger = try!(fern::LoggerConfig {
+            format: box |msg: &str, level: &fern::Level| {
                 return format!("[{}][{}] {}", chrono::Local::now().format("%Y-%m-%d][%H:%M:%S"), level, msg);
             },
-            output: vec![logging::LoggerOutput::Stdout, logging::LoggerOutput::File(Path::new("zaldinar.log"))],
-            level: logging::Level::Debug,
+            output: vec![fern::OutputConfig::Stdout, fern::OutputConfig::File(Path::new("zaldinar.log"))],
+            level: fern::Level::Debug,
         }.into_logger());
         let mut client = Client {
             interface: try!(IrcInterface::new(data_out, rc_config.clone())),
@@ -161,7 +160,7 @@ impl Client {
 
     fn spawn_dispatch_thread(self) {
         TaskBuilder::new().named("client_dispatch_task").spawn(move || {
-            logging_macros::init_thread_logger(self.logger.clone());
+            fern_macros::init_thread_logger(self.logger.clone());
             loop {
                 let message = match self.data_in.recv() {
                     Some(v) => v,

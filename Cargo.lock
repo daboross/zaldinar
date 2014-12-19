@@ -3,8 +3,8 @@ name = "zaldinar"
 version = "0.0.1"
 dependencies = [
  "chrono 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "simple-logging 0.0.1 (git+https://github.com/daboross/simple-logging-rs.git)",
- "simple-logging-macros 0.0.1 (git+https://github.com/daboross/simple-logging-macros-rs.git)",
+ "fern 0.0.1 (git+https://github.com/daboross/fern-rs.git)",
+ "fern_macros 0.0.1 (git+https://github.com/daboross/fern-macros-rs.git)",
 ]
 
 [[package]]
@@ -16,22 +16,22 @@ dependencies = [
 ]
 
 [[package]]
+name = "fern"
+version = "0.0.1"
+source = "git+https://github.com/daboross/fern-rs.git#8447a6daf44895d26c35d6ccd33b3493dfa8586a"
+
+[[package]]
+name = "fern_macros"
+version = "0.0.1"
+source = "git+https://github.com/daboross/fern-macros-rs.git#b9109d61224f4689f72e5a90f555b91997afafee"
+dependencies = [
+ "fern 0.0.1 (git+https://github.com/daboross/fern-rs.git)",
+]
+
+[[package]]
 name = "gcc"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-
-[[package]]
-name = "simple-logging"
-version = "0.0.1"
-source = "git+https://github.com/daboross/simple-logging-rs.git#2cf8c527c910f0b67e1a4e592f35e95496b85bdc"
-
-[[package]]
-name = "simple-logging-macros"
-version = "0.0.1"
-source = "git+https://github.com/daboross/simple-logging-macros-rs.git#2c6d5c313abf638f03767c5fcecd32ef3614f99a"
-dependencies = [
- "simple-logging 0.0.1 (git+https://github.com/daboross/simple-logging-rs.git)",
-]
 
 [[package]]
 name = "time"
