@@ -1,8 +1,8 @@
-use Client;
+use client::Client;
 
-pub mod control;
-pub mod log;
-pub mod ctcp;
+mod control;
+mod log;
+mod ctcp;
 
 pub fn register_plugins(client: &mut Client) {
     control::register(client);

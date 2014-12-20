@@ -1,6 +1,7 @@
-use Client;
-use IrcMessageEvent;
 use std::ascii::AsciiExt;
+
+use client::Client;
+use interface::IrcMessageEvent;
 
 fn log_message(event: &IrcMessageEvent) {
     let nick = event.mask.nick().unwrap_or_else(|| event.mask.mask().unwrap_or("*unknown*"));

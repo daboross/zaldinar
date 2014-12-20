@@ -1,8 +1,8 @@
 /// File containing responses for CTCP messages
 use chrono::Local;
 
-use Client;
-use CtcpEvent;
+use client::Client;
+use interface::CtcpEvent;
 use get_version;
 
 fn ctcp_version(event: &CtcpEvent) {

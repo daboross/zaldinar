@@ -1,6 +1,6 @@
 /// This file contains commands to generally control and administer the bot.
-use Client;
-use CommandEvent;
+use client::Client;
+use interface::CommandEvent;
 
 fn say(event: &CommandEvent) {
     if !event.client.is_admin(event) {
