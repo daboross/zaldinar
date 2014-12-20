@@ -4,14 +4,19 @@
 extern crate serialize;
 extern crate chrono;
 extern crate regex;
-#[phase(plugin)] extern crate regex_macros;
 extern crate fern;
+#[phase(plugin)] extern crate regex_macros;
 #[phase(plugin, link)] extern crate fern_macros;
 
 pub use errors::InitializationError;
 pub use config::ClientConfiguration;
-pub use interface::{CommandEvent, IrcMessageEvent, CtcpEvent, IrcInterface};
 pub use client::Client;
+pub use interface::{
+    IrcInterface,
+    IrcMessageEvent,
+    CommandEvent,
+    CtcpEvent,
+};
 
 pub mod errors;
 pub mod config;

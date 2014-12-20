@@ -1,15 +1,14 @@
-extern crate serialize;
-extern crate regex;
-
 use std::fmt;
 use std::error;
-use std::io::IoError;
-use serialize::json::DecoderError;
+use std::io;
+use serialize::json;
+use regex;
+
 
 pub enum InitializationError {
-    Io(IoError),
+    Io(io::IoError),
     Regex(regex::Error),
-    Decoder(DecoderError),
+    Decoder(json::DecoderError),
     Other(String),
 }
 
@@ -23,8 +22,8 @@ impl InitializationError {
     }
 }
 
-impl error::FromError<IoError> for InitializationError {
-    fn from_error(error: IoError) -> InitializationError {
+impl error::FromError<io::IoError> for InitializationError {
+    fn from_error(error: io::IoError) -> InitializationError {
         InitializationError::Io(error)
     }
 }
@@ -35,8 +34,8 @@ impl error::FromError<regex::Error> for InitializationError {
     }
 }
 
-impl error::FromError<DecoderError> for InitializationError {
-    fn from_error(error: DecoderError) -> InitializationError {
+impl error::FromError<json::DecoderError> for InitializationError {
+    fn from_error(error: json::DecoderError) -> InitializationError {
         InitializationError::Decoder(error)
     }
 }

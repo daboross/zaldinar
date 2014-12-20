@@ -1,9 +1,8 @@
-use regex;
 use std::ascii::AsciiExt;
 use std::io;
-use std::io::{TcpStream, IoError, BufferedReader};
-use std::task::TaskBuilder;
-use std::sync::Arc;
+use std::task;
+use std::sync;
+use regex;
 use fern;
 use fern_macros;
 
@@ -12,15 +11,15 @@ use errors::InitializationError;
 static IRC_COLOR_REGEX: regex::Regex = regex!("(\x03(\\d+,\\d+|\\d)|[\x0f\x02\x16\x1f\x02])");
 
 pub struct IrcConnection {
-    socket: TcpStream,
+    socket: io::TcpStream,
     data_out: Option<Sender<Option<IrcMessage>>>,
     data_in: Option<Receiver<Option<String>>>,
-    logger: Arc<Box<fern::Logger + Sync + Send>>
+    logger: sync::Arc<Box<fern::Logger + Sync + Send>>
 }
 
 impl IrcConnection {
-    pub fn create(addr: &str, data_out: Sender<Option<IrcMessage>>, data_in: Receiver<Option<String>>, logger: Arc<Box<fern::Logger + Sync + Send>>) -> Result<(), IoError> {
-        let socket = try!(TcpStream::connect(addr));
+    pub fn create(addr: &str, data_out: Sender<Option<IrcMessage>>, data_in: Receiver<Option<String>>, logger: sync::Arc<Box<fern::Logger + Sync + Send>>) -> Result<(), io::IoError> {
+        let socket = try!(io::TcpStream::connect(addr));
         let connection_receiving = IrcConnection {
             socket: socket.clone(),
             data_out: Some(data_out),
@@ -46,9 +45,9 @@ impl IrcConnection {
             Some(ref v) => v.clone(),
             None => return Err(InitializationError::new("Can't start reading thread without data_out")),
         };
-        TaskBuilder::new().named("socket_reading_task").spawn(move || {
+        task::TaskBuilder::new().named("socket_reading_task").spawn(move || {
             fern_macros::init_thread_logger(self.logger);
-            let mut reader = BufferedReader::new(self.socket.clone());
+            let mut reader = io::BufferedReader::new(self.socket.clone());
             loop {
                 let whole_input = match reader.read_line() {
                     Ok(v) => v,
@@ -101,7 +100,7 @@ impl IrcConnection {
         if (&self.data_in).is_none() {
             return Err(InitializationError::new("Can't start writing thread without data_in"));
         }
-        TaskBuilder::new().named("socket_writing_task").spawn(move || {
+        task::TaskBuilder::new().named("socket_writing_task").spawn(move || {
             fern_macros::init_thread_logger(self.logger);
             let data_in = self.data_in.expect("Already confirmed above");
             loop {

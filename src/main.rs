@@ -1,7 +1,7 @@
-extern crate "zaldinar" as irc;
+extern crate zaldinar;
 
 fn main() {
-    let config = match irc::ClientConfiguration::load_from_file(&Path::new("config.json")) {
+    let config = match zaldinar::ClientConfiguration::load_from_file(&Path::new("config.json")) {
         Ok(v) => v,
         Err(e) => {
             println!("Error loading configuration: {}", e);
@@ -10,7 +10,7 @@ fn main() {
         },
     };
 
-    let client = match irc::Client::new(config) {
+    let client = match zaldinar::Client::new(config) {
         Ok(v) => v,
         Err(e) => {
             println!("Error initializing Client: {}", e);

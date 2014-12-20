@@ -1,26 +1,26 @@
-use std::sync::Arc;
-use regex::Regex;
+use std::sync;
+use regex;
 
-use config::ClientConfiguration;
 use errors::InitializationError;
+use config;
 use irc;
 
 pub struct IrcInterface {
     data_out: Sender<Option<String>>,
-    pub config: Arc<ClientConfiguration>,
-    admins: Arc<Vec<Regex>>,
+    pub config: sync::Arc<config::ClientConfiguration>,
+    admins: sync::Arc<Vec<regex::Regex>>,
 }
 
 impl IrcInterface {
-    pub fn new(data_out: Sender<Option<String>>, config: Arc<ClientConfiguration>) -> Result<IrcInterface, InitializationError> {
-        let mut admins: Vec<Regex> = Vec::new();
+    pub fn new(data_out: Sender<Option<String>>, config: sync::Arc<config::ClientConfiguration>) -> Result<IrcInterface, InitializationError> {
+        let mut admins = Vec::new();
         for admin_str in config.admins.iter() {
-            admins.push(try!(Regex::new(format!("^{}$", admin_str.as_slice()).as_slice())));
+            admins.push(try!(regex::Regex::new(format!("^{}$", admin_str.as_slice()).as_slice())));
         }
         let interface = IrcInterface {
             data_out: data_out,
             config: config,
-            admins: Arc::new(admins),
+            admins: sync::Arc::new(admins),
         };
         return Ok(interface);
     }
