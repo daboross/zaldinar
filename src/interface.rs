@@ -167,6 +167,7 @@ pub struct IrcMessageEvent<'a> {
     pub mask: &'a IrcMask<'a>,
     /// (ctcp_command, ctcp_message)
     pub ctcp: Option<(&'a str, &'a str)>,
+    pub channel: Option<&'a str>,
 }
 
 pub struct CommandEvent<'a> {
@@ -186,13 +187,14 @@ pub struct CtcpEvent<'a> {
 
 
 impl <'a> IrcMessageEvent<'a> {
-    pub fn new(client: &'a IrcInterface, command: &'a str, args: &'a [&'a str], mask: &'a IrcMask, ctcp: Option<(&'a str, &'a str)>) -> IrcMessageEvent<'a> {
+    pub fn new(client: &'a IrcInterface, command: &'a str, args: &'a [&'a str], mask: &'a IrcMask, ctcp: Option<(&'a str, &'a str)>, channel: Option<&'a str>) -> IrcMessageEvent<'a> {
         return IrcMessageEvent {
             client: client,
             command: command,
             args: args,
             mask: mask,
             ctcp: ctcp,
+            channel: channel,
         };
     }
 }

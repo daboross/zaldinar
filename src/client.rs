@@ -143,15 +143,16 @@ impl Dispatch {
         let plugins = self.state.plugins.read();
 
         let shared_mask = &interface::IrcMask::from_internal(&message.mask);
-        let shared_args = message.args.iter().map(|s| &**s).collect::<Vec<&'a str>>();
+        let shared_args = message.args.iter().map(|s| s.as_slice()).collect::<Vec<&'a str>>();
         let shared_ctcp = message.ctcp.as_ref().map(|t| (t.0.as_slice(), t.1.as_slice()));
+        let shared_channel = message.channel.as_ref().map(|s| s.as_slice());
 
         // PING
         if message.command.as_slice().eq_ignore_ascii_case("PING") {
             self.interface.send_command("PONG".into_string(), shared_args.as_slice());
         }
 
-        let message_event = &mut interface::IrcMessageEvent::new(&self.interface, message.command.as_slice(), shared_args.as_slice(), shared_mask, shared_ctcp);
+        let message_event = &mut interface::IrcMessageEvent::new(&self.interface, message.command.as_slice(), shared_args.as_slice(), shared_mask, shared_ctcp, shared_channel);
 
         // Catch all listeners
         {
