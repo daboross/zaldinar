@@ -28,7 +28,7 @@ fn ctcp_time(event: &CtcpEvent) {
     event.client.send_ctcp_reply(event.mask.nick().unwrap(), event.command, message.as_slice());
 }
 
-pub fn register(register: &PluginRegister) {
+pub fn register(register: &mut PluginRegister) {
     register.register_ctcp("version", ctcp_version);
     register.register_ctcp("ping", ctcp_ping);
     register.register_ctcp("time", ctcp_time);

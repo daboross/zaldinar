@@ -14,74 +14,96 @@ use config;
 use irc;
 
 pub struct PluginRegister {
-    commands: sync::RWLock<collections::HashMap<String, Vec<Box<Fn(&interface::CommandEvent) + Send + Sync>>>>,
-    ctcp_listeners: sync::RWLock<collections::HashMap<String, Vec<Box<Fn(&interface::CtcpEvent) + Send + Sync>>>>,
-    raw_listeners: sync::RWLock<collections::HashMap<String, Vec<Box<Fn(&interface::IrcMessageEvent) + Send + Sync>>>>,
-    catch_all: sync::RWLock<Vec<Box<Fn(&interface::IrcMessageEvent) + Send + Sync>>>,
+    commands: collections::HashMap<String, Vec<Box<Fn(&interface::CommandEvent) + Send + Sync>>>,
+    ctcp_listeners: collections::HashMap<String, Vec<Box<Fn(&interface::CtcpEvent) + Send + Sync>>>,
+    raw_listeners: collections::HashMap<String, Vec<Box<Fn(&interface::IrcMessageEvent) + Send + Sync>>>,
+    catch_all: Vec<Box<Fn(&interface::IrcMessageEvent) + Send + Sync>>,
 }
 
 impl PluginRegister {
     pub fn new() -> PluginRegister {
         return PluginRegister {
-            commands: sync::RWLock::new(collections::HashMap::new()),
-            raw_listeners: sync::RWLock::new(collections::HashMap::new()),
-            ctcp_listeners: sync::RWLock::new(collections::HashMap::new()),
-            catch_all: sync::RWLock::new(Vec::new()),
+            commands: collections::HashMap::new(),
+            raw_listeners: collections::HashMap::new(),
+            ctcp_listeners: collections::HashMap::new(),
+            catch_all: Vec::new(),
         }
     }
 
-    pub fn register_irc<T: Fn(&interface::IrcMessageEvent) + Send + Sync>(&self, irc_command: &str, f: T) {
+    pub fn register_irc<T: Fn(&interface::IrcMessageEvent) + Send + Sync>(&mut self, irc_command: &str, f: T) {
         let boxed = box f as Box<Fn(&interface::IrcMessageEvent) + Send + Sync>;
         let command_string = irc_command.into_string().to_ascii_lower();
 
-        let mut listener_map = self.raw_listeners.write();
         // I can't use a match here because then I would be borrowing listener_map mutably twice:
         // Once for the match statement, and a second time inside the None branch
-        if listener_map.contains_key(&command_string) {
-            listener_map.get_mut(&command_string).expect("Honestly, this won't happen.").push(boxed);
+        if self.raw_listeners.contains_key(&command_string) {
+            self.raw_listeners.get_mut(&command_string).expect("Honestly, this won't happen.").push(boxed);
         } else {
-            listener_map.insert(command_string, vec!(boxed));
+            self.raw_listeners.insert(command_string, vec!(boxed));
         }
     }
 
-    pub fn register_ctcp<T: Fn(&interface::CtcpEvent) + Send + Sync>(&self, ctcp_command: &str, f: T) {
+    pub fn register_ctcp<T: Fn(&interface::CtcpEvent) + Send + Sync>(&mut self, ctcp_command: &str, f: T) {
         let boxed = box f as Box<Fn(&interface::CtcpEvent) + Send + Sync>;
         let command_string = ctcp_command.into_string().to_ascii_lower();
 
-        let mut listener_map = self.ctcp_listeners.write();
         // I can't use a match here because then I would be borrowing listener_map mutably twice:
         // Once for the match statement, and a second time inside the None branch
-        if listener_map.contains_key(&command_string) {
-            listener_map.get_mut(&command_string).expect("Honestly, this won't happen.").push(boxed);
+        if self.ctcp_listeners.contains_key(&command_string) {
+            self.ctcp_listeners.get_mut(&command_string).expect("Honestly, this won't happen.").push(boxed);
         } else {
-            listener_map.insert(command_string, vec!(boxed));
+            self.ctcp_listeners.insert(command_string, vec!(boxed));
         }
     }
 
 
-    pub fn register_catch_all<T: Fn(&interface::IrcMessageEvent) + Send + Sync>(&self, f: T) {
-        self.catch_all.write().push(box f as Box<Fn(&interface::IrcMessageEvent) + Send + Sync>);
+    pub fn register_catch_all<T: Fn(&interface::IrcMessageEvent) + Send + Sync>(&mut self, f: T) {
+        self.catch_all.push(box f as Box<Fn(&interface::IrcMessageEvent) + Send + Sync>);
     }
 
-    pub fn register_command<T: Fn(&interface::CommandEvent) + Send + Sync>(&self, command: &str, f: T) {
+    pub fn register_command<T: Fn(&interface::CommandEvent) + Send + Sync>(&mut self, command: &str, f: T) {
         let boxed = box f as Box<Fn(&interface::CommandEvent) + Send + Sync>;
         let command_lower = command.into_string().to_ascii_lower();
 
-        let mut command_map = self.commands.write();
         // I can't use a match here because then I would be borrowing the command_map mutably twice:
         // Once for the match statement, and a second time inside the None branch
-        if command_map.contains_key(&command_lower) {
-            command_map.get_mut(&command_lower).expect("Honestly, this won't happen.").push(boxed);
+        if self.commands.contains_key(&command_lower) {
+            self.commands.get_mut(&command_lower).expect("Honestly, this won't happen.").push(boxed);
         } else {
-            command_map.insert(command_lower, vec!(boxed));
+            self.commands.insert(command_lower, vec!(boxed));
         }
     }
 }
 
+pub struct ClientState {
+    pub nick: String,
+    pub channels: Vec<String>,
+}
+
+impl ClientState {
+    pub fn new(nick: String) -> ClientState {
+        return ClientState {
+            nick: nick,
+            channels: Vec::new(),
+        };
+    }
+}
+
 pub struct Client {
-    pub plugins: PluginRegister,
+    pub plugins: sync::RWLock<PluginRegister>,
     pub config: config::ClientConfiguration,
-    // TODO: Store channels joined and current bot nick here
+    pub state: sync::RWLock<ClientState>,
+}
+
+impl Client {
+    pub fn new(plugins: PluginRegister, config: config::ClientConfiguration) -> Client {
+        let state = sync::RWLock::new(ClientState::new(config.nick.clone()));
+        return Client {
+            plugins: sync::RWLock::new(plugins),
+            config: config,
+            state: state,
+        }
+    }
 }
 
 /// This allows access to configuration fields directly on Client
@@ -122,7 +144,8 @@ impl Dispatch {
     // Noting: This has to be a separate method from spawn_dispatch_thread, so that we can name an 'a lifetime.
     // This allows us to give the new &str slices a specific lifetime, which I don't know a way to do without making a new function.
     fn process_message<'a>(&self, message: &'a irc::IrcMessage) {
-        // let shared_mask: Option<&str> = message.mask.as_ref().map(|s| &**s);
+        let plugins = self.state.plugins.read();
+
         let shared_mask = &interface::IrcMask::from_internal(&message.mask);
         let shared_args = message.args.iter().map(|s| &**s).collect::<Vec<&'a str>>();
         let shared_ctcp = message.ctcp.as_ref().map(|t| (t.0.as_slice(), t.1.as_slice()));
@@ -136,17 +159,14 @@ impl Dispatch {
 
         // Catch all listeners
         {
-            let catch_all = self.state.plugins.catch_all.read();
-            for listener in catch_all.iter() {
+            for listener in plugins.catch_all.iter() {
                 listener.call((message_event,));
             }
         }
 
         // Raw listeners
         { // New scope so that listener_map will go out of scope after we use it
-            let listener_map = self.state.plugins.raw_listeners.read();
-
-            let listeners = listener_map.get(&message.command.to_ascii_lower());
+            let listeners = plugins.raw_listeners.get(&message.command.to_ascii_lower());
             match listeners {
                 Some(list) => {
                     for listener in list.iter() {
@@ -164,8 +184,7 @@ impl Dispatch {
                 Some(ref t) => {
                     let ctcp_event = interface::CtcpEvent::new(&self.interface, message.args[0].as_slice(), t.0.as_slice(), t.1.as_slice(), shared_mask);
                     { // New scope so that ctcp_map will go out of scope after we use it
-                        let ctcp_map = self.state.plugins.ctcp_listeners.read();
-                        let ctcp_listeners = ctcp_map.get(&ctcp_event.command.to_ascii_lower());
+                        let ctcp_listeners = plugins.ctcp_listeners.get(&ctcp_event.command.to_ascii_lower());
                         match ctcp_listeners {
                             Some(list) => {
                                 for ctcp_listener in list.iter() {
@@ -186,8 +205,7 @@ impl Dispatch {
             if shared_args[1].starts_with(prefix.as_slice()) {
                 let command = shared_args[1].slice_from(prefix.len()).into_string().to_ascii_lower();
                 { // New scope so that command_map will go out of scope after we use it
-                    let command_map = self.state.plugins.commands.read();
-                    let commands = command_map.get(&command);
+                    let commands = plugins.commands.get(&command);
                     match commands {
                         Some(list) => {
                             let args = shared_args.slice_from(2);
@@ -208,31 +226,11 @@ pub fn create_and_connect(config: config::ClientConfiguration) -> Result<(), Ini
     cac_with_plugin_register(config, PluginRegister::new())
 }
 
-pub fn cac_with_plugin_register(config: config::ClientConfiguration, plugins: PluginRegister) -> Result<(), InitializationError> {
-
-        let client = sync::Arc::new(Client {
-            plugins: plugins,
-            config: config,
-        });
-
-        // Add initial channel join listener
-        client.plugins.register_irc("004", |event: &interface::IrcMessageEvent| {
-            let nickserv = &event.client.nickserv;
-            if nickserv.enabled {
-                if nickserv.account.len() != 0 {
-                    event.client.send_message(nickserv.name.as_slice(), format!("{} {} {}", nickserv.command, nickserv.account, nickserv.password).as_slice());
-                } else {
-                    event.client.send_message(nickserv.name.as_slice(), format!("{} {}", nickserv.command, nickserv.password).as_slice());
-                }
-            }
-
-            for channel in event.client.channels.iter() {
-                event.client.send_command("JOIN".into_string(), &[channel.as_slice()]);
-            }
-        });
-
+pub fn cac_with_plugin_register(config: config::ClientConfiguration, mut plugins: PluginRegister) -> Result<(), InitializationError> {
         // Add built-in plugins to the Client
-        plugins::register_plugins(&client.plugins);
+        plugins::register_plugins(&mut plugins);
+
+        let client = sync::Arc::new(Client::new(plugins, config));
 
         let (data_out, connection_data_in) = channel();
         let (connection_data_out, data_in) = channel();

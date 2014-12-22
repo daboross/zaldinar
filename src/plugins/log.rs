@@ -37,6 +37,6 @@ fn log_message(event: &IrcMessageEvent) {
     info!("{}", message);
 }
 
-pub fn register(register: &PluginRegister) {
+pub fn register(register: &mut PluginRegister) {
     register.register_catch_all(log_message);
 }

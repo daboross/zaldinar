@@ -58,7 +58,7 @@ fn message(event: &CommandEvent) {
     event.client.send_message(event.channel, format!("Sent message to {}.", event.args[0]).as_slice());
 }
 
-pub fn register(register: &PluginRegister) {
+pub fn register(register: &mut PluginRegister) {
     register.register_command("say", say);
     register.register_command("message", message);
     register.register_command("raw", raw);
