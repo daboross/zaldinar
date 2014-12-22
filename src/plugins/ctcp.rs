@@ -1,7 +1,6 @@
-/// File containing responses for CTCP messages
 use chrono::Local;
 
-use client::Client;
+use client::PluginRegister;
 use interface::CtcpEvent;
 use get_version;
 
@@ -29,8 +28,8 @@ fn ctcp_time(event: &CtcpEvent) {
     event.client.send_ctcp_reply(event.mask.nick().unwrap(), event.command, message.as_slice());
 }
 
-pub fn register(client: &mut Client) {
-    client.add_ctcp_listener("version", ctcp_version);
-    client.add_ctcp_listener("ping", ctcp_ping);
-    client.add_ctcp_listener("time", ctcp_time);
+pub fn register(register: &PluginRegister) {
+    register.register_ctcp("version", ctcp_version);
+    register.register_ctcp("ping", ctcp_ping);
+    register.register_ctcp("time", ctcp_time);
 }

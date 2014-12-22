@@ -13,84 +13,24 @@ use interface;
 use config;
 use irc;
 
-// TODO: Store channels joined
-// TODO: Make a 'ClientState' object which holds current state like channels joined, current nick, etc. and share it in a Arc<RWLock<>> between all interfaces and connections
-pub struct Client {
-    data_in: Receiver<Option<irc::IrcMessage>>,
-    pub interface: interface::IrcInterface,
-    commands: sync::Arc<sync::RWLock<collections::HashMap<String, Vec<Box<Fn(&interface::CommandEvent) + Send + Sync>>>>>,
-    ctcp_listeners: sync::Arc<sync::RWLock<collections::HashMap<String, Vec<Box<Fn(&interface::CtcpEvent) + Send + Sync>>>>>,
-    raw_listeners: sync::Arc<sync::RWLock<collections::HashMap<String, Vec<Box<Fn(&interface::IrcMessageEvent) + Send + Sync>>>>>,
-    catch_all: sync::Arc<sync::RWLock<Vec<Box<Fn(&interface::IrcMessageEvent) + Send + Sync>>>>,
-    config: sync::Arc<config::ClientConfiguration>,
-    irc_connection_channel: Option<(Sender<Option<irc::IrcMessage>>, Receiver<Option<String>>)>,
-    logger: sync::Arc<Box<fern::Logger + Sync + Send>>,
+pub struct PluginRegister {
+    commands: sync::RWLock<collections::HashMap<String, Vec<Box<Fn(&interface::CommandEvent) + Send + Sync>>>>,
+    ctcp_listeners: sync::RWLock<collections::HashMap<String, Vec<Box<Fn(&interface::CtcpEvent) + Send + Sync>>>>,
+    raw_listeners: sync::RWLock<collections::HashMap<String, Vec<Box<Fn(&interface::IrcMessageEvent) + Send + Sync>>>>,
+    catch_all: sync::RWLock<Vec<Box<Fn(&interface::IrcMessageEvent) + Send + Sync>>>,
 }
 
-impl Client {
-    pub fn new(config: config::ClientConfiguration) -> Result<Client, InitializationError> {
-        let rc_config = sync::Arc::new(config);
-        let (data_out, connection_data_in) = channel();
-        let (connection_data_out, data_in) = channel();
-        let logger = try!(fern::LoggerConfig {
-            format: box |msg: &str, level: &fern::Level| {
-                return format!("[{}][{}] {}", chrono::Local::now().format("%Y-%m-%d][%H:%M:%S"), level, msg);
-            },
-            output: vec![fern::OutputConfig::Stdout, fern::OutputConfig::File(Path::new("zaldinar.log"))],
-            level: fern::Level::Debug,
-        }.into_logger());
-        let mut client = Client {
-            interface: try!(interface::IrcInterface::new(data_out, rc_config.clone())),
-            data_in: data_in,
-            commands: sync::Arc::new(sync::RWLock::new(collections::HashMap::new())),
-            raw_listeners: sync::Arc::new(sync::RWLock::new(collections::HashMap::new())),
-            ctcp_listeners: sync::Arc::new(sync::RWLock::new(collections::HashMap::new())),
-            catch_all: sync::Arc::new(sync::RWLock::new(Vec::new())),
-            config: rc_config,
-            irc_connection_channel: Some((connection_data_out, connection_data_in)),
-            logger: sync::Arc::new(logger),
-        };
-        // Add initial channel join listener
-        client.add_listener("004", |event: &interface::IrcMessageEvent| {
-            let nickserv = &event.client.config.nickserv;
-            if nickserv.enabled {
-                if nickserv.account.len() != 0 {
-                    event.client.send_message(nickserv.name.as_slice(), format!("{} {} {}", nickserv.command, nickserv.account, nickserv.password).as_slice());
-                } else {
-                    event.client.send_message(nickserv.name.as_slice(), format!("{} {}", nickserv.command, nickserv.password).as_slice());
-                }
-            }
-
-            for channel in event.client.config.channels.iter() {
-                event.client.send_command("JOIN".into_string(), &[channel.as_slice()]);
-            }
-        });
-
-        // Add built-in plugins to the Client
-        plugins::register_plugins(&mut client);
-
-        return Ok(client);
+impl PluginRegister {
+    pub fn new() -> PluginRegister {
+        return PluginRegister {
+            commands: sync::RWLock::new(collections::HashMap::new()),
+            raw_listeners: sync::RWLock::new(collections::HashMap::new()),
+            ctcp_listeners: sync::RWLock::new(collections::HashMap::new()),
+            catch_all: sync::RWLock::new(Vec::new()),
+        }
     }
 
-    pub fn connect(mut self) -> Result<(), InitializationError> {
-        // Get connection data_out/data_in, and assure that we haven't already done this (ensure we aren't already connected)
-        let (connection_data_out, connection_data_in) = match self.irc_connection_channel {
-            Some(v) => v,
-            None => return Err(InitializationError::new("Already connected")),
-        };
-        self.irc_connection_channel = None;
-
-        // Send NICK and USER, the initial IRC commands. Because an IrcConnection hasn't been created to receive these yet,
-        //  they will just go on hold and get sent as soon as the IrcConnection connects.
-        self.interface.send_command("NICK".into_string(), &[&*self.config.nick]);
-        self.interface.send_command("USER".into_string(), &[&*self.config.user, "0", "*", &*format!(":{}", self.config.real_name)]);
-
-        try!(irc::IrcConnection::create(self.config.address.as_slice(), connection_data_out, connection_data_in, self.logger.clone()));
-        self.spawn_dispatch_thread();
-        return Ok(());
-    }
-
-    pub fn add_listener<T: Fn(&interface::IrcMessageEvent) + Send + Sync>(&mut self, irc_command: &str, f: T) {
+    pub fn register_irc<T: Fn(&interface::IrcMessageEvent) + Send + Sync>(&self, irc_command: &str, f: T) {
         let boxed = box f as Box<Fn(&interface::IrcMessageEvent) + Send + Sync>;
         let command_string = irc_command.into_string().to_ascii_lower();
 
@@ -104,7 +44,7 @@ impl Client {
         }
     }
 
-    pub fn add_ctcp_listener<T: Fn(&interface::CtcpEvent) + Send + Sync>(&mut self, ctcp_command: &str, f: T) {
+    pub fn register_ctcp<T: Fn(&interface::CtcpEvent) + Send + Sync>(&self, ctcp_command: &str, f: T) {
         let boxed = box f as Box<Fn(&interface::CtcpEvent) + Send + Sync>;
         let command_string = ctcp_command.into_string().to_ascii_lower();
 
@@ -119,11 +59,11 @@ impl Client {
     }
 
 
-    pub fn add_catch_all_listener<T: Fn(&interface::IrcMessageEvent) + Send + Sync>(&mut self, f: T) {
+    pub fn register_catch_all<T: Fn(&interface::IrcMessageEvent) + Send + Sync>(&self, f: T) {
         self.catch_all.write().push(box f as Box<Fn(&interface::IrcMessageEvent) + Send + Sync>);
     }
 
-    pub fn add_command<T: Fn(&interface::CommandEvent) + Send + Sync>(&mut self, command: &str, f: T) {
+    pub fn register_command<T: Fn(&interface::CommandEvent) + Send + Sync>(&self, command: &str, f: T) {
         let boxed = box f as Box<Fn(&interface::CommandEvent) + Send + Sync>;
         let command_lower = command.into_string().to_ascii_lower();
 
@@ -136,10 +76,39 @@ impl Client {
             command_map.insert(command_lower, vec!(boxed));
         }
     }
+}
 
-    fn spawn_dispatch_thread(self) {
+pub struct Client {
+    pub plugins: PluginRegister,
+    pub config: config::ClientConfiguration,
+    // TODO: Store channels joined and current bot nick here
+}
+
+/// This allows access to configuration fields directly on Client
+impl Deref<config::ClientConfiguration> for Client {
+    fn deref<'a>(&'a self) -> &'a config::ClientConfiguration {
+        return &self.config;
+    }
+}
+
+pub struct Dispatch {
+    interface: interface::IrcInterface,
+    state: sync::Arc<Client>,
+    data_in: Receiver<Option<irc::IrcMessage>>,
+}
+
+impl Dispatch {
+    fn new(interface: interface::IrcInterface, state: sync::Arc<Client>, data_in: Receiver<Option<irc::IrcMessage>>) -> Dispatch {
+        return Dispatch {
+            interface: interface,
+            state: state,
+            data_in: data_in,
+        };
+    }
+
+    fn spawn_dispatch_thread(self, logger: sync::Arc<Box<fern::Logger + Sync + Send>>) {
         task::TaskBuilder::new().named("client_dispatch_task").spawn(move || {
-            fern_macros::init_thread_logger(self.logger.clone());
+            fern_macros::init_thread_logger(logger);
             loop {
                 let message = match self.data_in.recv() {
                     Some(v) => v,
@@ -167,7 +136,7 @@ impl Client {
 
         // Catch all listeners
         {
-            let catch_all = self.catch_all.read();
+            let catch_all = self.state.plugins.catch_all.read();
             for listener in catch_all.iter() {
                 listener.call((message_event,));
             }
@@ -175,7 +144,7 @@ impl Client {
 
         // Raw listeners
         { // New scope so that listener_map will go out of scope after we use it
-            let listener_map = self.raw_listeners.read();
+            let listener_map = self.state.plugins.raw_listeners.read();
 
             let listeners = listener_map.get(&message.command.to_ascii_lower());
             match listeners {
@@ -195,7 +164,7 @@ impl Client {
                 Some(ref t) => {
                     let ctcp_event = interface::CtcpEvent::new(&self.interface, message.args[0].as_slice(), t.0.as_slice(), t.1.as_slice(), shared_mask);
                     { // New scope so that ctcp_map will go out of scope after we use it
-                        let ctcp_map = self.ctcp_listeners.read();
+                        let ctcp_map = self.state.plugins.ctcp_listeners.read();
                         let ctcp_listeners = ctcp_map.get(&ctcp_event.command.to_ascii_lower());
                         match ctcp_listeners {
                             Some(list) => {
@@ -213,11 +182,11 @@ impl Client {
 
             // Commands
             let channel = shared_args[0];
-            let prefix = format!(":{}", self.config.command_prefix.as_slice());
+            let prefix = format!(":{}", self.state.command_prefix.as_slice());
             if shared_args[1].starts_with(prefix.as_slice()) {
                 let command = shared_args[1].slice_from(prefix.len()).into_string().to_ascii_lower();
                 { // New scope so that command_map will go out of scope after we use it
-                    let command_map = self.commands.read();
+                    let command_map = self.state.plugins.commands.read();
                     let commands = command_map.get(&command);
                     match commands {
                         Some(list) => {
@@ -233,4 +202,58 @@ impl Client {
             }
         }
     }
+}
+
+pub fn create_and_connect(config: config::ClientConfiguration) -> Result<(), InitializationError> {
+    cac_with_plugin_register(config, PluginRegister::new())
+}
+
+pub fn cac_with_plugin_register(config: config::ClientConfiguration, plugins: PluginRegister) -> Result<(), InitializationError> {
+
+        let client = sync::Arc::new(Client {
+            plugins: plugins,
+            config: config,
+        });
+
+        // Add initial channel join listener
+        client.plugins.register_irc("004", |event: &interface::IrcMessageEvent| {
+            let nickserv = &event.client.nickserv;
+            if nickserv.enabled {
+                if nickserv.account.len() != 0 {
+                    event.client.send_message(nickserv.name.as_slice(), format!("{} {} {}", nickserv.command, nickserv.account, nickserv.password).as_slice());
+                } else {
+                    event.client.send_message(nickserv.name.as_slice(), format!("{} {}", nickserv.command, nickserv.password).as_slice());
+                }
+            }
+
+            for channel in event.client.channels.iter() {
+                event.client.send_command("JOIN".into_string(), &[channel.as_slice()]);
+            }
+        });
+
+        // Add built-in plugins to the Client
+        plugins::register_plugins(&client.plugins);
+
+        let (data_out, connection_data_in) = channel();
+        let (connection_data_out, data_in) = channel();
+
+        let interface = try!(interface::IrcInterface::new(data_out, client.clone()));
+
+        let logger = sync::Arc::new(try!(fern::LoggerConfig {
+            format: box |msg: &str, level: &fern::Level| {
+                return format!("[{}][{}] {}", chrono::Local::now().format("%Y-%m-%d][%H:%M:%S"), level, msg);
+            },
+            output: vec![fern::OutputConfig::Stdout, fern::OutputConfig::File(Path::new("zaldinar.log"))],
+            level: fern::Level::Debug,
+        }.into_logger()));
+
+        // Send NICK and USER, the initial IRC commands. Because an IrcConnection hasn't been created to receive these yet,
+        //  they will just go on hold and get sent as soon as the IrcConnection connects.
+        interface.send_command("NICK".into_string(), &[client.nick.as_slice()]);
+        interface.send_command("USER".into_string(), &[client.user.as_slice(), "0", "*", format!(":{}", client.real_name).as_slice()]);
+
+        try!(irc::IrcConnection::create(client.address.as_slice(), connection_data_out, connection_data_in, logger.clone()));
+        Dispatch::new(interface.clone(), client, data_in).spawn_dispatch_thread(logger);
+
+        return Ok(());
 }

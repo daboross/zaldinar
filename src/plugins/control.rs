@@ -1,5 +1,5 @@
 /// This file contains commands to generally control and administer the bot.
-use client::Client;
+use client::PluginRegister;
 use interface::CommandEvent;
 
 fn say(event: &CommandEvent) {
@@ -58,12 +58,12 @@ fn message(event: &CommandEvent) {
     event.client.send_message(event.channel, format!("Sent message to {}.", event.args[0]).as_slice());
 }
 
-pub fn register(client: &mut Client) {
-    client.add_command("say", say);
-    client.add_command("message", message);
-    client.add_command("raw", raw);
-    client.add_command("join", join);
-    client.add_command("part", part);
-    client.add_command("leave", part);
-    client.add_command("quit", quit);
+pub fn register(register: &PluginRegister) {
+    register.register_command("say", say);
+    register.register_command("message", message);
+    register.register_command("raw", raw);
+    register.register_command("join", join);
+    register.register_command("part", part);
+    register.register_command("leave", part);
+    register.register_command("quit", quit);
 }

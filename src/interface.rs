@@ -2,24 +2,25 @@ use std::sync;
 use regex;
 
 use errors::InitializationError;
-use config;
+use client;
 use irc;
 
+#[deriving(Clone)]
 pub struct IrcInterface {
     data_out: Sender<Option<String>>,
-    pub config: sync::Arc<config::ClientConfiguration>,
+    pub client: sync::Arc<client::Client>,
     admins: sync::Arc<Vec<regex::Regex>>,
 }
 
 impl IrcInterface {
-    pub fn new(data_out: Sender<Option<String>>, config: sync::Arc<config::ClientConfiguration>) -> Result<IrcInterface, InitializationError> {
+    pub fn new(data_out: Sender<Option<String>>, client: sync::Arc<client::Client>) -> Result<IrcInterface, InitializationError> {
         let mut admins = Vec::new();
-        for admin_str in config.admins.iter() {
+        for admin_str in client.config.admins.iter() {
             admins.push(try!(regex::Regex::new(format!("^{}$", admin_str.as_slice()).as_slice())));
         }
         let interface = IrcInterface {
             data_out: data_out,
-            config: config,
+            client: client,
             admins: sync::Arc::new(admins),
         };
         return Ok(interface);
@@ -83,16 +84,12 @@ impl IrcInterface {
         self.send_message(event.channel, "Permission denied");
         return false;
     }
-
 }
 
-impl Clone for IrcInterface {
-    fn clone(&self) -> IrcInterface {
-        return IrcInterface {
-            data_out: self.data_out.clone(),
-            config: self.config.clone(),
-            admins: self.admins.clone(),
-        };
+/// This allows access to client and config fields on IrcInterface.
+impl Deref<sync::Arc<client::Client>> for IrcInterface {
+    fn deref<'a>(&'a self) -> &'a sync::Arc<client::Client> {
+        return &self.client;
     }
 }
 

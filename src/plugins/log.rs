@@ -1,6 +1,6 @@
 use std::ascii::AsciiExt;
 
-use client::Client;
+use client::PluginRegister;
 use interface::IrcMessageEvent;
 
 fn log_message(event: &IrcMessageEvent) {
@@ -37,6 +37,6 @@ fn log_message(event: &IrcMessageEvent) {
     info!("{}", message);
 }
 
-pub fn register(client: &mut Client) {
-    client.add_catch_all_listener(log_message);
+pub fn register(register: &PluginRegister) {
+    register.register_catch_all(log_message);
 }
