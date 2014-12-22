@@ -17,6 +17,29 @@ fn on_connect(event: &IrcMessageEvent) {
     event.client.state.write().channels.push_all(event.client.channels.iter().map(|s: &String| s.clone()).collect::<Vec<String>>().as_slice());
 }
 
+fn on_join(event: &IrcMessageEvent) {
+    if event.channel.is_none() {
+        return;
+    }
+    match event.mask.nick() {
+        Some(nick) => if nick == event.client.state.read().nick {
+            event.client.state.write().channels.push(event.channel.unwrap().into_string());
+        },
+        None => (),
+    }
+}
+
+fn on_nick(event: &IrcMessageEvent) {
+    match event.mask.nick() {
+        Some(nick) => if nick == event.client.state.read().nick {
+            event.client.state.write().nick = event.args[0].into_string();
+        },
+        None => (),
+    }
+}
+
 pub fn register(register: &mut PluginRegister) {
     register.register_irc("004", on_connect);
+    register.register_irc("join", on_join);
+    register.register_irc("nick", on_nick);
 }
