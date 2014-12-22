@@ -1,9 +1,9 @@
 [root]
 name = "zaldinar"
-version = "0.1.0"
+version = "0.1.1-dev"
 dependencies = [
  "chrono 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "fern 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "fern 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "fern_macros 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
@@ -17,7 +17,7 @@ dependencies = [
 
 [[package]]
 name = "fern"
-version = "0.1.0"
+version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -25,7 +25,7 @@ name = "fern_macros"
 version = "0.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
- "fern 0.1.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "fern 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
