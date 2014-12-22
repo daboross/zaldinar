@@ -1,7 +1,6 @@
 use std::ascii::AsciiExt;
 use std::sync;
 use std::collections;
-use std::task;
 
 use chrono;
 use fern;
@@ -128,17 +127,14 @@ impl Dispatch {
         };
     }
 
-    fn spawn_dispatch_thread(self, logger: sync::Arc<Box<fern::Logger + Sync + Send>>) {
-        task::TaskBuilder::new().named("client_dispatch_task").spawn(move || {
-            fern_macros::init_thread_logger(logger);
-            loop {
-                let message = match self.data_in.recv() {
-                    Some(v) => v,
-                    None => break,
-                };
-                self.process_message(&message);
-            }
-        });
+    fn start_dispatch_loop(self) {
+        loop {
+            let message = match self.data_in.recv() {
+                Some(v) => v,
+                None => break,
+            };
+            self.process_message(&message);
+        }
     }
 
     // Noting: This has to be a separate method from spawn_dispatch_thread, so that we can name an 'a lifetime.
@@ -222,20 +218,13 @@ impl Dispatch {
     }
 }
 
-pub fn create_and_connect(config: config::ClientConfiguration) -> Result<(), InitializationError> {
-    cac_with_plugin_register(config, PluginRegister::new())
+pub fn run(config: config::ClientConfiguration) -> Result<(), InitializationError> {
+    run_with_plugins(config, PluginRegister::new())
 }
 
-pub fn cac_with_plugin_register(config: config::ClientConfiguration, mut plugins: PluginRegister) -> Result<(), InitializationError> {
-        // Add built-in plugins to the Client
+pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: PluginRegister) -> Result<(), InitializationError> {
+        // Register built-in plugins
         plugins::register_plugins(&mut plugins);
-
-        let client = sync::Arc::new(Client::new(plugins, config));
-
-        let (data_out, connection_data_in) = channel();
-        let (connection_data_out, data_in) = channel();
-
-        let interface = try!(interface::IrcInterface::new(data_out, client.clone()));
 
         let logger = sync::Arc::new(try!(fern::LoggerConfig {
             format: box |msg: &str, level: &fern::Level| {
@@ -245,13 +234,27 @@ pub fn cac_with_plugin_register(config: config::ClientConfiguration, mut plugins
             level: fern::Level::Debug,
         }.into_logger()));
 
+        fern_macros::init_thread_logger(logger.clone());
+
+        let client = sync::Arc::new(Client::new(plugins, config));
+
+        let (data_out, connection_data_in) = channel();
+        let (connection_data_out, data_in) = channel();
+
+        let interface = try!(interface::IrcInterface::new(data_out, client.clone()));
+
+
         // Send NICK and USER, the initial IRC commands. Because an IrcConnection hasn't been created to receive these yet,
         //  they will just go on hold and get sent as soon as the IrcConnection connects.
         interface.send_command("NICK".into_string(), &[client.nick.as_slice()]);
         interface.send_command("USER".into_string(), &[client.user.as_slice(), "0", "*", format!(":{}", client.real_name).as_slice()]);
 
         try!(irc::IrcConnection::create(client.address.as_slice(), connection_data_out, connection_data_in, logger.clone()));
-        Dispatch::new(interface.clone(), client, data_in).spawn_dispatch_thread(logger);
+
+        let dispatch = Dispatch::new(interface.clone(), client, data_in);
+
+        // This statement will run until the bot exists
+        dispatch.start_dispatch_loop();
 
         return Ok(());
 }

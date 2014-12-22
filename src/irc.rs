@@ -1,6 +1,6 @@
 use std::ascii::AsciiExt;
 use std::io;
-use std::task;
+use std::thread;
 use std::sync;
 use regex;
 use fern;
@@ -45,7 +45,7 @@ impl IrcConnection {
             Some(ref v) => v.clone(),
             None => return Err(InitializationError::new("Can't start reading thread without data_out")),
         };
-        task::TaskBuilder::new().named("socket_reading_task").spawn(move || {
+        thread::Builder::new().name("socket_reading_task".into_string()).spawn(move || {
             fern_macros::init_thread_logger(self.logger);
             let mut reader = io::BufferedReader::new(self.socket.clone());
             loop {
@@ -92,7 +92,7 @@ impl IrcConnection {
                 let message = IrcMessage::new(command.into_string(), args_owned, possible_mask, ctcp, channel);
                 data_out.send(Some(message));
             }
-        });
+        }).detach();
         return Ok(());
     }
 
@@ -100,7 +100,7 @@ impl IrcConnection {
         if (&self.data_in).is_none() {
             return Err(InitializationError::new("Can't start writing thread without data_in"));
         }
-        task::TaskBuilder::new().named("socket_writing_task").spawn(move || {
+        thread::Builder::new().name("socket_writing_task".into_string()).spawn(move || {
             fern_macros::init_thread_logger(self.logger);
             let data_in = self.data_in.expect("Already confirmed above");
             loop {
@@ -115,7 +115,7 @@ impl IrcConnection {
                 log_error_then!(self.socket.write(b"\n"), return, "Failed to write to stream: {e}");
                 log_error_then!(self.socket.flush(), return, "Failed to write to stream: {e}");
             }
-        });
+        }).detach();
         return Ok(());
     }
 }

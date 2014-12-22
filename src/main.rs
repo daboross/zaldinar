@@ -10,10 +10,10 @@ fn main() {
         },
     };
 
-    match zaldinar::client::create_and_connect(config) {
+    match zaldinar::client::run(config) {
         Ok(()) => (),
         Err(e) => {
-            println!("Error starting client: {}", e);
+            println!("Error running client: {}", e);
             std::os::set_exit_status(1);
             // There is no need to stop other tasks at this point, because the only time client.connect() returns Err is before any tasks are started
         },

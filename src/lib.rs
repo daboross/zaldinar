@@ -16,8 +16,8 @@ pub use interface::{
     CommandEvent,
     CtcpEvent,
 };
-pub use client::create_and_connect;
-pub use client::cac_with_plugin_register;
+pub use client::run;
+pub use client::run_with_plugins;
 
 pub mod errors;
 pub mod config;
