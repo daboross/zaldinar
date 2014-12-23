@@ -251,38 +251,38 @@ pub fn run(config: config::ClientConfiguration) -> Result<(), InitializationErro
 }
 
 pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: PluginRegister) -> Result<(), InitializationError> {
-        // Register built-in plugins
-        plugins::register_plugins(&mut plugins);
+    // Register built-in plugins
+    plugins::register_plugins(&mut plugins);
 
-        let logger = sync::Arc::new(try!(fern::LoggerConfig {
-            format: box |msg: &str, level: &fern::Level| {
-                return format!("[{}][{}] {}", chrono::Local::now().format("%Y-%m-%d][%H:%M:%S"), level, msg);
-            },
-            output: vec![fern::OutputConfig::Stdout, fern::OutputConfig::File(Path::new("zaldinar.log"))],
-            level: fern::Level::Debug,
-        }.into_logger()));
+    let logger = sync::Arc::new(try!(fern::LoggerConfig {
+        format: box |msg: &str, level: &fern::Level| {
+            return format!("[{}][{}] {}", chrono::Local::now().format("%Y-%m-%d][%H:%M:%S"), level, msg);
+        },
+        output: vec![fern::OutputConfig::Stdout, fern::OutputConfig::File(Path::new("zaldinar.log"))],
+        level: fern::Level::Debug,
+    }.into_logger()));
 
-        fern_macros::init_thread_logger(logger.clone());
+    fern_macros::init_thread_logger(logger.clone());
 
-        let client = sync::Arc::new(Client::new(plugins, config));
+    let client = sync::Arc::new(Client::new(plugins, config));
 
-        let (data_out, connection_data_in) = channel();
-        let (connection_data_out, data_in) = channel();
+    let (data_out, connection_data_in) = channel();
+    let (connection_data_out, data_in) = channel();
 
-        let interface = try!(interface::IrcInterface::new(data_out, client.clone()));
+    let interface = try!(interface::IrcInterface::new(data_out, client.clone()));
 
 
-        // Send NICK and USER, the initial IRC commands. Because an IrcConnection hasn't been created to receive these yet,
-        //  they will just go on hold and get sent as soon as the IrcConnection connects.
-        interface.send_command("NICK".into_string(), &[client.nick.as_slice()]);
-        interface.send_command("USER".into_string(), &[client.user.as_slice(), "0", "*", format!(":{}", client.real_name).as_slice()]);
+    // Send NICK and USER, the initial IRC commands. Because an IrcConnection hasn't been created to receive these yet,
+    //  they will just go on hold and get sent as soon as the IrcConnection connects.
+    interface.send_command("NICK".into_string(), &[client.nick.as_slice()]);
+    interface.send_command("USER".into_string(), &[client.user.as_slice(), "0", "*", format!(":{}", client.real_name).as_slice()]);
 
-        try!(irc::IrcConnection::create(client.address.as_slice(), connection_data_out, connection_data_in, logger.clone(), client.clone()));
+    try!(irc::IrcConnection::create(client.address.as_slice(), connection_data_out, connection_data_in, logger.clone(), client.clone()));
 
-        let dispatch = Dispatch::new(interface, client, data_in);
+    let dispatch = Dispatch::new(interface, client, data_in);
 
-        // This statement will run until the bot exists
-        dispatch.start_dispatch_loop();
+    // This statement will run until the bot exists
+    dispatch.start_dispatch_loop();
 
-        return Ok(());
+    return Ok(());
 }
