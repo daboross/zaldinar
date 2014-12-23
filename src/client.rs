@@ -13,10 +13,10 @@ use config;
 use irc;
 
 pub struct PluginRegister {
-    commands: collections::HashMap<String, Vec<Box<Fn(&interface::CommandEvent) + Send + Sync>>>,
-    ctcp_listeners: collections::HashMap<String, Vec<Box<Fn(&interface::CtcpEvent) + Send + Sync>>>,
-    raw_listeners: collections::HashMap<String, Vec<Box<Fn(&interface::IrcMessageEvent) + Send + Sync>>>,
-    catch_all: Vec<Box<Fn(&interface::IrcMessageEvent) + Send + Sync>>,
+    pub commands: collections::HashMap<String, Vec<Box<Fn(&interface::CommandEvent) + Send + Sync>>>,
+    pub ctcp_listeners: collections::HashMap<String, Vec<Box<Fn(&interface::CtcpEvent) + Send + Sync>>>,
+    pub raw_listeners: collections::HashMap<String, Vec<Box<Fn(&interface::IrcMessageEvent) + Send + Sync>>>,
+    pub catch_all: Vec<Box<Fn(&interface::IrcMessageEvent) + Send + Sync>>,
 }
 
 impl PluginRegister {
