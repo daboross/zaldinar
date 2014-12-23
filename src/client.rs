@@ -170,6 +170,7 @@ impl Dispatch {
         }
 
         if message.command.as_slice().eq_ignore_ascii_case("PRIVMSG") {
+            let channel = shared_channel.unwrap(); // Always exists for PRIVMSG
 
             // CTCP
             match message.ctcp {
@@ -189,22 +190,58 @@ impl Dispatch {
             }
 
             // Commands
-            let channel = shared_args[0];
-            let prefix = format!(":{}", self.state.command_prefix.as_slice());
+            let command_prefix = format!(":{}", self.state.command_prefix.as_slice());
 
-            if shared_args[1].starts_with(prefix.as_slice()) {
-                let command = shared_args[1].slice_from(prefix.len()).into_string().to_ascii_lower();
-                match plugins.commands.get(&command) {
-                    Some(list) => {
-                        let args = shared_args.slice_from(2);
-                        let command_event = &mut interface::CommandEvent::new(&self.interface, channel, args, shared_mask);
-                        for command in list.iter() {
-                            command.call((command_event,));
+            // This checks for the command prefix, commands typed like '.command_name args'
+            if shared_args[1].starts_with(command_prefix.as_slice()) {
+                let command = shared_args[1].slice_from(command_prefix.len());
+                let args = shared_args.slice_from(2);
+                self.dispatch_command(&plugins, command, channel, args, shared_mask);
+            } else {
+                // This checks for someone typing commands like 'BotName, command_name args'
+                // We store whether or not a command was matched in a variable so that we can use it below.
+                // We can't just put the below in one of the None => branches, because there are multiple instances of them.
+                let command_matched = match regex!(r"^:([^\s]+?)[:;,]?\s+(.+)$").captures(shared_args.slice_from(1).connect(" ").as_slice()) {
+                    Some(captures) => {
+                        if captures.at(1) == Some(self.state.state.read().nick.as_slice()) {
+                            match captures.at(2) {
+                                Some(args_str) => {
+                                    let split = args_str.split(' ').collect::<Vec<&str>>();
+                                    let command = split[0];
+                                    let args = split.slice_from(1);
+                                    self.dispatch_command(&plugins, command, channel, args, shared_mask);
+                                    true
+                                },
+                                None => false,
+                            }
+                        } else {
+                            false
                         }
                     },
-                    None => (),
+                    None => false,
+                };
+
+                // This checks for commands in a private message, where a prefix isn't required
+                // People can just say 'command args' in a private message.
+                // If the channel is the sender's nick, the message is being sent in a private message.
+                if !command_matched && shared_mask.nick() == Some(channel) {
+                    let command = shared_args[1].slice_from(1); // slice_from(1) to remove the `:` at the beginning of privmsg content.
+                    let args = shared_args.slice_from(2);
+                    self.dispatch_command(&plugins, command, channel, args, shared_mask);
                 }
             }
+        }
+    }
+
+    fn dispatch_command(&self, plugins: &sync::RWLockReadGuard<PluginRegister>, command: &str, channel: &str, args: &[&str], mask: &interface::IrcMask) {
+        match plugins.commands.get(&command.to_ascii_lower()) {
+            Some(list) => {
+                let command_event = &mut interface::CommandEvent::new(&self.interface, channel, args, mask);
+                for closure in list.iter() {
+                    closure.call((command_event,));
+                }
+            },
+            None => (),
         }
     }
 }
@@ -240,9 +277,9 @@ pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: Plugin
         interface.send_command("NICK".into_string(), &[client.nick.as_slice()]);
         interface.send_command("USER".into_string(), &[client.user.as_slice(), "0", "*", format!(":{}", client.real_name).as_slice()]);
 
-        try!(irc::IrcConnection::create(client.address.as_slice(), connection_data_out, connection_data_in, logger.clone()));
+        try!(irc::IrcConnection::create(client.address.as_slice(), connection_data_out, connection_data_in, logger.clone(), client.clone()));
 
-        let dispatch = Dispatch::new(interface.clone(), client, data_in);
+        let dispatch = Dispatch::new(interface, client, data_in);
 
         // This statement will run until the bot exists
         dispatch.start_dispatch_loop();

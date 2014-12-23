@@ -7,6 +7,7 @@ use fern;
 use fern_macros;
 
 use errors::InitializationError;
+use client;
 
 static IRC_COLOR_REGEX: regex::Regex = regex!("(\x03(\\d+,\\d+|\\d)|[\x0f\x02\x16\x1f\x02])");
 
@@ -14,20 +15,23 @@ pub struct IrcConnection {
     socket: io::TcpStream,
     data_out: Option<Sender<Option<IrcMessage>>>,
     data_in: Option<Receiver<Option<String>>>,
+    client: sync::Arc<client::Client>,
 }
 
 impl IrcConnection {
-    pub fn create(addr: &str, data_out: Sender<Option<IrcMessage>>, data_in: Receiver<Option<String>>, logger: sync::Arc<Box<fern::Logger + Sync + Send>>) -> Result<(), io::IoError> {
+    pub fn create(addr: &str, data_out: Sender<Option<IrcMessage>>, data_in: Receiver<Option<String>>, logger: sync::Arc<Box<fern::Logger + Sync + Send>>, client: sync::Arc<client::Client>) -> Result<(), io::IoError> {
         let socket = try!(io::TcpStream::connect(addr));
         let connection_receiving = IrcConnection {
             socket: socket.clone(),
             data_out: Some(data_out),
             data_in: None,
+            client: client.clone(),
         };
         let connection_sending = IrcConnection {
             socket: socket, // No need to clone a second time, as this is the last time we are using this socket
             data_out: None,
             data_in: Some(data_in),
+            client: client,
         };
 
         // Using unwrap() on these two because we know that data_out and data_in are Some() and not None
@@ -64,6 +68,7 @@ impl IrcConnection {
                 } else {
                     (message_split[0], message_split.slice_from(1), IrcMask::Nonexistent)
                 };
+
                 let ctcp = if command.eq_ignore_ascii_case("PRIVMSG") && args[1].starts_with(":\x01") && args[args.len() -1].ends_with("\x01") {
                     let ctcp_command;
                     let mut ctcp_message;
@@ -81,7 +86,20 @@ impl IrcConnection {
                 };
                 let channel = match command {
                     "353" => Some(args[2].into_string()),
-                    "PRIVMSG" | "NOTICE" | "JOIN" | "PART" | "KICK" | "TOPIC" => Some(args[0].into_string()),
+                    "JOIN" | "PART" | "KICK" | "TOPIC" | "NOTICE" => Some(args[0].into_string()),
+                    "PRIVMSG" => {
+                        // This checks if the nick is the same as our bot's nick
+                        // If the channel is our bots nick, and the sender has a nick, the message is a private message.
+                        // For the sake of plugins trying to reply,  we set the channel to the sender's nick instead of our nick.
+                        if args[0] == self.client.state.read().nick.as_slice() {
+                            match possible_mask.nick() {
+                                Some(v) => Some(v.into_string()),
+                                None => Some(args[0].into_string()),
+                            }
+                        } else {
+                            Some(args[0].into_string())
+                        }
+                    },
                     _ => None,
                 };
                 // TODO: Change channel to sender nick if channel is our current nick.
@@ -179,5 +197,13 @@ impl IrcMask {
         let user = user_and_host_split[0];
         let host = user_and_host_split[1];
         return IrcMask::new_full(mask.into_string(), nick.into_string(), user.into_string(), host.into_string());
+    }
+
+    pub fn nick(&self) -> Option<&str> {
+        match self {
+            &IrcMask::Full(ref mask) => Some(mask.nick.as_slice()),
+            &IrcMask::Unparseable(_) => None,
+            &IrcMask::Nonexistent => None
+        }
     }
 }
