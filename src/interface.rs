@@ -157,7 +157,6 @@ impl <'a> IrcMask<'a> {
             &IrcMask::Nonexistent => None
         }
     }
-
 }
 
 pub struct IrcMessageEvent<'a> {

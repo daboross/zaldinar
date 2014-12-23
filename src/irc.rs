@@ -14,7 +14,6 @@ pub struct IrcConnection {
     socket: io::TcpStream,
     data_out: Option<Sender<Option<IrcMessage>>>,
     data_in: Option<Receiver<Option<String>>>,
-    logger: sync::Arc<Box<fern::Logger + Sync + Send>>
 }
 
 impl IrcConnection {
@@ -24,29 +23,27 @@ impl IrcConnection {
             socket: socket.clone(),
             data_out: Some(data_out),
             data_in: None,
-            logger: logger.clone(),
         };
         let connection_sending = IrcConnection {
             socket: socket, // No need to clone a second time, as this is the last time we are using this socket
             data_out: None,
             data_in: Some(data_in),
-            logger: logger,
         };
 
         // Using unwrap() on these two because we know that data_out and data_in are Some() and not None
-        connection_receiving.spawn_reading_thread().unwrap();
-        connection_sending.spawn_writing_thread().unwrap();
+        connection_receiving.spawn_reading_thread(logger.clone()).unwrap();
+        connection_sending.spawn_writing_thread(logger).unwrap();
 
         return Ok(());
     }
 
-    fn spawn_reading_thread(self) -> Result<(), InitializationError> {
+    fn spawn_reading_thread(self, logger: sync::Arc<Box<fern::Logger + Sync + Send>>) -> Result<(), InitializationError> {
         let data_out = match self.data_out {
             Some(ref v) => v.clone(),
             None => return Err(InitializationError::new("Can't start reading thread without data_out")),
         };
         thread::Builder::new().name("socket_reading_task".into_string()).spawn(move || {
-            fern_macros::init_thread_logger(self.logger);
+            fern_macros::init_thread_logger(logger);
             let mut reader = io::BufferedReader::new(self.socket.clone());
             loop {
                 let whole_input = match reader.read_line() {
@@ -67,9 +64,7 @@ impl IrcConnection {
                 } else {
                     (message_split[0], message_split.slice_from(1), IrcMask::Nonexistent)
                 };
-                let ctcp = if command.eq_ignore_ascii_case("PRIVMSG")
-                              && args[1].starts_with(":\x01")
-                              && args[args.len() -1].ends_with("\x01") {
+                let ctcp = if command.eq_ignore_ascii_case("PRIVMSG") && args[1].starts_with(":\x01") && args[args.len() -1].ends_with("\x01") {
                     let ctcp_command;
                     let mut ctcp_message;
                     if args.len() > 2 {
@@ -81,7 +76,9 @@ impl IrcConnection {
                         ctcp_message = "".into_string();
                     }
                     Some((ctcp_command, ctcp_message))
-                } else { None };
+                } else {
+                    None
+                };
                 let channel = match command {
                     "353" => Some(args[2].into_string()),
                     "PRIVMSG" | "NOTICE" | "JOIN" | "PART" | "KICK" | "TOPIC" => Some(args[0].into_string()),
@@ -96,12 +93,12 @@ impl IrcConnection {
         return Ok(());
     }
 
-    fn spawn_writing_thread(mut self) -> Result<(), InitializationError> {
+    fn spawn_writing_thread(mut self, logger: sync::Arc<Box<fern::Logger + Sync + Send>>) -> Result<(), InitializationError> {
         if (&self.data_in).is_none() {
             return Err(InitializationError::new("Can't start writing thread without data_in"));
         }
         thread::Builder::new().name("socket_writing_task".into_string()).spawn(move || {
-            fern_macros::init_thread_logger(self.logger);
+            fern_macros::init_thread_logger(logger);
             let data_in = self.data_in.expect("Already confirmed above");
             loop {
                 let command = match data_in.recv() {

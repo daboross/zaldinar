@@ -195,10 +195,10 @@ impl Dispatch {
                 None => (),
             }
 
-
             // Commands
             let channel = shared_args[0];
             let prefix = format!(":{}", self.state.command_prefix.as_slice());
+
             if shared_args[1].starts_with(prefix.as_slice()) {
                 let command = shared_args[1].slice_from(prefix.len()).into_string().to_ascii_lower();
                 { // New scope so that command_map will go out of scope after we use it
