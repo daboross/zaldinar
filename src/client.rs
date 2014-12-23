@@ -155,23 +155,18 @@ impl Dispatch {
         let message_event = &mut interface::IrcMessageEvent::new(&self.interface, message.command.as_slice(), shared_args.as_slice(), shared_mask, shared_ctcp, shared_channel);
 
         // Catch all listeners
-        {
-            for listener in plugins.catch_all.iter() {
-                listener.call((message_event,));
-            }
+        for listener in plugins.catch_all.iter() {
+            listener.call((message_event,));
         }
 
         // Raw listeners
-        { // New scope so that listener_map will go out of scope after we use it
-            let listeners = plugins.raw_listeners.get(&message.command.to_ascii_lower());
-            match listeners {
-                Some(list) => {
-                    for listener in list.iter() {
-                        listener.call((message_event,));
-                    }
-                },
-                None => (),
-            }
+        match plugins.raw_listeners.get(&message.command.to_ascii_lower()) {
+            Some(list) => {
+                for listener in list.iter() {
+                    listener.call((message_event,));
+                }
+            },
+            None => (),
         }
 
         if message.command.as_slice().eq_ignore_ascii_case("PRIVMSG") {
@@ -180,16 +175,14 @@ impl Dispatch {
             match message.ctcp {
                 Some(ref t) => {
                     let ctcp_event = interface::CtcpEvent::new(&self.interface, message.args[0].as_slice(), t.0.as_slice(), t.1.as_slice(), shared_mask);
-                    { // New scope so that ctcp_map will go out of scope after we use it
-                        let ctcp_listeners = plugins.ctcp_listeners.get(&ctcp_event.command.to_ascii_lower());
-                        match ctcp_listeners {
-                            Some(list) => {
-                                for ctcp_listener in list.iter() {
-                                    ctcp_listener.call((&ctcp_event,));
-                                }
-                            },
-                            None => (),
-                        }
+
+                    match plugins.ctcp_listeners.get(&ctcp_event.command.to_ascii_lower()) {
+                        Some(list) => {
+                            for ctcp_listener in list.iter() {
+                                ctcp_listener.call((&ctcp_event,));
+                            }
+                        },
+                        None => (),
                     }
                 },
                 None => (),
@@ -201,18 +194,15 @@ impl Dispatch {
 
             if shared_args[1].starts_with(prefix.as_slice()) {
                 let command = shared_args[1].slice_from(prefix.len()).into_string().to_ascii_lower();
-                { // New scope so that command_map will go out of scope after we use it
-                    let commands = plugins.commands.get(&command);
-                    match commands {
-                        Some(list) => {
-                            let args = shared_args.slice_from(2);
-                            let command_event = &mut interface::CommandEvent::new(&self.interface, channel, args, shared_mask);
-                            for command in list.iter() {
-                                command.call((command_event,));
-                            }
-                        },
-                        None => (),
-                    }
+                match plugins.commands.get(&command) {
+                    Some(list) => {
+                        let args = shared_args.slice_from(2);
+                        let command_event = &mut interface::CommandEvent::new(&self.interface, channel, args, shared_mask);
+                        for command in list.iter() {
+                            command.call((command_event,));
+                        }
+                    },
+                    None => (),
                 }
             }
         }
