@@ -22,6 +22,7 @@ pub struct ClientConfiguration {
     pub channels: Vec<String>,
     pub command_prefix: String,
     pub admins: Vec<String>,
+    pub on_connect: Vec<String>,
 }
 
 impl ClientConfiguration {

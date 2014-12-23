@@ -14,5 +14,6 @@
         "account": "",
         "password": "",
         "enabled": false
-    }
+    },
+    "on_connect": []
 }

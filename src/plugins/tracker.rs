@@ -2,6 +2,10 @@ use client::PluginRegister;
 use interface::IrcMessageEvent;
 
 fn on_connect(event: &IrcMessageEvent) {
+    for command in event.client.on_connect.iter() {
+        event.client.send_command(command.clone(), &[]);
+    }
+
     let nickserv = &event.client.nickserv;
     if nickserv.enabled {
         if nickserv.account.len() != 0 {
