@@ -25,6 +25,7 @@ pub mod interface;
 pub mod client;
 mod irc;
 mod plugins;
+mod dispatch;
 
 pub fn get_version() -> String {
     return format!("{}.{}.{}{}",
