@@ -14,7 +14,7 @@ pub enum InitializationError {
 
 impl InitializationError {
     pub fn new(detail: &str) -> InitializationError {
-        InitializationError::Other(detail.into_string())
+        InitializationError::Other(detail.to_string())
     }
 
     pub fn from_string(detail: String) -> InitializationError {

@@ -16,7 +16,7 @@ fn on_connect(event: &IrcMessageEvent) {
     }
 
     for channel in event.client.channels.iter() {
-        event.client.send_command("JOIN".into_string(), &[channel.as_slice()]);
+        event.client.send_command("JOIN".to_string(), &[channel.as_slice()]);
     }
     event.client.state.write().channels.push_all(event.client.channels.iter().map(|s: &String| s.clone()).collect::<Vec<String>>().as_slice());
 }
@@ -27,7 +27,7 @@ fn on_join(event: &IrcMessageEvent) {
     }
     match event.mask.nick() {
         Some(nick) => if nick == event.client.state.read().nick {
-            event.client.state.write().channels.push(event.channel.unwrap().into_string());
+            event.client.state.write().channels.push(event.channel.unwrap().to_string());
         },
         None => (),
     }
@@ -36,7 +36,7 @@ fn on_join(event: &IrcMessageEvent) {
 fn on_nick(event: &IrcMessageEvent) {
     match event.mask.nick() {
         Some(nick) => if nick == event.client.state.read().nick {
-            event.client.state.write().nick = event.args[0].into_string();
+            event.client.state.write().nick = event.args[0].to_string();
         },
         None => (),
     }

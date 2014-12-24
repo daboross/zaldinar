@@ -31,7 +31,7 @@ impl PluginRegister {
 
     pub fn register_irc<T: Fn(&interface::IrcMessageEvent) + Send + Sync>(&mut self, irc_command: &str, f: T) {
         let boxed = box f as Box<Fn(&interface::IrcMessageEvent) + Send + Sync>;
-        let command_string = irc_command.into_string().to_ascii_lower();
+        let command_string = irc_command.to_string().to_ascii_lower();
 
         // I can't use a match here because then I would be borrowing listener_map mutably twice:
         // Once for the match statement, and a second time inside the None branch
@@ -44,7 +44,7 @@ impl PluginRegister {
 
     pub fn register_ctcp<T: Fn(&interface::CtcpEvent) + Send + Sync>(&mut self, ctcp_command: &str, f: T) {
         let boxed = box f as Box<Fn(&interface::CtcpEvent) + Send + Sync>;
-        let command_string = ctcp_command.into_string().to_ascii_lower();
+        let command_string = ctcp_command.to_string().to_ascii_lower();
 
         // I can't use a match here because then I would be borrowing listener_map mutably twice:
         // Once for the match statement, and a second time inside the None branch
@@ -62,7 +62,7 @@ impl PluginRegister {
 
     pub fn register_command<T: Fn(&interface::CommandEvent) + Send + Sync>(&mut self, command: &str, f: T) {
         let boxed = box f as Box<Fn(&interface::CommandEvent) + Send + Sync>;
-        let command_lower = command.into_string().to_ascii_lower();
+        let command_lower = command.to_string().to_ascii_lower();
 
         // I can't use a match here because then I would be borrowing the command_map mutably twice:
         // Once for the match statement, and a second time inside the None branch
@@ -149,7 +149,7 @@ impl Dispatch {
 
         // PING
         if message.command.as_slice().eq_ignore_ascii_case("PING") {
-            self.interface.send_command("PONG".into_string(), shared_args.as_slice());
+            self.interface.send_command("PONG".to_string(), shared_args.as_slice());
         }
 
         let message_event = &mut interface::IrcMessageEvent::new(&self.interface, message.command.as_slice(), shared_args.as_slice(), shared_mask, shared_ctcp, shared_channel);
@@ -274,8 +274,8 @@ pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: Plugin
 
     // Send NICK and USER, the initial IRC commands. Because an IrcConnection hasn't been created to receive these yet,
     //  they will just go on hold and get sent as soon as the IrcConnection connects.
-    interface.send_command("NICK".into_string(), &[client.nick.as_slice()]);
-    interface.send_command("USER".into_string(), &[client.user.as_slice(), "0", "*", format!(":{}", client.real_name).as_slice()]);
+    interface.send_command("NICK".to_string(), &[client.nick.as_slice()]);
+    interface.send_command("USER".to_string(), &[client.user.as_slice(), "0", "*", format!(":{}", client.real_name).as_slice()]);
 
     try!(irc::IrcConnection::create(client.address.as_slice(), connection_data_out, connection_data_in, logger.clone(), client.clone()));
 

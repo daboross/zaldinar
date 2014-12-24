@@ -46,7 +46,7 @@ impl IrcConnection {
             Some(ref v) => v.clone(),
             None => return Err(InitializationError::new("Can't start reading thread without data_out")),
         };
-        thread::Builder::new().name("socket_reading_task".into_string()).spawn(move || {
+        thread::Builder::new().name("socket_reading_task".to_string()).spawn(move || {
             fern_macros::init_thread_logger(logger);
             let mut reader = io::BufferedReader::new(self.socket.clone());
             loop {
@@ -73,38 +73,38 @@ impl IrcConnection {
                     let ctcp_command;
                     let mut ctcp_message;
                     if args.len() > 2 {
-                        ctcp_command = args[1].slice_from(2).into_string(); // to remove :\x01
+                        ctcp_command = args[1].slice_from(2).to_string(); // to remove :\x01
                         ctcp_message = args.slice_from(2).connect(" ");
                         ctcp_message.pop(); // to remove last \x01
                     } else {
-                        ctcp_command = args[1].slice(2, args[1].len() - 1).into_string(); // remove starting :\x01 and ending \x01
-                        ctcp_message = "".into_string();
+                        ctcp_command = args[1].slice(2, args[1].len() - 1).to_string(); // remove starting :\x01 and ending \x01
+                        ctcp_message = "".to_string();
                     }
                     Some((ctcp_command, ctcp_message))
                 } else {
                     None
                 };
                 let channel = match command {
-                    "353" => Some(args[2].into_string()),
-                    "JOIN" | "PART" | "KICK" | "TOPIC" | "NOTICE" => Some(args[0].into_string()),
+                    "353" => Some(args[2].to_string()),
+                    "JOIN" | "PART" | "KICK" | "TOPIC" | "NOTICE" => Some(args[0].to_string()),
                     "PRIVMSG" => {
                         // This checks if the nick is the same as our bot's nick
                         // If the channel is our bots nick, and the sender has a nick, the message is a private message.
                         // For the sake of plugins trying to reply,  we set the channel to the sender's nick instead of our nick.
                         if args[0] == self.client.state.read().nick.as_slice() {
                             match possible_mask.nick() {
-                                Some(v) => Some(v.into_string()),
-                                None => Some(args[0].into_string()),
+                                Some(v) => Some(v.to_string()),
+                                None => Some(args[0].to_string()),
                             }
                         } else {
-                            Some(args[0].into_string())
+                            Some(args[0].to_string())
                         }
                     },
                     _ => None,
                 };
                 // TODO: Change channel to sender nick if channel is our current nick.
-                let args_owned: Vec<String> = args.iter().map(|s: &&str| s.into_string()).collect();
-                let message = IrcMessage::new(command.into_string(), args_owned, possible_mask, ctcp, channel);
+                let args_owned: Vec<String> = args.iter().map(|s: &&str| s.to_string()).collect();
+                let message = IrcMessage::new(command.to_string(), args_owned, possible_mask, ctcp, channel);
                 data_out.send(Some(message));
             }
         }).detach();
@@ -115,7 +115,7 @@ impl IrcConnection {
         if (&self.data_in).is_none() {
             return Err(InitializationError::new("Can't start writing thread without data_in"));
         }
-        thread::Builder::new().name("socket_writing_task".into_string()).spawn(move || {
+        thread::Builder::new().name("socket_writing_task".to_string()).spawn(move || {
             fern_macros::init_thread_logger(logger);
             let data_in = self.data_in.expect("Already confirmed above");
             loop {
@@ -186,17 +186,17 @@ impl IrcMask {
     fn parse_from_str(mask: &str) -> IrcMask {
         let mask_split = mask.splitn(1, '!').collect::<Vec<&str>>();
         if mask_split.len() < 2 {
-            return IrcMask::new_mask_only(mask.into_string());
+            return IrcMask::new_mask_only(mask.to_string());
         }
         let nick = mask_split[0];
         let user_and_host = mask_split[1];
         let user_and_host_split = user_and_host.splitn(1, '@').collect::<Vec<&str>>();
         if user_and_host_split.len() < 2 {
-            return IrcMask::new_mask_only(mask.into_string());
+            return IrcMask::new_mask_only(mask.to_string());
         }
         let user = user_and_host_split[0];
         let host = user_and_host_split[1];
-        return IrcMask::new_full(mask.into_string(), nick.into_string(), user.into_string(), host.into_string());
+        return IrcMask::new_full(mask.to_string(), nick.to_string(), user.to_string(), host.to_string());
     }
 
     pub fn nick(&self) -> Option<&str> {
