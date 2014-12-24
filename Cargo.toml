@@ -5,8 +5,8 @@ version = "0.1.1-dev"
 authors = ["Dabo Ross <daboross@daboross.net>"]
 
 [dependencies]
-chrono = "0.1.*"
-fern = "0.1.*"
-fern_macros = "0.1.*"
-rustc-serialize = "0.1.*"
-regex = "0.1.*"
+chrono = "0.1.5"
+fern = "0.1.2"
+fern_macros = "0.1.0"
+rustc-serialize = "0.1.5"
+regex = "0.1.4"
