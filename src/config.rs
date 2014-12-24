@@ -1,9 +1,9 @@
 use std::io;
-use serialize::json;
+use rustc_serialize::json;
 
 use errors::InitializationError;
 
-#[deriving(Decodable)]
+#[deriving(RustcDecodable)]
 pub struct NickServConf {
     pub name: String,
     pub command: String,
@@ -12,7 +12,7 @@ pub struct NickServConf {
     pub enabled: bool,
 }
 
-#[deriving(Decodable)]
+#[deriving(RustcDecodable)]
 pub struct ClientConfiguration {
     pub nick: String,
     pub user: String,

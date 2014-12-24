@@ -1,7 +1,7 @@
 use std::fmt;
 use std::error;
 use std::io;
-use serialize::json;
+use rustc_serialize::json;
 use regex;
 
 

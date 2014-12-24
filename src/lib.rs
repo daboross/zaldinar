@@ -1,7 +1,7 @@
 #![feature(phase)]
 #![feature(unboxed_closures)]
 
-extern crate serialize;
+extern crate "rustc-serialize" as rustc_serialize;
 extern crate chrono;
 extern crate regex;
 extern crate fern;
