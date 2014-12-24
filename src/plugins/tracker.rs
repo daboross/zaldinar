@@ -25,20 +25,18 @@ fn on_join(event: &IrcMessageEvent) {
     if event.channel.is_none() {
         return;
     }
-    match event.mask.nick() {
-        Some(nick) => if nick == event.client.state.read().nick {
+    if let Some(nick) = event.mask.nick() {
+        if nick == event.client.state.read().nick {
             event.client.state.write().channels.push(event.channel.unwrap().to_string());
-        },
-        None => (),
+        }
     }
 }
 
 fn on_nick(event: &IrcMessageEvent) {
-    match event.mask.nick() {
-        Some(nick) => if nick == event.client.state.read().nick {
+    if let Some(nick) = event.mask.nick() {
+        if nick == event.client.state.read().nick {
             event.client.state.write().nick = event.args[0].to_string();
-        },
-        None => (),
+        }
     }
 }
 

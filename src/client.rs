@@ -160,33 +160,23 @@ impl Dispatch {
         }
 
         // Raw listeners
-        match plugins.raw_listeners.get(&message.command.to_ascii_lower()) {
-            Some(list) => {
-                for listener in list.iter() {
-                    listener.call((message_event,));
-                }
-            },
-            None => (),
+        if let Some(list) = plugins.raw_listeners.get(&message.command.to_ascii_lower()) {
+            for listener in list.iter() {
+                listener.call((message_event,));
+            }
         }
 
         if message.command.as_slice().eq_ignore_ascii_case("PRIVMSG") {
             let channel = shared_channel.unwrap(); // Always exists for PRIVMSG
 
             // CTCP
-            match message.ctcp {
-                Some(ref t) => {
+            if let Some(ref t) = message.ctcp {
+                if let Some(list) = plugins.ctcp_listeners.get(&message.args[0].to_ascii_lower()) {
                     let ctcp_event = interface::CtcpEvent::new(&self.interface, message.args[0].as_slice(), t.0.as_slice(), t.1.as_slice(), shared_mask);
-
-                    match plugins.ctcp_listeners.get(&ctcp_event.command.to_ascii_lower()) {
-                        Some(list) => {
-                            for ctcp_listener in list.iter() {
-                                ctcp_listener.call((&ctcp_event,));
-                            }
-                        },
-                        None => (),
+                    for ctcp_listener in list.iter() {
+                        ctcp_listener.call((&ctcp_event,));
                     }
-                },
-                None => (),
+                }
             }
 
             // Commands
@@ -200,26 +190,18 @@ impl Dispatch {
             } else {
                 // This checks for someone typing commands like 'BotName, command_name args'
                 // We store whether or not a command was matched in a variable so that we can use it below.
-                // We can't just put the below in one of the None => branches, because there are multiple instances of them.
-                let command_matched = match regex!(r"^:([^\s]+?)[:;,]?\s+(.+)$").captures(shared_args.slice_from(1).connect(" ").as_slice()) {
-                    Some(captures) => {
-                        if captures.at(1) == Some(self.state.state.read().nick.as_slice()) {
-                            match captures.at(2) {
-                                Some(args_str) => {
-                                    let split = args_str.split(' ').collect::<Vec<&str>>();
-                                    let command = split[0];
-                                    let args = split.slice_from(1);
-                                    self.dispatch_command(&plugins, command, channel, args, shared_mask);
-                                    true
-                                },
-                                None => false,
-                            }
-                        } else {
-                            false
+                let mut command_matched = false;
+                if let Some(captures) = regex!(r"^:([^\s]+?)[:;,]?\s+(.+)$").captures(shared_args.slice_from(1).connect(" ").as_slice()) {
+                    if captures.at(1) == Some(self.state.state.read().nick.as_slice()) {
+                        if let Some(args_str) = captures.at(2) {
+                            let split = args_str.split(' ').collect::<Vec<&str>>();
+                            let command = split[0];
+                            let args = split.slice_from(1);
+                            self.dispatch_command(&plugins, command, channel, args, shared_mask);
+                            command_matched = true;
                         }
-                    },
-                    None => false,
-                };
+                    }
+                }
 
                 // This checks for commands in a private message, where a prefix isn't required
                 // People can just say 'command args' in a private message.
@@ -234,14 +216,11 @@ impl Dispatch {
     }
 
     fn dispatch_command(&self, plugins: &sync::RWLockReadGuard<PluginRegister>, command: &str, channel: &str, args: &[&str], mask: &interface::IrcMask) {
-        match plugins.commands.get(&command.to_ascii_lower()) {
-            Some(list) => {
-                let command_event = &mut interface::CommandEvent::new(&self.interface, channel, args, mask);
-                for closure in list.iter() {
-                    closure.call((command_event,));
-                }
-            },
-            None => (),
+        if let Some(list) = plugins.commands.get(&command.to_ascii_lower()) {
+            let command_event = &mut interface::CommandEvent::new(&self.interface, channel, args, mask);
+            for closure in list.iter() {
+                closure.call((command_event,));
+            }
         }
     }
 }
