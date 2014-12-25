@@ -1,7 +1,7 @@
 use client::PluginRegister;
-use interface::IrcMessageEvent;
+use events::MessageEvent;
 
-fn on_connect(event: &IrcMessageEvent) {
+fn on_connect(event: &MessageEvent) {
     for command in event.client.on_connect.iter() {
         event.client.send_command(command.clone(), &[]);
     }
@@ -21,18 +21,18 @@ fn on_connect(event: &IrcMessageEvent) {
     event.client.state.write().channels.push_all(event.client.channels.iter().map(|s: &String| s.clone()).collect::<Vec<String>>().as_slice());
 }
 
-fn on_join(event: &IrcMessageEvent) {
+fn on_join(event: &MessageEvent) {
     if event.channel.is_none() {
         return;
     }
     if let Some(nick) = event.mask.nick() {
         if nick == event.client.state.read().nick {
-            event.client.state.write().channels.push(event.channel.unwrap().to_string());
+            event.client.state.write().channels.push(event.channel().unwrap().to_string());
         }
     }
 }
 
-fn on_nick(event: &IrcMessageEvent) {
+fn on_nick(event: &MessageEvent) {
     if let Some(nick) = event.mask.nick() {
         if nick == event.client.state.read().nick {
             event.client.state.write().nick = event.args[0].to_string();

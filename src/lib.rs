@@ -10,9 +10,9 @@ extern crate fern;
 
 pub use errors::InitializationError;
 pub use config::ClientConfiguration;
-pub use interface::{
-    IrcInterface,
-    IrcMessageEvent,
+pub use interface::IrcInterface;
+pub use events::{
+    MessageEvent,
     CommandEvent,
     CtcpEvent,
 };
@@ -26,6 +26,7 @@ pub mod client;
 mod irc;
 mod plugins;
 mod dispatch;
+mod events;
 
 pub fn get_version() -> String {
     return format!("{}.{}.{}{}",

@@ -12,12 +12,17 @@ use interface;
 use config;
 use dispatch;
 use irc;
+use events;
+
+pub type CommandListener = Box<Fn(&events::CommandEvent) + Sync + Send>;
+pub type CtcpListener = Box<Fn(&events::CtcpEvent) + Sync + Send>;
+pub type MessageListener = Box<Fn(&events::MessageEvent) + Sync + Send>;
 
 pub struct PluginRegister {
-    pub commands: collections::HashMap<String, Vec<Box<Fn(&interface::CommandEvent) + Send + Sync>>>,
-    pub ctcp_listeners: collections::HashMap<String, Vec<Box<Fn(&interface::CtcpEvent) + Send + Sync>>>,
-    pub raw_listeners: collections::HashMap<String, Vec<Box<Fn(&interface::IrcMessageEvent) + Send + Sync>>>,
-    pub catch_all: Vec<Box<Fn(&interface::IrcMessageEvent) + Send + Sync>>,
+    pub commands: collections::HashMap<String, Vec<sync::Arc<CommandListener>>>,
+    pub ctcp_listeners: collections::HashMap<String, Vec<sync::Arc<CtcpListener>>>,
+    pub raw_listeners: collections::HashMap<String, Vec<sync::Arc<MessageListener>>>,
+    pub catch_all: Vec<sync::Arc<MessageListener>>,
 }
 
 impl PluginRegister {
@@ -30,8 +35,8 @@ impl PluginRegister {
         }
     }
 
-    pub fn register_irc<T: Fn(&interface::IrcMessageEvent) + Send + Sync>(&mut self, irc_command: &str, f: T) {
-        let boxed = box f as Box<Fn(&interface::IrcMessageEvent) + Send + Sync>;
+    pub fn register_irc<T: Fn(&events::MessageEvent) + Send + Sync>(&mut self, irc_command: &str, f: T) {
+        let boxed = sync::Arc::new(box f as MessageListener);
         let command_string = irc_command.to_string().to_ascii_lower();
 
         // I can't use a match here because then I would be borrowing listener_map mutably twice:
@@ -43,8 +48,8 @@ impl PluginRegister {
         }
     }
 
-    pub fn register_ctcp<T: Fn(&interface::CtcpEvent) + Send + Sync>(&mut self, ctcp_command: &str, f: T) {
-        let boxed = box f as Box<Fn(&interface::CtcpEvent) + Send + Sync>;
+    pub fn register_ctcp<T: Fn(&events::CtcpEvent) + Send + Sync>(&mut self, ctcp_command: &str, f: T) {
+        let boxed = sync::Arc::new(box f as CtcpListener);
         let command_string = ctcp_command.to_string().to_ascii_lower();
 
         // I can't use a match here because then I would be borrowing listener_map mutably twice:
@@ -57,12 +62,12 @@ impl PluginRegister {
     }
 
 
-    pub fn register_catch_all<T: Fn(&interface::IrcMessageEvent) + Send + Sync>(&mut self, f: T) {
-        self.catch_all.push(box f as Box<Fn(&interface::IrcMessageEvent) + Send + Sync>);
+    pub fn register_catch_all<T: Fn(&events::MessageEvent) + Send + Sync>(&mut self, f: T) {
+        self.catch_all.push(sync::Arc::new(box f as MessageListener));
     }
 
-    pub fn register_command<T: Fn(&interface::CommandEvent) + Send + Sync>(&mut self, command: &str, f: T) {
-        let boxed = box f as Box<Fn(&interface::CommandEvent) + Send + Sync>;
+    pub fn register_command<T: Fn(&events::CommandEvent) + Send + Sync>(&mut self, command: &str, f: T) {
+        let boxed = sync::Arc::new(box f as CommandListener);
         let command_lower = command.to_string().to_ascii_lower();
 
         // I can't use a match here because then I would be borrowing the command_map mutably twice:
@@ -147,6 +152,9 @@ pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: Plugin
     try!(irc::IrcConnection::create(client.address.as_slice(), connection_data_out, connection_data_in, logger.clone(), client.clone()));
 
     let dispatch = dispatch::Dispatch::new(interface, client, data_in);
+
+    // Start the worker threads for plugin execution
+    dispatch.start_workers(logger);
 
     // This statement will run until the bot exists
     dispatch.start_dispatch_loop();
