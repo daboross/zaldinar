@@ -1,7 +1,3 @@
-use std::io::timer;
-use std::time::duration;
-use std::rand;
-
 use client::PluginRegister;
 use events::CommandEvent;
 
