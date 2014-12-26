@@ -144,8 +144,11 @@ pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: Plugin
     let interface = try!(interface::IrcInterface::new(data_out, client.clone()));
 
 
-    // Send NICK and USER, the initial IRC commands. Because an IrcConnection hasn't been created to receive these yet,
+    // Send PASS, NICK and USER, the initial IRC commands. Because an IrcConnection hasn't been created to receive these yet,
     //  they will just go on hold and get sent as soon as the IrcConnection connects.
+    if let Some(ref pass) = client.password {
+        interface.send_command("PASS".to_string(), &[pass.as_slice()]);
+    }
     interface.send_command("NICK".to_string(), &[client.nick.as_slice()]);
     interface.send_command("USER".to_string(), &[client.user.as_slice(), "0", "*", format!(":{}", client.real_name).as_slice()]);
 

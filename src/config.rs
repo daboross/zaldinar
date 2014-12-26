@@ -23,6 +23,7 @@ pub struct ClientConfiguration {
     pub command_prefix: String,
     pub admins: Vec<String>,
     pub on_connect: Vec<String>,
+    pub password: Option<String>,
 }
 
 impl ClientConfiguration {
