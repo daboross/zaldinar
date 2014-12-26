@@ -130,7 +130,7 @@ pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: Plugin
         format: box |msg: &str, level: &fern::Level| {
             return format!("[{}][{}] {}", chrono::Local::now().format("%Y-%m-%d][%H:%M:%S"), level, msg);
         },
-        output: vec![fern::OutputConfig::Stdout, fern::OutputConfig::File(Path::new("zaldinar.log"))],
+        output: vec![fern::OutputConfig::Stdout, fern::OutputConfig::File(Path::new(config.log_file.as_slice()))],
         level: fern::Level::Debug,
     }.into_logger()));
 

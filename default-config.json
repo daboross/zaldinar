@@ -15,5 +15,6 @@
         "password": "",
         "enabled": false
     },
-    "on_connect": []
+    "on_connect": [],
+    "log_file": "zaldinar.log"
 }

@@ -24,6 +24,7 @@ pub struct ClientConfiguration {
     pub admins: Vec<String>,
     pub on_connect: Vec<String>,
     pub password: Option<String>,
+    pub log_file: String,
 }
 
 impl ClientConfiguration {
