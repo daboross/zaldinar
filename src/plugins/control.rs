@@ -25,6 +25,9 @@ fn quit(event: &CommandEvent) {
 }
 
 fn raw(event: &CommandEvent) {
+    if !event.client.is_admin(event) {
+        return;
+    }
     event.client.send_raw(event.args.connect(" "));
     event.client.send_message(event.channel(), "Sent raw message.");
 }
