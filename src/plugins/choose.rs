@@ -36,7 +36,7 @@ fn rand(event: &CommandEvent) {
         },
     };
     let mut rng = rand::task_rng();
-    event.client.send_message(event.channel(), format!("{}", rng.gen_range(1, max + 1)).as_slice())
+    event.client.send_message(event.channel(), format!("{}", rng.gen_range(0, max) + 1).as_slice())
 }
 
 pub fn register(register: &mut PluginRegister) {
