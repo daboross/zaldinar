@@ -24,7 +24,23 @@ fn coin(event: &CommandEvent) {
     event.client.send_message(event.channel(), message.as_slice());
 }
 
+fn rand(event: &CommandEvent) {
+    if event.args.len() != 1 {
+        event.client.send_message(event.channel(), "Please specify exactly one argument.");
+    }
+    let max = match event.args[0].parse::<u64>() {
+        Some(v) => v,
+        None => {
+            event.client.send_message(event.channel(), format!("Invalid number '{}'", event.args[0]).as_slice());
+            return;
+        },
+    };
+    let mut rng = rand::task_rng();
+    event.client.send_message(event.channel(), format!("{}", rng.gen_range(1, max + 1)).as_slice())
+}
+
 pub fn register(register: &mut PluginRegister) {
     register.register_command("choose", choose);
     register.register_command("coin", coin);
+    register.register_command("rand", rand);
 }
