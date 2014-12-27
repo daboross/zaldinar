@@ -13,13 +13,13 @@ static IRC_COLOR_REGEX: regex::Regex = regex!("(\x03(\\d+,\\d+|\\d)|[\x0f\x02\x1
 
 pub struct IrcConnection {
     socket: io::TcpStream,
-    data_out: Option<Sender<Option<IrcMessage>>>,
+    data_out: Option<Sender<IrcMessage>>,
     data_in: Option<Receiver<Option<String>>>,
     client: sync::Arc<client::Client>,
 }
 
 impl IrcConnection {
-    pub fn create(addr: &str, data_out: Sender<Option<IrcMessage>>, data_in: Receiver<Option<String>>, logger: sync::Arc<Box<fern::Logger + Sync + Send>>, client: sync::Arc<client::Client>) -> Result<(), io::IoError> {
+    pub fn create(addr: &str, data_out: Sender<IrcMessage>, data_in: Receiver<Option<String>>, logger: fern::ArcLogger, client: sync::Arc<client::Client>) -> Result<(), io::IoError> {
         let socket = try!(io::TcpStream::connect(addr));
         let connection_receiving = IrcConnection {
             socket: socket.clone(),
@@ -41,7 +41,7 @@ impl IrcConnection {
         return Ok(());
     }
 
-    fn spawn_reading_thread(self, logger: sync::Arc<Box<fern::Logger + Sync + Send>>) -> Result<(), InitializationError> {
+    fn spawn_reading_thread(self, logger: fern::ArcLogger) -> Result<(), InitializationError> {
         let data_out = match self.data_out {
             Some(ref v) => v.clone(),
             None => return Err(InitializationError::new("Can't start reading thread without data_out")),
@@ -57,7 +57,6 @@ impl IrcConnection {
                             io::IoErrorKind::EndOfFile => (),
                             _ => severe!("Error in reading thread: {}", e),
                         }
-                        data_out.send(None);
                         break;
                     },
                 };
@@ -105,13 +104,13 @@ impl IrcConnection {
                 // TODO: Change channel to sender nick if channel is our current nick.
                 let args_owned: Vec<String> = args.iter().map(|s: &&str| s.to_string()).collect();
                 let message = IrcMessage::new(command.to_string(), args_owned, possible_mask, ctcp, channel);
-                data_out.send(Some(message));
+                data_out.send(message);
             }
         }).detach();
         return Ok(());
     }
 
-    fn spawn_writing_thread(mut self, logger: sync::Arc<Box<fern::Logger + Sync + Send>>) -> Result<(), InitializationError> {
+    fn spawn_writing_thread(mut self, logger: fern::ArcLogger) -> Result<(), InitializationError> {
         if (&self.data_in).is_none() {
             return Err(InitializationError::new("Can't start writing thread without data_in"));
         }
@@ -119,9 +118,9 @@ impl IrcConnection {
             fern_macros::init_thread_logger(logger);
             let data_in = self.data_in.expect("Already confirmed above");
             loop {
-                let command = match data_in.recv() {
-                    Some(v) => v,
-                    None => break,
+                let command = match data_in.recv_opt() {
+                    Ok(Some(v)) => v,
+                    Ok(None) | Err(()) => break,
                 };
                 if !command.starts_with("PONG ") {
                     info!(">>> {}", command);

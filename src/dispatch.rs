@@ -12,12 +12,12 @@ use fern_macros;
 pub struct Dispatch {
     interface: interface::IrcInterface,
     state: sync::Arc<client::Client>,
-    data_in: Receiver<Option<irc::IrcMessage>>,
+    data_in: Receiver<irc::IrcMessage>,
     workers_out: Sender<PluginTask>,
 }
 
 impl Dispatch {
-    pub fn new(interface: interface::IrcInterface, state: sync::Arc<client::Client>, data_in: Receiver<Option<irc::IrcMessage>>, logger: fern::ArcLogger) -> Dispatch {
+    pub fn new(interface: interface::IrcInterface, state: sync::Arc<client::Client>, data_in: Receiver<irc::IrcMessage>, logger: fern::ArcLogger) -> Dispatch {
         let (dispatch_out, workers_in) = channel();
         let workers_in_arc = sync::Arc::new(sync::Mutex::new(workers_in));
         for _ in range::<u8>(0, 4) {
@@ -32,14 +32,21 @@ impl Dispatch {
             workers_out: dispatch_out,
         };
     }
-    pub fn start_dispatch_loop(self) {
+
+    pub fn dispatch_loop(self) {
         loop {
-            let message = match self.data_in.recv() {
-                Some(v) => v,
-                None => break,
+            let message = match self.data_in.recv_opt() {
+                Ok(v) => v,
+                Err(()) => break,
             };
             self.process_message(&message);
         }
+    }
+
+    pub fn start_dispatch_loop(self) -> thread::Result<()>{
+        return thread::Builder::new().name("dispatch".to_string()).spawn(move || {
+            self.dispatch_loop();
+        }).join();
     }
 
     // Noting: This has to be a separate method from spawn_dispatch_thread, so that we can name an 'a lifetime.

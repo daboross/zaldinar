@@ -70,6 +70,10 @@ impl IrcInterface {
             Some(m) => format!("QUIT :{}", m),
             None => format!("QUIT"),
         };
+        {
+            let mut state = self.client.state.write();
+            state.done_executing = true;
+        }
         self.send_raw(line);
         self.data_out.send(None);
     }

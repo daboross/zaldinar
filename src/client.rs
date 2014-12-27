@@ -83,6 +83,8 @@ impl PluginRegister {
 pub struct ClientState {
     pub nick: String,
     pub channels: Vec<String>,
+    /// This is a marker for if the bot exited on purpose. The bot will restart if this is still true after exiting.
+    pub done_executing: bool,
 }
 
 impl ClientState {
@@ -90,6 +92,7 @@ impl ClientState {
         return ClientState {
             nick: nick,
             channels: Vec::new(),
+            done_executing: false,
         };
     }
 }
@@ -118,11 +121,11 @@ impl Deref<config::ClientConfiguration> for Client {
     }
 }
 
-pub fn run(config: config::ClientConfiguration) -> Result<(), InitializationError> {
+pub fn run(config: config::ClientConfiguration) -> Result<bool, InitializationError> {
     run_with_plugins(config, PluginRegister::new())
 }
 
-pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: PluginRegister) -> Result<(), InitializationError> {
+pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: PluginRegister) -> Result<bool, InitializationError> {
     // Register built-in plugins
     plugins::register_plugins(&mut plugins);
 
@@ -155,10 +158,17 @@ pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: Plugin
     try!(irc::IrcConnection::create(client.address.as_slice(), connection_data_out, connection_data_in, logger.clone(), client.clone()));
 
     // Create dispatch, and start the worker threads for plugin execution
-    let dispatch = dispatch::Dispatch::new(interface, client, data_in, logger);
+    let dispatch = dispatch::Dispatch::new(interface, client.clone(), data_in, logger);
 
     // This statement will run until the bot exists
-    dispatch.start_dispatch_loop();
+    if let Err(..) = dispatch.start_dispatch_loop() {
+        severe!("Dispatch loop panicked!");
+    }
 
-    return Ok(());
+    let done = {
+        let state = client.state.read();
+        state.done_executing
+    };
+
+    return Ok(done);
 }
