@@ -13,30 +13,25 @@ pub struct Dispatch {
     interface: interface::IrcInterface,
     state: sync::Arc<client::Client>,
     data_in: Receiver<Option<irc::IrcMessage>>,
-    workers_out: Sender<SendPlugin>,
-    workers_in: sync::Arc<sync::Mutex<Receiver<SendPlugin>>>,
+    workers_out: Sender<PluginTask>,
 }
 
 impl Dispatch {
-    pub fn new(interface: interface::IrcInterface, state: sync::Arc<client::Client>, data_in: Receiver<Option<irc::IrcMessage>>) -> Dispatch {
-        let (worker_out, worker_in) = channel();
+    pub fn new(interface: interface::IrcInterface, state: sync::Arc<client::Client>, data_in: Receiver<Option<irc::IrcMessage>>, logger: fern::ArcLogger) -> Dispatch {
+        let (dispatch_out, workers_in) = channel();
+        let workers_in_arc = sync::Arc::new(sync::Mutex::new(workers_in));
+        for _ in range::<u8>(0, 4) {
+            let executor = PluginExecutor::new(interface.clone(), workers_in_arc.clone(), logger.clone());
+            executor.start_worker_thread();
+        }
 
         return Dispatch {
             interface: interface,
             state: state,
             data_in: data_in,
-            workers_out: worker_out,
-            workers_in: sync::Arc::new(sync::Mutex::new(worker_in)),
+            workers_out: dispatch_out,
         };
     }
-
-    pub fn start_workers(&self, logger: fern::ArcLogger) {
-        for i in range::<u8>(0, 4) {
-            let executor = PluginExecutor::new(self.interface.clone(), self.workers_in.clone());
-            executor.start_worker_thread(logger.clone(), format!("plugin_executor_{}", i));
-        }
-    }
-
     pub fn start_dispatch_loop(self) {
         loop {
             let message = match self.data_in.recv() {
@@ -61,13 +56,13 @@ impl Dispatch {
 
         // Catch all listeners
         for listener in plugins.catch_all.iter() {
-            self.workers_out.send(SendPlugin::Message((listener.clone(), message_event.clone())));
+            self.execute(PluginTask::Message((listener.clone(), message_event.clone())));
         }
 
         // Raw listeners
         if let Some(list) = plugins.raw_listeners.get(&message.command.to_ascii_lower()) {
             for listener in list.iter() {
-                self.workers_out.send(SendPlugin::Message((listener.clone(), message_event.clone())));
+                self.execute(PluginTask::Message((listener.clone(), message_event.clone())));
             }
         }
 
@@ -78,7 +73,7 @@ impl Dispatch {
             if let Some(ctcp_event) = events::CtcpTransport::from_internal(message) {
                 if let Some(list) = plugins.ctcp_listeners.get(&message.args[0].to_ascii_lower()) {
                     for ctcp_listener in list.iter() {
-                        self.workers_out.send(SendPlugin::Ctcp((ctcp_listener.clone(), ctcp_event.clone())));
+                        self.execute(PluginTask::Ctcp((ctcp_listener.clone(), ctcp_event.clone())));
                     }
                 }
             }
@@ -123,29 +118,33 @@ impl Dispatch {
         if let Some(list) = plugins.commands.get(&command.to_ascii_lower()) {
             let command_event = events::CommandTransport::new(channel, args, mask);
             for closure in list.iter() {
-                self.workers_out.send(SendPlugin::Command((closure.clone(), command_event.clone())));
+                self.execute(PluginTask::Command((closure.clone(), command_event.clone())));
             }
         }
+    }
+
+    fn execute(&self, task: PluginTask) {
+        self.workers_out.send(task);
     }
 }
 
 /// TODO: Better name for this
-enum SendPlugin {
+enum PluginTask {
     Command((sync::Arc<client::CommandListener>, events::CommandTransport)),
     Message((sync::Arc<client::MessageListener>, events::MessageTransport)),
     Ctcp((sync::Arc<client::CtcpListener>, events::CtcpTransport)),
 }
 
-impl SendPlugin {
+impl PluginTask {
     fn execute(self, interface: &interface::IrcInterface) {
         match self {
-            SendPlugin::Command((closure, event)) => {
+            PluginTask::Command((closure, event)) => {
                 closure.call((&events::CommandEvent::new(interface, &event),));
             },
-            SendPlugin::Message((closure, event)) => {
+            PluginTask::Message((closure, event)) => {
                 closure.call((&events::MessageEvent::new(interface, &event),));
             },
-            SendPlugin::Ctcp((closure, event)) => {
+            PluginTask::Ctcp((closure, event)) => {
                 closure.call((&events::CtcpEvent::new(interface, &event),));
             },
         }
@@ -155,28 +154,52 @@ impl SendPlugin {
 
 struct PluginExecutor {
     interface: interface::IrcInterface,
-    data_in: sync::Arc<sync::Mutex<Receiver<SendPlugin>>>,
+    data_in: sync::Arc<sync::Mutex<Receiver<PluginTask>>>,
+    logger: fern::ArcLogger,
+    active: bool,
 }
 
 impl PluginExecutor {
-    fn new(interface: interface::IrcInterface, data_in: sync::Arc<sync::Mutex<Receiver<SendPlugin>>>) -> PluginExecutor {
+    fn new(interface: interface::IrcInterface, data_in: sync::Arc<sync::Mutex<Receiver<PluginTask>>>, logger: fern::ArcLogger) -> PluginExecutor {
         return PluginExecutor {
             interface: interface,
             data_in: data_in,
+            logger: logger,
+            active: true,
         };
     }
 
-    fn worker_loop(&self) {
+    fn worker_loop(&mut self) {
         loop {
-            let next = self.data_in.lock().recv();
-            next.execute(&self.interface);
+            let message = {
+                // Only lock jobs for the time it takes
+                // to get a job, not run it.
+                let lock = self.data_in.lock();
+                lock.recv_opt()
+            };
+            match message {
+                Ok(next) => next.execute(&self.interface),
+                Err(()) => {
+                    self.active = false;
+                    break;
+                }
+            };
         }
     }
 
-    fn start_worker_thread(self, logger: fern::ArcLogger, name: String) {
-        thread::Builder::new().name(name).spawn(move || {
-            fern_macros::init_thread_logger(logger);
+    fn start_worker_thread(mut self) {
+        thread::Builder::new().name("worker_thread".to_string()).spawn(move || {
+            fern_macros::init_thread_logger(self.logger.clone());
             self.worker_loop();
         }).detach();
+    }
+}
+
+impl Drop for PluginExecutor {
+    fn drop(&mut self) {
+        if self.active {
+            warning!("Worker panicked!");
+            PluginExecutor::new(self.interface.clone(), self.data_in.clone(), self.logger.clone()).start_worker_thread();
+        }
     }
 }

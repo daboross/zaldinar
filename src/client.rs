@@ -154,10 +154,8 @@ pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: Plugin
 
     try!(irc::IrcConnection::create(client.address.as_slice(), connection_data_out, connection_data_in, logger.clone(), client.clone()));
 
-    let dispatch = dispatch::Dispatch::new(interface, client, data_in);
-
-    // Start the worker threads for plugin execution
-    dispatch.start_workers(logger);
+    // Create dispatch, and start the worker threads for plugin execution
+    let dispatch = dispatch::Dispatch::new(interface, client, data_in, logger);
 
     // This statement will run until the bot exists
     dispatch.start_dispatch_loop();
