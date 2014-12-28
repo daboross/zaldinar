@@ -6,7 +6,7 @@ extern crate chrono;
 extern crate regex;
 extern crate fern;
 #[phase(plugin)] extern crate regex_macros;
-#[phase(plugin, link)] extern crate fern_macros;
+#[phase(plugin)] extern crate fern_macros;
 
 pub use errors::InitializationError;
 pub use config::ClientConfiguration;

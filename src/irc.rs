@@ -4,7 +4,6 @@ use std::thread;
 use std::sync;
 use regex;
 use fern;
-use fern_macros;
 
 use errors::InitializationError;
 use client;
@@ -47,7 +46,7 @@ impl IrcConnection {
             None => return Err(InitializationError::new("Can't start reading thread without data_out")),
         };
         thread::Builder::new().name("socket_reading_task".to_string()).spawn(move || {
-            fern_macros::init_thread_logger(logger);
+            fern::local::set_thread_logger(logger);
             let mut reader = io::BufferedReader::new(self.socket.clone());
             loop {
                 let whole_input = match reader.read_line() {
@@ -115,7 +114,7 @@ impl IrcConnection {
             return Err(InitializationError::new("Can't start writing thread without data_in"));
         }
         thread::Builder::new().name("socket_writing_task".to_string()).spawn(move || {
-            fern_macros::init_thread_logger(logger);
+            fern::local::set_thread_logger(logger);
             let data_in = self.data_in.expect("Already confirmed above");
             loop {
                 let command = match data_in.recv_opt() {

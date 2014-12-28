@@ -7,7 +7,6 @@ use irc;
 use client;
 use events;
 use fern;
-use fern_macros;
 
 pub struct Dispatch {
     interface: interface::IrcInterface,
@@ -196,7 +195,7 @@ impl PluginExecutor {
 
     fn start_worker_thread(mut self) {
         thread::Builder::new().name("worker_thread".to_string()).spawn(move || {
-            fern_macros::init_thread_logger(self.logger.clone());
+            fern::local::set_thread_logger(self.logger.clone());
             self.worker_loop();
         }).detach();
     }

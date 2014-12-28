@@ -4,7 +4,6 @@ use std::collections;
 
 use chrono;
 use fern;
-use fern_macros;
 
 use errors::InitializationError;
 use plugins;
@@ -137,7 +136,7 @@ pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: Plugin
         level: fern::Level::Debug,
     }.into_logger()));
 
-    fern_macros::init_thread_logger(logger.clone());
+    fern::local::set_thread_logger(logger.clone());
 
     let client = sync::Arc::new(Client::new(plugins, config));
 
