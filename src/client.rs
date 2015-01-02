@@ -36,7 +36,7 @@ impl PluginRegister {
 
     pub fn register_irc<T: Fn(&events::MessageEvent) + Send + Sync>(&mut self, irc_command: &str, f: T) {
         let boxed = sync::Arc::new(box f as MessageListener);
-        let command_string = irc_command.to_string().to_ascii_lower();
+        let command_string = irc_command.to_string().to_ascii_lowercase();
 
         // I can't use a match here because then I would be borrowing listener_map mutably twice:
         // Once for the match statement, and a second time inside the None branch
@@ -49,7 +49,7 @@ impl PluginRegister {
 
     pub fn register_ctcp<T: Fn(&events::CtcpEvent) + Send + Sync>(&mut self, ctcp_command: &str, f: T) {
         let boxed = sync::Arc::new(box f as CtcpListener);
-        let command_string = ctcp_command.to_string().to_ascii_lower();
+        let command_string = ctcp_command.to_string().to_ascii_lowercase();
 
         // I can't use a match here because then I would be borrowing listener_map mutably twice:
         // Once for the match statement, and a second time inside the None branch
@@ -67,7 +67,7 @@ impl PluginRegister {
 
     pub fn register_command<T: Fn(&events::CommandEvent) + Send + Sync>(&mut self, command: &str, f: T) {
         let boxed = sync::Arc::new(box f as CommandListener);
-        let command_lower = command.to_string().to_ascii_lower();
+        let command_lower = command.to_string().to_ascii_lowercase();
 
         // I can't use a match here because then I would be borrowing the command_map mutably twice:
         // Once for the match statement, and a second time inside the None branch
@@ -165,7 +165,7 @@ pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: Plugin
     }
 
     let done = {
-        let state = client.state.read();
+        let state = try!(client.state.read());
         state.done_executing
     };
 

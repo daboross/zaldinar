@@ -89,7 +89,7 @@ impl IrcConnection {
                         // This checks if the nick is the same as our bot's nick
                         // If the channel is our bots nick, and the sender has a nick, the message is a private message.
                         // For the sake of plugins trying to reply,  we set the channel to the sender's nick instead of our nick.
-                        if args[0] == self.client.state.read().nick.as_slice() {
+                        if args[0] == self.client.state.read().unwrap().nick.as_slice() {
                             match possible_mask.nick() {
                                 Some(v) => Some(v.to_string()),
                                 None => Some(args[0].to_string()),

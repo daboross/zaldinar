@@ -32,7 +32,7 @@ fn main() {
         println!("{}", getopts::usage(getopts::short_usage(program, opts).as_slice(), opts));
         return;
     } else if matches.opt_present("version") {
-        println!("zaldinar version {}", zaldinar::get_version());
+        println!("zaldinar version {}", zaldinar::VERSION);
         return;
     }
 

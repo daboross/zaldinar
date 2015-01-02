@@ -1,10 +1,10 @@
-use std::fmt;
 use std::error;
 use std::io;
+use std::sync;
 use rustc_serialize::json;
 use regex;
 
-
+#[deriving(Show)]
 pub enum InitializationError {
     Io(io::IoError),
     Regex(regex::Error),
@@ -40,13 +40,8 @@ impl error::FromError<json::DecoderError> for InitializationError {
     }
 }
 
-impl fmt::Show for InitializationError {
-    fn fmt(&self, formatter: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        match *self {
-            InitializationError::Io(ref v) => v.fmt(formatter),
-            InitializationError::Regex(ref v) => v.fmt(formatter),
-            InitializationError::Decoder(ref v) => v.fmt(formatter),
-            InitializationError::Other(ref v) => v.fmt(formatter),
-        }
+impl <T> error::FromError<sync::PoisonError<T>> for InitializationError {
+    fn from_error(error: sync::PoisonError<T>) -> InitializationError {
+        InitializationError::Other(format!("{}",error))
     }
 }

@@ -28,11 +28,4 @@ mod plugins;
 mod dispatch;
 mod events;
 
-pub fn get_version() -> String {
-    return format!("{}.{}.{}{}",
-        env!("CARGO_PKG_VERSION_MAJOR"),
-        env!("CARGO_PKG_VERSION_MINOR"),
-        env!("CARGO_PKG_VERSION_PATCH"),
-        option_env!("CARGO_PKG_VERSION_PRE").unwrap_or(""));
-}
-
+pub const VERSION: &'static str = env!("CARGO_PKG_VERSION");

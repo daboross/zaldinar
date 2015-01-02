@@ -51,7 +51,7 @@ impl Dispatch {
     // Noting: This has to be a separate method from spawn_dispatch_thread, so that we can name an 'a lifetime.
     // This allows us to give the new &str slices a specific lifetime, which I don't know a way to do without making a new function.
     fn process_message<'a>(&self, message: &'a irc::IrcMessage) {
-        let plugins = self.state.plugins.read();
+        let plugins = self.state.plugins.read().unwrap();
 
         // PING
         if message.command.as_slice().eq_ignore_ascii_case("PING") {
@@ -66,7 +66,7 @@ impl Dispatch {
         }
 
         // Raw listeners
-        if let Some(list) = plugins.raw_listeners.get(&message.command.to_ascii_lower()) {
+        if let Some(list) = plugins.raw_listeners.get(&message.command.to_ascii_lowercase()) {
             for listener in list.iter() {
                 self.execute(PluginTask::Message((listener.clone(), message_event.clone())));
             }
@@ -77,7 +77,7 @@ impl Dispatch {
 
             // CTCP
             if let Some(ctcp_event) = events::CtcpTransport::from_internal(message) {
-                if let Some(list) = plugins.ctcp_listeners.get(&message.args[0].to_ascii_lower()) {
+                if let Some(list) = plugins.ctcp_listeners.get(&message.args[0].to_ascii_lowercase()) {
                     for ctcp_listener in list.iter() {
                         self.execute(PluginTask::Ctcp((ctcp_listener.clone(), ctcp_event.clone())));
                     }
@@ -97,7 +97,11 @@ impl Dispatch {
                 // We store whether or not a command was matched in a variable so that we can use it below.
                 let mut command_matched = false;
                 if let Some(captures) = regex!(r"^:([^\s]+?)[:;,]?\s+(.+)$").captures(message.args.slice_from(1).connect(" ").as_slice()) {
-                    if captures.at(1) == Some(self.state.state.read().nick.as_slice()) {
+                    let same = {
+                        let state = self.state.state.read().unwrap();
+                        captures.at(1) == Some(state.nick.as_slice())
+                    };
+                    if same {
                         if let Some(args_str) = captures.at(2) {
                             let split = args_str.split(' ').collect::<Vec<&str>>();
                             let command = split[0];
@@ -121,7 +125,7 @@ impl Dispatch {
     }
 
     fn dispatch_command(&self, plugins: &sync::RWLockReadGuard<client::PluginRegister>, command: &str, channel: &str, args: Vec<String>, mask: &irc::IrcMask) {
-        if let Some(list) = plugins.commands.get(&command.to_ascii_lower()) {
+        if let Some(list) = plugins.commands.get(&command.to_ascii_lowercase()) {
             let command_event = events::CommandTransport::new(channel, args, mask);
             for closure in list.iter() {
                 self.execute(PluginTask::Command((closure.clone(), command_event.clone())));
@@ -180,7 +184,7 @@ impl PluginExecutor {
             let message = {
                 // Only lock jobs for the time it takes
                 // to get a job, not run it.
-                let lock = self.data_in.lock();
+                let lock = self.data_in.lock().unwrap();
                 lock.recv_opt()
             };
             match message {

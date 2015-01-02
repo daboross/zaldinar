@@ -2,13 +2,14 @@ use chrono::Local;
 
 use client::PluginRegister;
 use events::CtcpEvent;
-use get_version;
+use VERSION;
 
 fn ctcp_version(event: &CtcpEvent) {
     if !event.mask.has_nick() {
         return; // CTCP must come from a user
     }
-    let message = format!("zaldinar - by Dabo - https://github.com/daboross/zaldinar - version {}", get_version());
+    let message = format!("zaldinar - by Dabo - https://github.com/daboross/zaldinar - version {}",
+        VERSION);
     event.client.send_ctcp_reply(event.mask.nick().unwrap(), event.command(), message.as_slice());
 }
 

@@ -18,7 +18,11 @@ fn on_connect(event: &MessageEvent) {
     for channel in event.client.channels.iter() {
         event.client.send_command("JOIN".to_string(), &[channel.as_slice()]);
     }
-    event.client.state.write().channels.push_all(event.client.channels.iter().map(|s: &String| s.clone()).collect::<Vec<String>>().as_slice());
+    {
+        let mut state = event.client.state.write().unwrap();
+        state.channels.push_all(event.client.channels.iter()
+            .map(|s: &String| s.clone()).collect::<Vec<String>>().as_slice());
+    }
 }
 
 fn on_join(event: &MessageEvent) {
@@ -26,16 +30,26 @@ fn on_join(event: &MessageEvent) {
         return;
     }
     if let Some(nick) = event.mask.nick() {
-        if nick == event.client.state.read().nick {
-            event.client.state.write().channels.push(event.channel().unwrap().to_string());
+        let same = {
+            let state = event.client.state.read().unwrap();
+            nick == state.nick
+        };
+        if same {
+            let mut state = event.client.state.write().unwrap();
+            state.channels.push(event.channel().unwrap().to_string());
         }
     }
 }
 
 fn on_nick(event: &MessageEvent) {
     if let Some(nick) = event.mask.nick() {
-        if nick == event.client.state.read().nick {
-            event.client.state.write().nick = event.args[0].to_string();
+        let same = {
+            let state = event.client.state.read().unwrap();
+            nick == state.nick
+        };
+        if same {
+            let mut state = event.client.state.write().unwrap();
+            state.nick = event.args[0].to_string();
         }
     }
 }

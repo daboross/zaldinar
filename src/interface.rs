@@ -71,7 +71,7 @@ impl IrcInterface {
             None => format!("QUIT"),
         };
         {
-            let mut state = self.client.state.write();
+            let mut state = self.client.state.write().unwrap();
             state.done_executing = true;
         }
         self.send_raw(line);
