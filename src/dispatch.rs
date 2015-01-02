@@ -77,9 +77,11 @@ impl Dispatch {
 
             // CTCP
             if let Some(ctcp_event) = events::CtcpTransport::from_internal(message) {
-                if let Some(list) = plugins.ctcp_listeners.get(&message.args[0].to_ascii_lowercase()) {
+                if let Some(list) = plugins.ctcp_listeners.get(&ctcp_event.command
+                        .to_ascii_lowercase()) {
                     for ctcp_listener in list.iter() {
-                        self.execute(PluginTask::Ctcp((ctcp_listener.clone(), ctcp_event.clone())));
+                        self.execute(PluginTask::Ctcp((ctcp_listener.clone(),
+                            ctcp_event.clone())));
                     }
                 }
             }
