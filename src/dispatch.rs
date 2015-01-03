@@ -16,11 +16,13 @@ pub struct Dispatch {
 }
 
 impl Dispatch {
-    pub fn new(interface: interface::IrcInterface, state: sync::Arc<client::Client>, data_in: Receiver<irc::IrcMessage>, logger: fern::ArcLogger) -> Dispatch {
+    pub fn new(interface: interface::IrcInterface, state: sync::Arc<client::Client>,
+            data_in: Receiver<irc::IrcMessage>, logger: fern::ArcLogger) -> Dispatch {
         let (dispatch_out, workers_in) = channel();
         let workers_in_arc = sync::Arc::new(sync::Mutex::new(workers_in));
         for _ in range::<u8>(0, 4) {
-            let executor = PluginExecutor::new(interface.clone(), workers_in_arc.clone(), logger.clone());
+            let executor = PluginExecutor::new(interface.clone(), workers_in_arc.clone(),
+                                                logger.clone());
             executor.start_worker_thread();
         }
 
@@ -48,8 +50,6 @@ impl Dispatch {
         }).join();
     }
 
-    // Noting: This has to be a separate method from spawn_dispatch_thread, so that we can name an 'a lifetime.
-    // This allows us to give the new &str slices a specific lifetime, which I don't know a way to do without making a new function.
     fn process_message<'a>(&self, message: &'a irc::IrcMessage) {
         let plugins = self.state.plugins.read().unwrap();
 
@@ -73,7 +73,8 @@ impl Dispatch {
         }
 
         if message.command.as_slice().eq_ignore_ascii_case("PRIVMSG") {
-            let channel = message.channel.as_ref().unwrap().as_slice(); // Always exists for PRIVMSG
+            // Channel always exists for PRIVMSG
+            let channel = message.channel.as_ref().unwrap().as_slice();
 
             // CTCP
             if let Some(ctcp_event) = events::CtcpTransport::from_internal(message) {
@@ -92,13 +93,16 @@ impl Dispatch {
             // This checks for the command prefix, commands typed like '.command_name args'
             if message.args[1].starts_with(command_prefix.as_slice()) {
                 let command = message.args[1].slice_from(command_prefix.len());
-                let args = message.args.slice_from(2).iter().map(|s| s.clone()).collect::<Vec<String>>();
+                let args = message.args.slice_from(2).iter().map(|s| s.clone())
+                            .collect::<Vec<String>>();
                 self.dispatch_command(&plugins, command, channel, args, &message.mask);
             } else {
                 // This checks for someone typing commands like 'BotName, command_name args'
-                // We store whether or not a command was matched in a variable so that we can use it below.
+                // We store whether or not a command was matched in a variable so that we can use
+                // it below.
                 let mut command_matched = false;
-                if let Some(captures) = regex!(r"^:([^\s]+?)[:;,]?\s+(.+)$").captures(message.args.slice_from(1).connect(" ").as_slice()) {
+                if let Some(captures) = regex!(r"^:([^\s]+?)[:;,]?\s+(.+)$").captures(
+                                            message.args.slice_from(1).connect(" ").as_slice()) {
                     let same = {
                         let state = self.state.state.read().unwrap();
                         captures.at(1) == Some(state.nick.as_slice())
@@ -107,7 +111,8 @@ impl Dispatch {
                         if let Some(args_str) = captures.at(2) {
                             let split = args_str.split(' ').collect::<Vec<&str>>();
                             let command = split[0];
-                            let args = split.slice_from(1).iter().map(|s| s.to_string()).collect::<Vec<String>>();
+                            let args = split.slice_from(1).iter().map(|s| s.to_string())
+                                        .collect::<Vec<String>>();
                             self.dispatch_command(&plugins, command, channel, args, &message.mask);
                             command_matched = true;
                         }
@@ -115,18 +120,21 @@ impl Dispatch {
                 }
 
                 // This checks for commands in a private message, where a prefix isn't required
-                // People can just say 'command args' in a private message.
-                // If the channel is the sender's nick, the message is being sent in a private message.
+                // People can just say 'command args' in a private message. If the channel is the
+                // sender's nick, the message is being sent in a private message.
                 if !command_matched && message.mask.nick() == Some(channel) {
-                    let command = message.args[1].slice_from(1); // slice_from(1) to remove the `:` at the beginning of privmsg content.
-                    let args = message.args.slice_from(2).iter().map(|s| s.clone()).collect::<Vec<String>>();
+                    // slice_from(1) to remove the `:` at the beginning of privmsg content.
+                    let command = message.args[1].slice_from(1);
+                    let args = message.args.slice_from(2).iter().map(|s| s.clone())
+                                .collect::<Vec<String>>();
                     self.dispatch_command(&plugins, command, channel, args, &message.mask);
                 }
             }
         }
     }
 
-    fn dispatch_command(&self, plugins: &sync::RWLockReadGuard<client::PluginRegister>, command: &str, channel: &str, args: Vec<String>, mask: &irc::IrcMask) {
+    fn dispatch_command(&self, plugins: &sync::RWLockReadGuard<client::PluginRegister>,
+            command: &str, channel: &str, args: Vec<String>, mask: &irc::IrcMask) {
         if let Some(list) = plugins.commands.get(&command.to_ascii_lowercase()) {
             let command_event = events::CommandTransport::new(channel, args, mask);
             for closure in list.iter() {
@@ -172,7 +180,9 @@ struct PluginExecutor {
 }
 
 impl PluginExecutor {
-    fn new(interface: interface::IrcInterface, data_in: sync::Arc<sync::Mutex<Receiver<PluginTask>>>, logger: fern::ArcLogger) -> PluginExecutor {
+    fn new(interface: interface::IrcInterface,
+            data_in: sync::Arc<sync::Mutex<Receiver<PluginTask>>>, logger: fern::ArcLogger)
+            -> PluginExecutor {
         return PluginExecutor {
             interface: interface,
             data_in: data_in,
@@ -211,7 +221,8 @@ impl Drop for PluginExecutor {
     fn drop(&mut self) {
         if self.active {
             warning!("Worker panicked!");
-            PluginExecutor::new(self.interface.clone(), self.data_in.clone(), self.logger.clone()).start_worker_thread();
+            PluginExecutor::new(self.interface.clone(), self.data_in.clone(),
+                self.logger.clone()).start_worker_thread();
         }
     }
 }

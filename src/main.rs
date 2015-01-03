@@ -7,7 +7,9 @@ use std::io;
 
 fn print_err(msg: String) {
     if let Err(e) = writeln!(&mut io::stderr(), "{}", msg) {
-        panic!("Failed to write to stderr.\nOriginal error output: {}\nSecondary error writing to stderr: {}", msg, e);
+        panic!("Failed to write to stderr.
+            \nOriginal error output: {}
+            \nSecondary error writing to stderr: {}", msg, e);
     }
 }
 
@@ -67,7 +69,8 @@ fn main() {
             Err(e) => {
                 println!("Error running client: {}", e);
                 std::os::set_exit_status(1);
-                // There is no need to stop other tasks at this point, because the only time client.connect() returns Err is before any tasks are started
+                // There is no need to stop other tasks at this point, because the only time
+                // client.connect() returns Err is before any tasks are started
             },
         };
     }

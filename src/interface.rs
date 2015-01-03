@@ -13,7 +13,8 @@ pub struct IrcInterface {
 }
 
 impl IrcInterface {
-    pub fn new(data_out: Sender<Option<String>>, client: sync::Arc<client::Client>) -> Result<IrcInterface, InitializationError> {
+    pub fn new(data_out: Sender<Option<String>>, client: sync::Arc<client::Client>)
+            -> Result<IrcInterface, InitializationError> {
         let mut admins = Vec::new();
         for admin_str in client.config.admins.iter() {
             admins.push(try!(regex::Regex::new(format!("^{}$", admin_str.as_slice()).as_slice())));

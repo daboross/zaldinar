@@ -9,9 +9,11 @@ fn on_connect(event: &MessageEvent) {
     let nickserv = &event.client.nickserv;
     if nickserv.enabled {
         if nickserv.account.len() != 0 {
-            event.client.send_message(nickserv.name.as_slice(), format!("{} {} {}", nickserv.command, nickserv.account, nickserv.password).as_slice());
+            event.client.send_message(nickserv.name.as_slice(), format!("{} {} {}",
+                nickserv.command, nickserv.account, nickserv.password).as_slice());
         } else {
-            event.client.send_message(nickserv.name.as_slice(), format!("{} {}", nickserv.command, nickserv.password).as_slice());
+            event.client.send_message(nickserv.name.as_slice(), format!("{} {}",
+                nickserv.command, nickserv.password).as_slice());
         }
     }
 

@@ -8,7 +8,8 @@ fn eightball(event: &CommandEvent) {
         event.client.send_message(event.channel(), "I can't answer if you don't ask.");
         return;
     }
-    let messages = include_str!("../../resources/8ball/messages.txt").split('\n').collect::<Vec<&str>>();
+    let messages = include_str!("../../resources/8ball/messages.txt").split('\n')
+                                .collect::<Vec<&str>>();
     let mut rng = rand::thread_rng();
     let message = rng.choose(messages.as_slice()).unwrap()
                     .replace("<yes>", "\x0305").replace("<no>", "\x0303");

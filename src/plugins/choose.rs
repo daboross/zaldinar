@@ -20,7 +20,8 @@ fn choose(event: &CommandEvent) {
 
 fn coin(event: &CommandEvent) {
     let mut rng = rand::thread_rng();
-    let message = format!("\x01ACTION flips a coin... \x02{}\x02\x01", rng.choose(&["heads", "tails"]).unwrap());
+    let message = format!("\x01ACTION flips a coin... \x02{}\x02\x01", rng.choose(&["heads",
+                                                                            "tails"]).unwrap());
     event.client.send_message(event.channel(), message.as_slice());
 }
 
@@ -31,7 +32,8 @@ fn rand(event: &CommandEvent) {
     let max = match event.args[0].parse::<u64>() {
         Some(v) => v,
         None => {
-            event.client.send_message(event.channel(), format!("Invalid number '{}'", event.args[0]).as_slice());
+            event.client.send_message(event.channel(), format!("Invalid number '{}'",
+                                                                event.args[0]).as_slice());
             return;
         },
     };

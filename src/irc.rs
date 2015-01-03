@@ -18,7 +18,9 @@ pub struct IrcConnection {
 }
 
 impl IrcConnection {
-    pub fn create(addr: &str, data_out: Sender<IrcMessage>, data_in: Receiver<Option<String>>, logger: fern::ArcLogger, client: sync::Arc<client::Client>) -> Result<(), io::IoError> {
+    pub fn create(addr: &str, data_out: Sender<IrcMessage>, data_in: Receiver<Option<String>>,
+            logger: fern::ArcLogger, client: sync::Arc<client::Client>)
+            -> Result<(), io::IoError> {
         let socket = try!(io::TcpStream::connect(addr));
         let connection_receiving = IrcConnection {
             socket: socket.clone(),
@@ -27,13 +29,14 @@ impl IrcConnection {
             client: client.clone(),
         };
         let connection_sending = IrcConnection {
-            socket: socket, // No need to clone a second time, as this is the last time we are using this socket
+            // No need to clone socket a second time, as this is the last time we are using it
+            socket: socket,
             data_out: None,
             data_in: Some(data_in),
             client: client,
         };
 
-        // Using unwrap() on these two because we know that data_out and data_in are Some() and not None
+        // Using unwrap() on these two because we know that data_out and data_in are Some
         connection_receiving.spawn_reading_thread(logger.clone()).unwrap();
         connection_sending.spawn_writing_thread(logger).unwrap();
 
@@ -43,7 +46,8 @@ impl IrcConnection {
     fn spawn_reading_thread(self, logger: fern::ArcLogger) -> Result<(), InitializationError> {
         let data_out = match self.data_out {
             Some(ref v) => v.clone(),
-            None => return Err(InitializationError::new("Can't start reading thread without data_out")),
+            None => return Err(InitializationError::new(
+                "Can't start reading thread without data_out")),
         };
         thread::Builder::new().name("socket_reading_task".to_string()).spawn(move || {
             fern::local::set_thread_logger(logger);
@@ -61,13 +65,19 @@ impl IrcConnection {
                 };
                 let input = IRC_COLOR_REGEX.replace_all(whole_input.trim_right(), "");
                 let message_split: Vec<&str> = input.split(' ').collect();
-                let (command, args, possible_mask): (&str, &[&str], IrcMask) = if message_split[0].starts_with(":") {
-                    (message_split[1], message_split.slice_from(2), IrcMask::parse_from_str(message_split[0].slice_from(1)))
+                let (command, args, possible_mask): (&str, &[&str], IrcMask) = if message_split[0]
+                        .starts_with(":") {
+                    (
+                        message_split[1], message_split.slice_from(2),
+                        IrcMask::parse_from_str(message_split[0].slice_from(1))
+                    )
                 } else {
                     (message_split[0], message_split.slice_from(1), IrcMask::Nonexistent)
                 };
 
-                let ctcp = if command.eq_ignore_ascii_case("PRIVMSG") && args[1].starts_with(":\x01") && args[args.len() -1].ends_with("\x01") {
+                let ctcp = if command.eq_ignore_ascii_case("PRIVMSG")
+                                && args[1].starts_with(":\x01")
+                                && args[args.len() -1].ends_with("\x01") {
                     let ctcp_command;
                     let mut ctcp_message;
                     if args.len() > 2 {
@@ -75,7 +85,8 @@ impl IrcConnection {
                         ctcp_message = args.slice_from(2).connect(" ");
                         ctcp_message.pop(); // to remove last \x01
                     } else {
-                        ctcp_command = args[1].slice(2, args[1].len() - 1).to_string(); // remove starting :\x01 and ending \x01
+                        // remove starting :\x01 and ending \x01
+                        ctcp_command = args[1].slice(2, args[1].len() - 1).to_string();
                         ctcp_message = "".to_string();
                     }
                     Some((ctcp_command, ctcp_message))
@@ -87,8 +98,9 @@ impl IrcConnection {
                     "JOIN" | "PART" | "KICK" | "TOPIC" | "NOTICE" => Some(args[0].to_string()),
                     "PRIVMSG" => {
                         // This checks if the nick is the same as our bot's nick
-                        // If the channel is our bots nick, and the sender has a nick, the message is a private message.
-                        // For the sake of plugins trying to reply,  we set the channel to the sender's nick instead of our nick.
+                        // If the channel is our bots nick, and the sender has a nick, the message
+                        // is a private message. For the sake of plugins trying to reply,  we set
+                        // the channel to the sender's nick instead of our nick.
                         if args[0] == self.client.state.read().unwrap().nick.as_slice() {
                             match possible_mask.nick() {
                                 Some(v) => Some(v.to_string()),
@@ -102,7 +114,8 @@ impl IrcConnection {
                 };
                 // TODO: Change channel to sender nick if channel is our current nick.
                 let args_owned: Vec<String> = args.iter().map(|s: &&str| s.to_string()).collect();
-                let message = IrcMessage::new(command.to_string(), args_owned, possible_mask, ctcp, channel);
+                let message = IrcMessage::new(command.to_string(), args_owned, possible_mask, ctcp,
+                    channel);
                 data_out.send(message);
             }
         }).detach();
@@ -124,9 +137,12 @@ impl IrcConnection {
                 if !command.starts_with("PONG ") {
                     info!(">>> {}", command);
                 }
-                log_error_then!(self.socket.write(command.as_bytes()), return, "Failed to write to stream: {e}");
-                log_error_then!(self.socket.write(b"\n"), return, "Failed to write to stream: {e}");
-                log_error_then!(self.socket.flush(), return, "Failed to write to stream: {e}");
+                log_error_then!(self.socket.write(command.as_bytes()), return,
+                    "Failed to write to stream: {e}");
+                log_error_then!(self.socket.write(b"\n"), return,
+                    "Failed to write to stream: {e}");
+                log_error_then!(self.socket.flush(), return,
+                    "Failed to write to stream: {e}");
             }
         }).detach();
         return Ok(());
@@ -156,7 +172,8 @@ pub struct IrcMessage {
 }
 
 impl IrcMessage {
-    fn new(command: String, args: Vec<String>, mask: IrcMask, ctcp: Option<(String, String)>, channel: Option<String>) -> IrcMessage {
+    fn new(command: String, args: Vec<String>, mask: IrcMask, ctcp: Option<(String, String)>,
+            channel: Option<String>) -> IrcMessage {
         return IrcMessage {
             command: command,
             args: args,
@@ -194,7 +211,8 @@ impl IrcMask {
         }
         let user = user_and_host_split[0];
         let host = user_and_host_split[1];
-        return IrcMask::new_full(mask.to_string(), nick.to_string(), user.to_string(), host.to_string());
+        return IrcMask::new_full(mask.to_string(), nick.to_string(), user.to_string(),
+                                    host.to_string());
     }
 
     pub fn nick(&self) -> Option<&str> {

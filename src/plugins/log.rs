@@ -12,22 +12,27 @@ fn log_message(event: &MessageEvent) {
                 _ => if ctcp_message.len() == 0 {
                     format!("[{}] CTCP {} from {}", event.args[0], ctcp_command, nick)
                 } else {
-                    format!("[{}] CTCP {} from {}: {}", event.args[0], ctcp_command, nick, ctcp_message)
+                    format!("[{}] CTCP {} from {}: {}", event.args[0], ctcp_command, nick,
+                        ctcp_message)
                 },
             },
-            None => format!("[{}] <{}> {}", event.args[0], nick, event.args.slice_from(1).connect(" ").slice_from(1)),
+            None => format!("[{}] <{}> {}", event.args[0], nick, event.args.slice_from(1)
+                .connect(" ").slice_from(1)),
         },
-        "NOTICE" => format!("[{}] -{}- {}", event.args[0], nick, event.args.slice_from(1).connect(" ").slice_from(1)),
+        "NOTICE" => format!("[{}] -{}- {}", event.args[0], nick, event.args.slice_from(1)
+            .connect(" ").slice_from(1)),
         "JOIN" => format!("[{}] *** {} joined", event.args[0], nick),
         "PART" => format!("[{}] *** {} left ({})", event.args[0], nick, event.args[1]),
         "KICK" => {
             if event.args.len() > 2 {
-                format!("[{}] *** {} kicked {} ({})", event.args[0], nick, event.args[1], event.args.slice_from(2).connect(" ").slice_from(1))
+                format!("[{}] *** {} kicked {} ({})", event.args[0], nick, event.args[1],
+                    event.args.slice_from(2).connect(" ").slice_from(1))
             } else {
                 format!("[{}] *** {} kicked {}", event.args[0], nick, event.args[1])
             }
         },
-        "TOPIC" => format!("[{}] *** {} changed the topic to \"{}\"", event.args[0], nick, event.args.slice_from(1).connect(" ").slice_from(1)),
+        "TOPIC" => format!("[{}] *** {} changed the topic to \"{}\"", event.args[0], nick,
+            event.args.slice_from(1).connect(" ").slice_from(1)),
         "PING" => return, // don't log pings
         _ => match event.mask.mask() {
             Some(mask) => format!("{} {} {}", mask, event.command, event.args.connect(" ")),
