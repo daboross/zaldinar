@@ -1,8 +1,10 @@
 #![allow(dead_code)]
+use std::ops;
+
 use irc;
 use interface::IrcInterface;
 
-#[deriving(Clone)]
+#[derive(Clone)]
 pub struct FullIrcMask {
     mask: String,
     nick: String,
@@ -28,7 +30,7 @@ impl FullIrcMask {
     }
 }
 
-#[deriving(Clone)]
+#[derive(Clone)]
 pub enum IrcMask {
     Full(FullIrcMask),
     Unparseable(String),
@@ -102,7 +104,9 @@ impl <'a> MessageEvent<'a> {
     }
 }
 
-impl <'a> Deref<MessageTransport> for MessageEvent<'a> {
+impl <'a> ops::Deref for MessageEvent<'a> {
+    type Target = MessageTransport;
+
     fn deref(&self) -> &MessageTransport {
         self.internal
     }
@@ -122,7 +126,9 @@ impl <'a> CommandEvent<'a> {
     }
 }
 
-impl <'a> Deref<CommandTransport> for CommandEvent<'a> {
+impl <'a> ops::Deref for CommandEvent<'a> {
+    type Target = CommandTransport;
+
     fn deref(&self) -> &CommandTransport {
         self.internal
     }
@@ -142,13 +148,15 @@ impl <'a> CtcpEvent<'a> {
     }
 }
 
-impl <'a> Deref<CtcpTransport> for CtcpEvent<'a> {
+impl <'a> ops::Deref for CtcpEvent<'a> {
+    type Target = CtcpTransport;
+
     fn deref(&self) -> &CtcpTransport {
         self.internal
     }
 }
 
-#[deriving(Clone)]
+#[derive(Clone)]
 pub struct MessageTransport {
     pub command: String,
     pub args: Vec<String>,
@@ -190,7 +198,7 @@ impl MessageTransport {
     }
 }
 
-#[deriving(Clone)]
+#[derive(Clone)]
 pub struct CommandTransport {
     pub channel: String,
     pub args: Vec<String>,
@@ -219,7 +227,7 @@ impl CommandTransport {
     }
 }
 
-#[deriving(Clone)]
+#[derive(Clone)]
 pub struct CtcpTransport {
     pub channel: String,
     pub command: String,

@@ -5,9 +5,13 @@ version = "0.1.1-dev"
 authors = ["Dabo Ross <daboross@daboross.net>"]
 
 [dependencies]
-chrono = "0.1.6"
+#chrono = "0.1.6"
 fern = "0.1.2"
 fern_macros = "0.1.0"
-rustc-serialize = "0.1.5"
+rustc-serialize = "0.2.4"
 regex = "0.1.4"
+regex_macros = "0.1.2"
 getopts ="0.1.0"
+
+[dependencies.chrono]
+git = 'https://github.com/daboross/rust-chrono.git'

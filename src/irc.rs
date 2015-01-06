@@ -2,6 +2,7 @@ use std::ascii::AsciiExt;
 use std::io;
 use std::thread;
 use std::sync;
+use std::sync::mpsc;
 use regex;
 use fern;
 
@@ -12,13 +13,13 @@ static IRC_COLOR_REGEX: regex::Regex = regex!("(\x03(\\d+,\\d+|\\d)|[\x0f\x02\x1
 
 pub struct IrcConnection {
     socket: io::TcpStream,
-    data_out: Option<Sender<IrcMessage>>,
-    data_in: Option<Receiver<Option<String>>>,
+    data_out: Option<mpsc::Sender<IrcMessage>>,
+    data_in: Option<mpsc::Receiver<Option<String>>>,
     client: sync::Arc<client::Client>,
 }
 
 impl IrcConnection {
-    pub fn create(addr: &str, data_out: Sender<IrcMessage>, data_in: Receiver<Option<String>>,
+    pub fn create(addr: &str, data_out: mpsc::Sender<IrcMessage>, data_in: mpsc::Receiver<Option<String>>,
             logger: fern::ArcLogger, client: sync::Arc<client::Client>)
             -> Result<(), io::IoError> {
         let socket = try!(io::TcpStream::connect(addr));
@@ -130,9 +131,9 @@ impl IrcConnection {
             fern::local::set_thread_logger(logger);
             let data_in = self.data_in.expect("Already confirmed above");
             loop {
-                let command = match data_in.recv_opt() {
+                let command = match data_in.recv() {
                     Ok(Some(v)) => v,
-                    Ok(None) | Err(()) => break,
+                    Ok(None) | Err(_) => break,
                 };
                 if !command.starts_with("PONG ") {
                     info!(">>> {}", command);

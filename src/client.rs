@@ -1,5 +1,7 @@
 use std::ascii::AsciiExt;
 use std::sync;
+use std::sync::mpsc;
+use std::ops;
 use std::collections;
 
 use chrono;
@@ -120,7 +122,9 @@ impl Client {
 }
 
 /// This allows access to configuration fields directly on Client
-impl Deref<config::ClientConfiguration> for Client {
+impl ops::Deref for Client {
+    type Target = config::ClientConfiguration;
+
     fn deref<'a>(&'a self) -> &'a config::ClientConfiguration {
         return &self.config;
     }
@@ -149,8 +153,8 @@ pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: Plugin
 
     let client = sync::Arc::new(Client::new(plugins, config));
 
-    let (data_out, connection_data_in) = channel();
-    let (connection_data_out, data_in) = channel();
+    let (data_out, connection_data_in) = mpsc::channel();
+    let (connection_data_out, data_in) = mpsc::channel();
 
     let interface = try!(interface::IrcInterface::new(data_out, client.clone()));
 

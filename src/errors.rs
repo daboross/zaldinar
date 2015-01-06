@@ -4,7 +4,7 @@ use std::sync;
 use rustc_serialize::json;
 use regex;
 
-#[deriving(Show)]
+#[derive(Show)]
 pub enum InitializationError {
     Io(io::IoError),
     Regex(regex::Error),

@@ -1,19 +1,22 @@
 use std::sync;
+use std::sync::mpsc;
+use std::ops;
+
 use regex;
 
 use errors::InitializationError;
 use client;
 use events;
 
-#[deriving(Clone)]
+#[derive(Clone)]
 pub struct IrcInterface {
-    data_out: Sender<Option<String>>,
+    data_out: mpsc::Sender<Option<String>>,
     pub client: sync::Arc<client::Client>,
     admins: sync::Arc<Vec<regex::Regex>>,
 }
 
 impl IrcInterface {
-    pub fn new(data_out: Sender<Option<String>>, client: sync::Arc<client::Client>)
+    pub fn new(data_out: mpsc::Sender<Option<String>>, client: sync::Arc<client::Client>)
             -> Result<IrcInterface, InitializationError> {
         let mut admins = Vec::new();
         for admin_str in client.config.admins.iter() {
@@ -92,7 +95,9 @@ impl IrcInterface {
 }
 
 /// This allows access to client and config fields on IrcInterface.
-impl Deref<sync::Arc<client::Client>> for IrcInterface {
+impl ops::Deref for IrcInterface {
+    type Target = sync::Arc<client::Client>;
+
     fn deref<'a>(&'a self) -> &'a sync::Arc<client::Client> {
         return &self.client;
     }

@@ -1,5 +1,7 @@
 #![feature(phase)]
 #![feature(unboxed_closures)]
+#![feature(associated_types)]
+#![feature(old_orphan_check)] // TODO: Remove after error::FromError<sync::PoisonError<T>> and derive(RustcDecodable) work without it.
 
 extern crate "rustc-serialize" as rustc_serialize;
 extern crate chrono;

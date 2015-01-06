@@ -1,5 +1,6 @@
 use std::ascii::AsciiExt;
 use std::sync;
+use std::sync::mpsc;
 use std::thread;
 
 use interface;
@@ -11,14 +12,14 @@ use fern;
 pub struct Dispatch {
     interface: interface::IrcInterface,
     state: sync::Arc<client::Client>,
-    data_in: Receiver<irc::IrcMessage>,
-    workers_out: Sender<PluginTask>,
+    data_in: mpsc::Receiver<irc::IrcMessage>,
+    workers_out: mpsc::Sender<PluginTask>,
 }
 
 impl Dispatch {
     pub fn new(interface: interface::IrcInterface, state: sync::Arc<client::Client>,
-            data_in: Receiver<irc::IrcMessage>, logger: fern::ArcLogger) -> Dispatch {
-        let (dispatch_out, workers_in) = channel();
+            data_in: mpsc::Receiver<irc::IrcMessage>, logger: fern::ArcLogger) -> Dispatch {
+        let (dispatch_out, workers_in) = mpsc::channel();
         let workers_in_arc = sync::Arc::new(sync::Mutex::new(workers_in));
         for _ in range::<u8>(0, 4) {
             let executor = PluginExecutor::new(interface.clone(), workers_in_arc.clone(),
@@ -36,9 +37,9 @@ impl Dispatch {
 
     pub fn dispatch_loop(self) {
         loop {
-            let message = match self.data_in.recv_opt() {
+            let message = match self.data_in.recv() {
                 Ok(v) => v,
-                Err(()) => break,
+                Err(_) => break,
             };
             self.process_message(&message);
         }
@@ -174,14 +175,14 @@ impl PluginTask {
 
 struct PluginExecutor {
     interface: interface::IrcInterface,
-    data_in: sync::Arc<sync::Mutex<Receiver<PluginTask>>>,
+    data_in: sync::Arc<sync::Mutex<mpsc::Receiver<PluginTask>>>,
     logger: fern::ArcLogger,
     active: bool,
 }
 
 impl PluginExecutor {
     fn new(interface: interface::IrcInterface,
-            data_in: sync::Arc<sync::Mutex<Receiver<PluginTask>>>, logger: fern::ArcLogger)
+            data_in: sync::Arc<sync::Mutex<mpsc::Receiver<PluginTask>>>, logger: fern::ArcLogger)
             -> PluginExecutor {
         return PluginExecutor {
             interface: interface,
@@ -197,11 +198,11 @@ impl PluginExecutor {
                 // Only lock jobs for the time it takes
                 // to get a job, not run it.
                 let lock = self.data_in.lock().unwrap();
-                lock.recv_opt()
+                lock.recv()
             };
             match message {
                 Ok(next) => next.execute(&self.interface),
-                Err(()) => {
+                Err(_) => {
                     self.active = false;
                     break;
                 }

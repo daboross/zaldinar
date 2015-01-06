@@ -3,7 +3,7 @@ use rustc_serialize::json;
 
 use errors::InitializationError;
 
-#[deriving(RustcDecodable)]
+#[derive(RustcDecodable)]
 pub struct NickServConf {
     pub name: String,
     pub command: String,
@@ -12,7 +12,7 @@ pub struct NickServConf {
     pub enabled: bool,
 }
 
-#[deriving(RustcDecodable)]
+#[derive(RustcDecodable)]
 pub struct ClientConfiguration {
     pub nick: String,
     pub user: String,
