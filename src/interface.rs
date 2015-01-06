@@ -31,7 +31,9 @@ impl IrcInterface {
     }
 
     pub fn send_raw(&self, line: String) {
-        self.data_out.send(Some(line));
+        if let Err(_) = self.data_out.send(Some(line)) {
+            warning!("Unable to send to data_out from IrcInterface.")
+        }
     }
 
     pub fn send_command(&self, command: String, args: &[&str]) {
@@ -79,7 +81,9 @@ impl IrcInterface {
             state.done_executing = true;
         }
         self.send_raw(line);
-        self.data_out.send(None);
+        if let Err(_) =  self.data_out.send(None) {
+            warning!("Unable to send to data_out from IrcInterface. (running quit)")
+        }
     }
 
     pub fn is_admin(&self, event: &events::CommandEvent) -> bool {

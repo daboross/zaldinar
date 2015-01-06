@@ -2,7 +2,7 @@
 name = "zaldinar"
 version = "0.1.1-dev"
 dependencies = [
- "chrono 0.1.9 (git+https://github.com/daboross/rust-chrono.git)",
+ "chrono 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
  "fern 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "fern_macros 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "getopts 0.1.1 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -13,8 +13,8 @@ dependencies = [
 
 [[package]]
 name = "chrono"
-version = "0.1.9"
-source = "git+https://github.com/daboross/rust-chrono.git#1b04bc36974485851645ad45be9116e713d2482a"
+version = "0.1.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "time 0.1.9 (registry+https://github.com/rust-lang/crates.io-index)",
 ]

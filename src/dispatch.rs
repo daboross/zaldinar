@@ -41,7 +41,10 @@ impl Dispatch {
                 Ok(v) => v,
                 Err(_) => break,
             };
-            self.process_message(&message);
+            if let Err(_) = self.process_message(&message) {
+                severe!("Failed to send to workers_out from Dispatch. Exiting.");
+                return;
+            }
         }
     }
 
@@ -51,7 +54,8 @@ impl Dispatch {
         }).join();
     }
 
-    fn process_message<'a>(&self, message: &'a irc::IrcMessage) {
+    fn process_message<'a>(&self, message: &'a irc::IrcMessage)
+            -> Result<(), mpsc::SendError<PluginTask>> {
         let plugins = self.state.plugins.read().unwrap();
 
         // PING
@@ -63,13 +67,13 @@ impl Dispatch {
 
         // Catch all listeners
         for listener in plugins.catch_all.iter() {
-            self.execute(PluginTask::Message((listener.clone(), message_event.clone())));
+            try!(self.execute(PluginTask::Message((listener.clone(), message_event.clone()))));
         }
 
         // Raw listeners
         if let Some(list) = plugins.raw_listeners.get(&message.command.to_ascii_lowercase()) {
             for listener in list.iter() {
-                self.execute(PluginTask::Message((listener.clone(), message_event.clone())));
+                try!(self.execute(PluginTask::Message((listener.clone(), message_event.clone()))));
             }
         }
 
@@ -82,8 +86,8 @@ impl Dispatch {
                 if let Some(list) = plugins.ctcp_listeners.get(&ctcp_event.command
                         .to_ascii_lowercase()) {
                     for ctcp_listener in list.iter() {
-                        self.execute(PluginTask::Ctcp((ctcp_listener.clone(),
-                            ctcp_event.clone())));
+                        try!(self.execute(PluginTask::Ctcp((ctcp_listener.clone(),
+                            ctcp_event.clone()))));
                     }
                 }
             }
@@ -96,7 +100,7 @@ impl Dispatch {
                 let command = message.args[1].slice_from(command_prefix.len());
                 let args = message.args.slice_from(2).iter().map(|s| s.clone())
                             .collect::<Vec<String>>();
-                self.dispatch_command(&plugins, command, channel, args, &message.mask);
+                try!(self.dispatch_command(&plugins, command, channel, args, &message.mask));
             } else {
                 // This checks for someone typing commands like 'BotName, command_name args'
                 // We store whether or not a command was matched in a variable so that we can use
@@ -114,7 +118,7 @@ impl Dispatch {
                             let command = split[0];
                             let args = split.slice_from(1).iter().map(|s| s.to_string())
                                         .collect::<Vec<String>>();
-                            self.dispatch_command(&plugins, command, channel, args, &message.mask);
+                            try!(self.dispatch_command(&plugins, command, channel, args, &message.mask));
                             command_matched = true;
                         }
                     }
@@ -128,24 +132,27 @@ impl Dispatch {
                     let command = message.args[1].slice_from(1);
                     let args = message.args.slice_from(2).iter().map(|s| s.clone())
                                 .collect::<Vec<String>>();
-                    self.dispatch_command(&plugins, command, channel, args, &message.mask);
+                    try!(self.dispatch_command(&plugins, command, channel, args, &message.mask));
                 }
             }
         }
+        return Ok(());
     }
 
     fn dispatch_command(&self, plugins: &sync::RWLockReadGuard<client::PluginRegister>,
-            command: &str, channel: &str, args: Vec<String>, mask: &irc::IrcMask) {
+            command: &str, channel: &str, args: Vec<String>, mask: &irc::IrcMask)
+            -> Result<(), mpsc::SendError<PluginTask>> {
         if let Some(list) = plugins.commands.get(&command.to_ascii_lowercase()) {
             let command_event = events::CommandTransport::new(channel, args, mask);
             for closure in list.iter() {
-                self.execute(PluginTask::Command((closure.clone(), command_event.clone())));
+                try!(self.execute(PluginTask::Command((closure.clone(), command_event.clone()))));
             }
         }
+        return Ok(());
     }
 
-    fn execute(&self, task: PluginTask) {
-        self.workers_out.send(task);
+    fn execute(&self, task: PluginTask) -> Result<(), mpsc::SendError<PluginTask>> {
+        self.workers_out.send(task)
     }
 }
 
