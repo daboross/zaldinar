@@ -105,16 +105,16 @@ impl ClientState {
 }
 
 pub struct Client {
-    pub plugins: sync::RWLock<PluginRegister>,
+    pub plugins: sync::RwLock<PluginRegister>,
     pub config: config::ClientConfiguration,
-    pub state: sync::RWLock<ClientState>,
+    pub state: sync::RwLock<ClientState>,
 }
 
 impl Client {
     pub fn new(plugins: PluginRegister, config: config::ClientConfiguration) -> Client {
-        let state = sync::RWLock::new(ClientState::new(config.nick.clone()));
+        let state = sync::RwLock::new(ClientState::new(config.nick.clone()));
         return Client {
-            plugins: sync::RWLock::new(plugins),
+            plugins: sync::RwLock::new(plugins),
             config: config,
             state: state,
         }

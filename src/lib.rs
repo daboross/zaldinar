@@ -1,14 +1,13 @@
-#![feature(phase)]
-#![feature(unboxed_closures)]
-#![feature(associated_types)]
-#![feature(old_orphan_check)] // TODO: Remove after error::FromError<sync::PoisonError<T>> and derive(RustcDecodable) work without it.
+#![feature(plugin)]
 
 extern crate "rustc-serialize" as rustc_serialize;
 extern crate chrono;
 extern crate regex;
 extern crate fern;
-#[phase(plugin)] extern crate regex_macros;
-#[phase(plugin)] extern crate fern_macros;
+#[plugin]
+extern crate regex_macros;
+#[macro_use] #[no_link]
+extern crate fern_macros;
 
 pub use errors::InitializationError;
 pub use config::ClientConfiguration;

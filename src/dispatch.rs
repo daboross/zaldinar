@@ -139,7 +139,7 @@ impl Dispatch {
         return Ok(());
     }
 
-    fn dispatch_command(&self, plugins: &sync::RWLockReadGuard<client::PluginRegister>,
+    fn dispatch_command(&self, plugins: &sync::RwLockReadGuard<client::PluginRegister>,
             command: &str, channel: &str, args: Vec<String>, mask: &irc::IrcMask)
             -> Result<(), mpsc::SendError<PluginTask>> {
         if let Some(list) = plugins.commands.get(&command.to_ascii_lowercase()) {
@@ -167,13 +167,13 @@ impl PluginTask {
     fn execute(self, interface: &interface::IrcInterface) {
         match self {
             PluginTask::Command((closure, event)) => {
-                closure.call((&events::CommandEvent::new(interface, &event),));
+                (*closure)(&events::CommandEvent::new(interface, &event));
             },
             PluginTask::Message((closure, event)) => {
-                closure.call((&events::MessageEvent::new(interface, &event),));
+                (*closure)(&events::MessageEvent::new(interface, &event));
             },
             PluginTask::Ctcp((closure, event)) => {
-                closure.call((&events::CtcpEvent::new(interface, &event),));
+                (*closure)(&events::CtcpEvent::new(interface, &event));
             },
         }
     }
