@@ -78,7 +78,7 @@ impl IrcInterface {
         };
         {
             let mut state = self.client.state.write().unwrap();
-            state.done_executing = true;
+            state.done_executing = client::ExecutingState::Done;
         }
         self.send_raw(line);
         if let Err(_) =  self.data_out.send(None) {

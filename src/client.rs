@@ -86,12 +86,22 @@ impl PluginRegister {
     }
 }
 
+#[derive(Copy, Clone)]
+pub enum ExecutingState {
+    Running,
+    Done,
+    Restart,
+}
+
 pub struct ClientState {
     pub nick: String,
     pub channels: Vec<String>,
-    /// This is a marker for if the bot exited on purpose. The bot will restart if this is still
-    /// false after exiting.
-    pub done_executing: bool,
+    /// This is a marker for what the bot should do after the main program exits.
+    /// - The main function will just be re-run if this is still "Running".
+    /// - The bot will exit if this is "Done".
+    /// - The bot will restart using exec (running using a new binary if there is one) if this is
+    ///   "restart".
+    pub done_executing: ExecutingState,
 }
 
 impl ClientState {
@@ -99,7 +109,7 @@ impl ClientState {
         return ClientState {
             nick: nick,
             channels: Vec::new(),
-            done_executing: false,
+            done_executing: ExecutingState::Running,
         };
     }
 }
@@ -130,12 +140,12 @@ impl ops::Deref for Client {
     }
 }
 
-pub fn run(config: config::ClientConfiguration) -> Result<bool, InitializationError> {
+pub fn run(config: config::ClientConfiguration) -> Result<ExecutingState, InitializationError> {
     run_with_plugins(config, PluginRegister::new())
 }
 
 pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: PluginRegister)
-        -> Result<bool, InitializationError> {
+        -> Result<ExecutingState, InitializationError> {
     // Register built-in plugins
     plugins::register_plugins(&mut plugins);
 
@@ -157,7 +167,6 @@ pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: Plugin
     let (connection_data_out, data_in) = mpsc::channel();
 
     let interface = try!(interface::IrcInterface::new(data_out, client.clone()));
-
 
     // Send PASS, NICK and USER, the initial IRC commands. Because an IrcConnection hasn't been
     // created to receive these yet, they will just go on hold and get sent as soon as the

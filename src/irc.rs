@@ -118,7 +118,7 @@ impl IrcConnection {
                 let message = IrcMessage::new(command.to_string(), args_owned, possible_mask, ctcp,
                     channel);
                 if let Err(_) = data_out.send(message) {
-                    severe!("Failed to send to data_out from IrcConnection reading thread.
+                    severe!("Failed to send to data_out from IrcConnection reading thread. \
                         Exiting.");
                     return;
                 }

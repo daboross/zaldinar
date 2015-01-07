@@ -7,8 +7,8 @@ use std::io;
 
 fn print_err(msg: String) {
     if let Err(e) = writeln!(&mut io::stderr(), "{}", msg) {
-        panic!("Failed to write to stderr.
-            \nOriginal error output: {}
+        panic!("Failed to write to stderr.\
+            \nOriginal error output: {}\
             \nSecondary error writing to stderr: {}", msg, e);
     }
 }
@@ -64,8 +64,8 @@ fn main() {
         };
 
         match zaldinar::client::run(config) {
-            Ok(true) => break,
-            Ok(false) => println!("Restarting."),
+            Ok(zaldinar::client::ExecutingState::Done) => break,
+            Ok(_) => println!("Restarting."),
             Err(e) => {
                 println!("Error running client: {}", e);
                 std::os::set_exit_status(1);
