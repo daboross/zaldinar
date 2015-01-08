@@ -1,3 +1,7 @@
 language: rust
 script:
   - cargo build
+cache:
+  directories:
+    # Cache compiled dependencies
+    - target/
