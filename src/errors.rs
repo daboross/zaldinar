@@ -9,16 +9,16 @@ pub enum InitializationError {
     Io(io::IoError),
     Regex(regex::Error),
     Decoder(json::DecoderError),
-    Other(String),
+    Generic(String),
 }
 
 impl InitializationError {
     pub fn new(detail: &str) -> InitializationError {
-        InitializationError::Other(detail.to_string())
+        InitializationError::Generic(detail.to_string())
     }
 
     pub fn from_string(detail: String) -> InitializationError {
-        InitializationError::Other(detail)
+        InitializationError::Generic(detail)
     }
 }
 
@@ -42,6 +42,6 @@ impl error::FromError<json::DecoderError> for InitializationError {
 
 impl <T> error::FromError<sync::PoisonError<T>> for InitializationError {
     fn from_error(error: sync::PoisonError<T>) -> InitializationError {
-        InitializationError::Other(format!("{}",error))
+        InitializationError::Generic(format!("{}",error))
     }
 }

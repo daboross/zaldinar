@@ -1,5 +1,8 @@
 /// This file contains commands to generally control and administer the bot.
-use client::PluginRegister;
+use client::{
+    PluginRegister,
+    ExecutingState,
+};
 use events::CommandEvent;
 
 fn say(event: &CommandEvent) {
@@ -19,9 +22,9 @@ fn quit(event: &CommandEvent) {
         return;
     }
     if event.args.len() != 0 {
-        event.client.quit(Some(event.args.connect(" ").as_slice()));
+        event.client.quit(Some(event.args.connect(" ").as_slice()), ExecutingState::Done);
     } else {
-        event.client.quit(None);
+        event.client.quit(None, ExecutingState::Done);
     }
 }
 

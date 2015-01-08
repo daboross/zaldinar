@@ -16,5 +16,6 @@
         "enabled": false
     },
     "on_connect": [],
-    "log_file": "zaldinar.log"
+    "log_file": "zaldinar.log",
+    "watch_binary": true
 }

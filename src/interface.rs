@@ -71,14 +71,14 @@ impl IrcInterface {
         self.send_raw(line);
     }
 
-    pub fn quit(&self, message: Option<&str>) {
+    pub fn quit(&self, message: Option<&str>, restart: client::ExecutingState) {
         let line = match message {
             Some(m) => format!("QUIT :{}", m),
             None => format!("QUIT"),
         };
         {
             let mut state = self.client.state.write().unwrap();
-            state.done_executing = client::ExecutingState::Done;
+            state.done_executing = restart;
         }
         self.send_raw(line);
         if let Err(_) =  self.data_out.send(None) {

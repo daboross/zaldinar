@@ -14,6 +14,7 @@ use config;
 use dispatch;
 use irc;
 use events;
+use filewatch;
 
 pub type CommandListener = Box<Fn(&events::CommandEvent) + Sync + Send>;
 pub type CtcpListener = Box<Fn(&events::CtcpEvent) + Sync + Send>;
@@ -168,6 +169,14 @@ pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: Plugin
 
     let interface = try!(interface::IrcInterface::new(data_out, client.clone()));
 
+    // Load file watcher
+    if client.watch_binary {
+        match filewatch::watch_binary(interface.clone()) {
+            Ok(v) => v.detach(),
+            Err(e) => warning!("Failed to start binary watch thread: {}", e),
+        }
+    }
+
     // Send PASS, NICK and USER, the initial IRC commands. Because an IrcConnection hasn't been
     // created to receive these yet, they will just go on hold and get sent as soon as the
     // IrcConnection connects.
@@ -193,6 +202,9 @@ pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: Plugin
         let state = try!(client.state.read());
         state.done_executing
     };
+
+    // Possibly drop the thread logger
+    fern::local::set_thread_logger(sync::Arc::new(box fern::NullLogger as fern::BoxedLogger));
 
     return Ok(done);
 }

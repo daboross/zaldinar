@@ -1,4 +1,3 @@
-#![feature(phase)]
 extern crate zaldinar;
 extern crate getopts;
 
@@ -64,8 +63,18 @@ fn main() {
         };
 
         match zaldinar::client::run(config) {
-            Ok(zaldinar::client::ExecutingState::Done) => break,
-            Ok(_) => println!("Restarting."),
+            Ok(zaldinar::client::ExecutingState::Done) => {
+                println!("Done, exiting.");
+                break
+            },
+            Ok(zaldinar::client::ExecutingState::Running) => {
+                println!("Restarting zaldinar main loop.");
+                continue;
+            },
+            Ok(zaldinar::client::ExecutingState::Restart) => {
+                println!("Restarting zaldinar using exec.");
+                continue; // TODO: exec
+            }
             Err(e) => {
                 println!("Error running client: {}", e);
                 std::os::set_exit_status(1);

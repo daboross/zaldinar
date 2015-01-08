@@ -25,6 +25,7 @@ pub struct ClientConfiguration {
     pub on_connect: Vec<String>,
     pub password: Option<String>,
     pub log_file: String,
+    pub watch_binary: bool,
 }
 
 impl ClientConfiguration {

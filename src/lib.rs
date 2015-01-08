@@ -4,9 +4,10 @@ extern crate "rustc-serialize" as rustc_serialize;
 extern crate chrono;
 extern crate regex;
 extern crate fern;
-#[plugin]
+extern crate inotify;
+#[plugin] #[no_link]
 extern crate regex_macros;
-#[macro_use] #[no_link]
+#[macro_use]
 extern crate fern_macros;
 
 pub use errors::InitializationError;
@@ -28,5 +29,6 @@ mod irc;
 mod plugins;
 mod dispatch;
 mod events;
+mod filewatch;
 
 pub const VERSION: &'static str = env!("CARGO_PKG_VERSION");

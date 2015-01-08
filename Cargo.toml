@@ -12,3 +12,6 @@ rustc-serialize = "0.2.4"
 regex = "0.1.4"
 regex_macros = "0.1.2"
 getopts = "0.1.0"
+
+[dependencies.inotify]
+path = "../../CheckedOut/inotify-rs"
