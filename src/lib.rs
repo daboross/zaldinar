@@ -1,4 +1,4 @@
-#![feature(plugin)]
+#![feature(plugin, box_syntax)]
 
 extern crate "rustc-serialize" as rustc_serialize;
 extern crate chrono;
