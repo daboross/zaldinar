@@ -22,7 +22,14 @@ fn log_message(event: &MessageEvent) {
         "NOTICE" => format!("[{}] -{}- {}", event.args[0], nick, event.args.slice_from(1)
             .connect(" ").slice_from(1)),
         "JOIN" => format!("[{}] *** {} joined", event.args[0], nick),
-        "PART" => format!("[{}] *** {} left ({})", event.args[0], nick, event.args[1]),
+        "PART" => {
+            if event.args.len() > 1 {
+                format!("[{}] *** {} left ({})", event.args[0], nick, event.args[1])
+            } else {
+                format!("[{}] *** {} left", event.args[0], nick)
+            }
+
+        },
         "KICK" => {
             if event.args.len() > 2 {
                 format!("[{}] *** {} kicked {} ({})", event.args[0], nick, event.args[1],
