@@ -5,12 +5,14 @@ extern crate getopts;
 use std::os;
 use std::io;
 
-fn print_err(msg: String) {
-    if let Err(e) = writeln!(&mut io::stderr(), "{}", msg) {
-        panic!("Failed to write to stderr.\
-            \nOriginal error output: {}\
-            \nSecondary error writing to stderr: {}", msg, e);
-    }
+macro_rules! print_err {
+    ($($arg:tt)*) => (
+        if let Err(e) = write!(&mut ::std::io::stdio::stderr_raw(), $($arg)*) {
+            panic!("Failed to write to stderr.\
+                \nOriginal error output: {}\
+                \nSecondary error writing to stderr: {}", format!($($arg)*), e);
+        }
+    )
 }
 
 fn main() {
@@ -25,7 +27,7 @@ fn main() {
     let matches = match getopts::getopts(args.tail(), opts) {
         Ok(v) => v,
         Err(e) => {
-            print_err(e.to_string());
+            print_err!("{}", e.to_string());
             return;
         }
     };
@@ -43,7 +45,7 @@ fn main() {
             let absolute = match os::make_absolute(&Path::new(v)) {
                 Ok(v) => v,
                 Err(e) => {
-                    print_err(format!("Failed to make path absolute: {}", e));
+                    print_err!("Failed to make path absolute: {}", e);
                     return;
                 }
             };
@@ -57,7 +59,7 @@ fn main() {
         let config = match zaldinar::ClientConfiguration::load_from_file(&config_path) {
             Ok(v) => v,
             Err(e) => {
-                print_err(format!("Error loading configuration: {}", e));
+                print_err!("Error loading configuration: {}", e);
                 std::os::set_exit_status(1);
                 return;
             },
