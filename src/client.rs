@@ -152,7 +152,7 @@ pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: Plugin
 
     let logger = sync::Arc::new(try!(fern::LoggerConfig {
         format: box |msg: &str, level: &fern::Level| {
-            return format!("[{}][{}] {}", chrono::Local::now().format("%Y-%m-%d][%H:%M:%S"),
+            return format!("[{}][{:?}] {}", chrono::Local::now().format("%Y-%m-%d][%H:%M:%S"),
                 level, msg);
         },
         output: vec![fern::OutputConfig::Stdout, fern::OutputConfig::File(
@@ -171,9 +171,8 @@ pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: Plugin
 
     // Load file watcher
     if client.watch_binary {
-        match filewatch::watch_binary(interface.clone()) {
-            Ok(v) => v.detach(),
-            Err(e) => warning!("Failed to start binary watch thread: {}", e),
+        if let Err(e) = filewatch::watch_binary(interface.clone()) {
+            warning!("Failed to start binary watch thread: {:?}", e);
         }
     }
 

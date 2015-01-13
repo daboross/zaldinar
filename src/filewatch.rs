@@ -9,7 +9,7 @@ use errors::InitializationError;
 
 
 pub fn watch_binary(client: interface::IrcInterface)
-        -> Result<thread::JoinGuard<()>, InitializationError> {
+        -> Result<thread::Thread, InitializationError> {
     let mut watch = try!(inotify::INotify::init());
     let program = match os::self_exe_name() {
         Some(v) => v,
@@ -31,7 +31,7 @@ pub fn watch_binary(client: interface::IrcInterface)
         inotify::ffi::IN_CREATE
     ));
 
-    let guard = thread::Thread::spawn(move || {
+    let thread = thread::Thread::spawn(move || {
         loop {
             let events = match watch.wait_for_events() {
                 Ok(v) => v,
@@ -57,5 +57,5 @@ pub fn watch_binary(client: interface::IrcInterface)
             }
         }
     });
-    return Ok(guard);
+    return Ok(thread);
 }

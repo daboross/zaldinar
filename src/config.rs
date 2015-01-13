@@ -39,7 +39,7 @@ impl ClientConfiguration {
             Err(json::DecoderError::ParseError(
                     json::ParserError::SyntaxError(error_code, line, col))) => {
                 return Err(InitializationError::from_string(format!(
-                    "Syntax error ({}) on line {} column {} in {}",
+                    "Syntax error ({:?}) on line {} column {} in {}",
                     error_code, line, col, path.display())))
             },
             Err(json::DecoderError::ParseError(json::ParserError::IoError(kind, desc))) => {

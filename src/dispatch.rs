@@ -49,7 +49,7 @@ impl Dispatch {
     }
 
     pub fn start_dispatch_loop(self) -> thread::Result<()>{
-        return thread::Builder::new().name("dispatch".to_string()).spawn(move || {
+        return thread::Builder::new().name("dispatch".to_string()).scoped(move || {
             self.dispatch_loop();
         }).join();
     }
@@ -221,7 +221,7 @@ impl PluginExecutor {
         thread::Builder::new().name("worker_thread".to_string()).spawn(move || {
             fern::local::set_thread_logger(self.logger.clone());
             self.worker_loop();
-        }).detach();
+        });
     }
 }
 

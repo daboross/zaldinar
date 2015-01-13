@@ -123,7 +123,7 @@ impl IrcConnection {
                     return;
                 }
             }
-        }).detach();
+        });
         return Ok(());
     }
 
@@ -149,7 +149,7 @@ impl IrcConnection {
                 log_error_then!(self.socket.flush(), return,
                     "Failed to write to stream: {e}");
             }
-        }).detach();
+        });
         return Ok(());
     }
 }
