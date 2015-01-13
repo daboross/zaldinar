@@ -3,11 +3,11 @@ extern crate zaldinar;
 extern crate getopts;
 
 use std::os;
-use std::io;
+use std::io::stdio;
 
 macro_rules! print_err {
     ($($arg:tt)*) => (
-        if let Err(e) = write!(&mut ::std::io::stdio::stderr_raw(), $($arg)*) {
+        if let Err(e) = write!(&mut stdio::stderr_raw(), $($arg)*) {
             panic!("Failed to write to stderr.\
                 \nOriginal error output: {}\
                 \nSecondary error writing to stderr: {}", format!($($arg)*), e);
