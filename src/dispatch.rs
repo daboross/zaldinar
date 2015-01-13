@@ -2,6 +2,7 @@ use std::ascii::AsciiExt;
 use std::sync;
 use std::sync::mpsc;
 use std::thread;
+use std::fmt;
 
 use interface;
 use irc;
@@ -163,6 +164,16 @@ enum PluginTask {
     Ctcp((sync::Arc<client::CtcpListener>, events::CtcpTransport)),
 }
 
+impl fmt::Show for PluginTask {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        fmt.write_str(match self {
+            &PluginTask::Command(_) => "command",
+            &PluginTask::Message(_) => "message",
+            &PluginTask::Ctcp(_) => "ctcp",
+        })
+    }
+}
+
 impl PluginTask {
     fn execute(self, interface: &interface::IrcInterface) {
         match self {
@@ -208,7 +219,12 @@ impl PluginExecutor {
                 lock.recv()
             };
             match message {
-                Ok(next) => next.execute(&self.interface),
+                Ok(next) => {
+                    let desc = format!("{:?}", &next);
+                    debug!("Executing {}", desc);
+                    next.execute(&self.interface);
+                    debug!("Done executing {}", desc);
+                },
                 Err(_) => {
                     self.active = false;
                     break;

@@ -52,6 +52,62 @@ pub fn watch_binary(client: interface::IrcInterface)
                     continue;
                 }
 
+                debug!("Event! \"{}\"", event.name);
+                if event.is_access() {
+                    debug!("\tevent is: access");
+                }
+                if event.is_modify() {
+                    debug!("\tevent is: modify");
+                }
+                if event.is_attrib() {
+                    debug!("\tevent is: attrib");
+                }
+                if event.is_close_write() {
+                    debug!("\tevent is: close_write");
+                }
+                if event.is_close_nowrite() {
+                    debug!("\tevent is: close_nowrite");
+                }
+                if event.is_open() {
+                    debug!("\tevent is: open");
+                }
+                if event.is_moved_from() {
+                    debug!("\tevent is: moved_from");
+                }
+                if event.is_moved_to() {
+                    debug!("\tevent is: moved_to");
+                }
+                if event.is_create() {
+                    debug!("\tevent is: create");
+                }
+                if event.is_delete() {
+                    debug!("\tevent is: delete");
+                }
+                if event.is_delete_self() {
+                    debug!("\tevent is: delete_self");
+                }
+                if event.is_move_self() {
+                    debug!("\tevent is: move_self");
+                }
+                if event.is_move() {
+                    debug!("\tevent is: move");
+                }
+                if event.is_close() {
+                    debug!("\tevent is: close");
+                }
+                if event.is_dir() {
+                    debug!("\tevent is: dir");
+                }
+                if event.is_unmount() {
+                    debug!("\tevent is: unmount");
+                }
+                if event.is_queue_overflow() {
+                    debug!("\tevent is: queue_overflow");
+                }
+                if event.is_ignored() {
+                    debug!("\tevent is: ignored");
+                }
+
                 client.quit(Some("Updating to latest binary"), client::ExecutingState::Restart);
                 return;
             }

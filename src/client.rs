@@ -157,7 +157,7 @@ pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: Plugin
         },
         output: vec![fern::OutputConfig::Stdout, fern::OutputConfig::File(
                                                     Path::new(config.log_file.as_slice()))],
-        level: fern::Level::Debug,
+        level: fern::Level::Info,
     }.into_logger()));
 
     fern::local::set_thread_logger(logger.clone());
