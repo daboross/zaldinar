@@ -1,9 +1,9 @@
-#![allow(unstable)]
+#![feature(io, os, path, collections)]
 extern crate zaldinar;
 extern crate getopts;
 
 use std::os;
-use std::io::stdio;
+use std::old_io::stdio;
 
 macro_rules! print_err {
     ($($arg:tt)*) => (
@@ -17,7 +17,7 @@ macro_rules! print_err {
 
 fn main() {
     let args = os::args();
-    let program = args[0].as_slice();
+    let program = &args[0];
     let opts = &[
         getopts::optopt("c", "config", "set config file name", "FILE"),
         getopts::optflag("h", "help", "print this help menu"),
@@ -33,7 +33,7 @@ fn main() {
     };
 
     if matches.opt_present("help") {
-        println!("{}", getopts::usage(getopts::short_usage(program, opts).as_slice(), opts));
+        println!("{}", getopts::usage(&getopts::short_usage(program, opts), opts));
         return;
     } else if matches.opt_present("version") {
         println!("zaldinar version {}", zaldinar::VERSION);

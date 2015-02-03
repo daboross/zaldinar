@@ -1,4 +1,4 @@
-use std::io;
+use std::old_io as io;
 use rustc_serialize::json;
 
 use errors::InitializationError;
@@ -31,20 +31,20 @@ pub struct ClientConfiguration {
 impl ClientConfiguration {
     pub fn load_from_file(path: &Path) -> Result<ClientConfiguration, InitializationError> {
         let config_contents = try!(io::File::open(path).read_to_string());
-        return Ok(try!(match json::decode::<ClientConfiguration>(config_contents.as_slice()) {
+        return Ok(try!(match json::decode::<ClientConfiguration>(&config_contents) {
             Err(json::DecoderError::MissingFieldError(s)) => {
                 return Err(InitializationError::from_string(format!("Field {} not found in {}",
-                    s.as_slice(), path.display())))
+                    &s, path.display())));
             },
             Err(json::DecoderError::ParseError(
                     json::ParserError::SyntaxError(error_code, line, col))) => {
                 return Err(InitializationError::from_string(format!(
                     "Syntax error ({:?}) on line {} column {} in {}",
-                    error_code, line, col, path.display())))
+                    error_code, line, col, path.display())));
             },
             Err(json::DecoderError::ParseError(json::ParserError::IoError(kind, desc))) => {
                 return Err(InitializationError::Io(
-                    io::IoError{ kind: kind, desc: desc, detail: None}))
+                    io::IoError{ kind: kind, desc: desc, detail: None}));
             },
             Ok(v) => Ok(v),
             Err(e) => Err(e),

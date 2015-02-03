@@ -10,10 +10,9 @@ fn say(event: &CommandEvent) {
         return;
     }
     if event.args[0].starts_with("#") {
-        event.client.send_message(event.args[0].as_slice(),
-                                    event.args.slice_from(1).connect(" ").as_slice());
+        event.client.send_message(&event.args[0], &event.args[1..].connect(" "));
     } else {
-        event.client.send_message(event.channel(), event.args.connect(" ").as_slice());
+        event.client.send_message(event.channel(), &event.args.connect(" "));
     }
 }
 
@@ -22,7 +21,7 @@ fn quit(event: &CommandEvent) {
         return;
     }
     if event.args.len() != 0 {
-        event.client.quit(Some(event.args.connect(" ").as_slice()), ExecutingState::Done);
+        event.client.quit(Some(&event.args.connect(" ")), ExecutingState::Done);
     } else {
         event.client.quit(None, ExecutingState::Done);
     }
@@ -40,8 +39,8 @@ fn join(event: &CommandEvent) {
     if !event.client.is_admin(event) {
         return;
     }
-    event.client.join(event.args[0].as_slice());
-    event.client.send_message(event.channel(), format!("Joined {}.", event.args[0]).as_slice());
+    event.client.join(&event.args[0]);
+    event.client.send_message(event.channel(), &format!("Joined {}.", event.args[0]));
 }
 
 fn part(event: &CommandEvent) {
@@ -49,23 +48,20 @@ fn part(event: &CommandEvent) {
         return;
     }
     if event.args.len() > 1 {
-        event.client.part(event.args[0].as_slice(),
-                            Some(event.args.slice_from(1).connect(" ").as_slice()));
+        event.client.part(&event.args[0], Some(&event.args[1..].connect(" ")));
     } else {
-        event.client.part(event.args[0].as_slice(), None);
+        event.client.part(&event.args[0], None);
     }
 
-    event.client.send_message(event.channel(), format!("Parted {}.", event.args[0]).as_slice());
+    event.client.send_message(event.channel(), &format!("Parted {}.", event.args[0]));
 }
 
 fn message(event: &CommandEvent) {
     if !event.client.is_admin(event) {
         return;
     }
-    event.client.send_message(event.args[0].as_slice(),
-                                event.args.slice_from(1).connect(" ").as_slice());
-    event.client.send_message(event.channel(),
-                                format!("Sent message to {}.", event.args[0]).as_slice());
+    event.client.send_message(&event.args[0], &event.args[1..].connect(" "));
+    event.client.send_message(event.channel(), &format!("Sent message to {}.", event.args[0]));
 }
 
 pub fn register(register: &mut PluginRegister) {

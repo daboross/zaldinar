@@ -2,28 +2,28 @@ use client::PluginRegister;
 use events::MessageEvent;
 
 fn on_connect(event: &MessageEvent) {
-    for command in event.client.on_connect.iter() {
+    for command in &event.client.on_connect {
         event.client.send_command(command.clone(), &[]);
     }
 
     let nickserv = &event.client.nickserv;
     if nickserv.enabled {
         if nickserv.account.len() != 0 {
-            event.client.send_message(nickserv.name.as_slice(), format!("{} {} {}",
-                nickserv.command, nickserv.account, nickserv.password).as_slice());
+            event.client.send_message(&nickserv.name, &format!("{} {} {}",
+                nickserv.command, nickserv.account, nickserv.password));
         } else {
-            event.client.send_message(nickserv.name.as_slice(), format!("{} {}",
-                nickserv.command, nickserv.password).as_slice());
+            event.client.send_message(&nickserv.name, &format!("{} {}",
+                nickserv.command, nickserv.password));
         }
     }
 
-    for channel in event.client.channels.iter() {
-        event.client.send_command("JOIN".to_string(), &[channel.as_slice()]);
+    for channel in &event.client.channels {
+        event.client.send_command("JOIN".to_string(), &[&channel]);
     }
     {
         let mut state = event.client.state.write().unwrap();
-        state.channels.push_all(event.client.channels.iter()
-            .map(|s: &String| s.clone()).collect::<Vec<String>>().as_slice());
+        state.channels.push_all(&event.client.channels.iter()
+            .map(|s: &String| s.clone()).collect::<Vec<String>>());
     }
 }
 

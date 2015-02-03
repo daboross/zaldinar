@@ -11,9 +11,9 @@ fn eightball(event: &CommandEvent) {
     let messages = include_str!("../../resources/8ball/messages.txt").split('\n')
                                 .collect::<Vec<&str>>();
     let mut rng = rand::thread_rng();
-    let message = rng.choose(messages.as_slice()).unwrap()
+    let message = rng.choose(&messages).unwrap()
                     .replace("<yes>", "\x0305").replace("<no>", "\x0303");
-    event.client.send_message(event.channel(), format!("\x01ACTION shakes the magic 8 ball... \x02{}\x01", message).as_slice());
+    event.client.send_message(event.channel(), &format!("\x01ACTION shakes the magic 8 ball... \x02{}\x01", message));
 }
 
 pub fn register(register: &mut PluginRegister) {

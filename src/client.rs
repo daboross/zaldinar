@@ -156,7 +156,7 @@ pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: Plugin
                 level, msg);
         },
         output: vec![fern::OutputConfig::Stdout, fern::OutputConfig::File(
-                                                    Path::new(config.log_file.as_slice()))],
+                                                    Path::new(&config.log_file))],
         level: fern::Level::Info,
     }.into_logger()));
 
@@ -172,7 +172,7 @@ pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: Plugin
     // Load file watcher
     if client.watch_binary {
         if let Err(e) = filewatch::watch_binary(interface.clone()) {
-            warning!("Failed to start binary watch thread: {:?}", e);
+            warning!("Failed to start binary watch thread: {}", e);
         }
     }
 
@@ -180,13 +180,13 @@ pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: Plugin
     // created to receive these yet, they will just go on hold and get sent as soon as the
     // IrcConnection connects.
     if let Some(ref pass) = client.password {
-        interface.send_command("PASS".to_string(), &[pass.as_slice()]);
+        interface.send_command("PASS".to_string(), &[&pass]);
     }
-    interface.send_command("NICK".to_string(), &[client.nick.as_slice()]);
-    interface.send_command("USER".to_string(), &[client.user.as_slice(), "0", "*", format!(":{}",
-        client.real_name).as_slice()]);
+    interface.send_command("NICK".to_string(), &[&client.nick]);
+    interface.send_command("USER".to_string(), &[&client.user, "0", "*",
+        &format!(":{}", client.real_name)]);
 
-    try!(irc::IrcConnection::create(client.address.as_slice(), connection_data_out,
+    try!(irc::IrcConnection::create(&client.address, connection_data_out,
         connection_data_in, logger.clone(), client.clone()));
 
     // Create dispatch, and start the worker threads for plugin execution

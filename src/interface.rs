@@ -20,7 +20,7 @@ impl IrcInterface {
             -> Result<IrcInterface, InitializationError> {
         let mut admins = Vec::new();
         for admin_str in client.config.admins.iter() {
-            admins.push(try!(regex::Regex::new(format!("^{}$", admin_str.as_slice()).as_slice())));
+            admins.push(try!(regex::Regex::new(&format!("^{}$", &admin_str))));
         }
         let interface = IrcInterface {
             data_out: data_out,
@@ -32,14 +32,14 @@ impl IrcInterface {
 
     pub fn send_raw(&self, line: String) {
         if let Err(_) = self.data_out.send(Some(line)) {
-            warning!("Unable to send to data_out from IrcInterface.")
+            warning!("Unable to send to data_out from IrcInterface.");
         }
     }
 
     pub fn send_command(&self, command: String, args: &[&str]) {
         let mut line = command;
         line.push(' ');
-        line.push_str(args.connect(" ").as_slice());
+        line.push_str(&args.connect(" "));
         self.send_raw(line);
     }
 
@@ -82,13 +82,13 @@ impl IrcInterface {
         }
         self.send_raw(line);
         if let Err(_) =  self.data_out.send(None) {
-            warning!("Unable to send to data_out from IrcInterface. (running quit)")
+            warning!("Unable to send to data_out from IrcInterface. (running quit)");
         }
     }
 
     pub fn is_admin(&self, event: &events::CommandEvent) -> bool {
         if event.mask().has_mask() {
-            let mask = event.mask().mask().unwrap().as_slice();
+            let mask = &event.mask().mask().unwrap();
             if self.admins.iter().any(|r| r.is_match(mask)) {
                 return true;
             }

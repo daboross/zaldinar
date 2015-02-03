@@ -60,33 +60,33 @@ impl Dispatch {
         let plugins = self.state.plugins.read().unwrap();
 
         // PING
-        if message.command.as_slice().eq_ignore_ascii_case("PING") {
+        if message.command.eq_ignore_ascii_case("PING") {
             self.interface.send_raw(format!("PONG {}", message.args.connect(" ")));
         }
 
         let message_event = events::MessageTransport::from_internal(message);
 
         // Catch all listeners
-        for listener in plugins.catch_all.iter() {
+        for listener in &plugins.catch_all {
             try!(self.execute(PluginTask::Message((listener.clone(), message_event.clone()))));
         }
 
         // Raw listeners
         if let Some(list) = plugins.raw_listeners.get(&message.command.to_ascii_lowercase()) {
-            for listener in list.iter() {
+            for listener in list {
                 try!(self.execute(PluginTask::Message((listener.clone(), message_event.clone()))));
             }
         }
 
-        if message.command.as_slice().eq_ignore_ascii_case("PRIVMSG") {
+        if message.command.eq_ignore_ascii_case("PRIVMSG") {
             // Channel always exists for PRIVMSG
-            let channel = message.channel.as_ref().unwrap().as_slice();
+            let channel = &message.channel.as_ref().unwrap();
 
             // CTCP
             if let Some(ctcp_event) = events::CtcpTransport::from_internal(message) {
                 if let Some(list) = plugins.ctcp_listeners.get(&ctcp_event.command
                         .to_ascii_lowercase()) {
-                    for ctcp_listener in list.iter() {
+                    for ctcp_listener in list {
                         try!(self.execute(PluginTask::Ctcp((ctcp_listener.clone(),
                             ctcp_event.clone()))));
                     }
@@ -94,12 +94,12 @@ impl Dispatch {
             }
 
             // Commands
-            let command_prefix = format!(":{}", self.state.command_prefix.as_slice());
+            let command_prefix = format!(":{}", &self.state.command_prefix);
 
             // This checks for the command prefix, commands typed like '.command_name args'
-            if message.args[1].starts_with(command_prefix.as_slice()) {
-                let command = message.args[1].slice_from(command_prefix.len());
-                let args = message.args.slice_from(2).iter().map(|s| s.clone())
+            if message.args[1].starts_with(&command_prefix) {
+                let command = &message.args[1][command_prefix.len()..];
+                let args = message.args[2..].iter().map(|s| s.clone())
                             .collect::<Vec<String>>();
                 try!(self.dispatch_command(&plugins, command, channel, args, &message.mask));
             } else {
@@ -108,16 +108,16 @@ impl Dispatch {
                 // it below.
                 let mut command_matched = false;
                 if let Some(captures) = regex!(r"^:([^\s]+?)[:;,]?\s+(.+)$").captures(
-                                            message.args.slice_from(1).connect(" ").as_slice()) {
+                                            &message.args[1..].connect(" ")) {
                     let same = {
                         let state = self.state.state.read().unwrap();
-                        captures.at(1) == Some(state.nick.as_slice())
+                        captures.at(1) == Some(&state.nick)
                     };
                     if same {
                         if let Some(args_str) = captures.at(2) {
                             let split = args_str.split(' ').collect::<Vec<&str>>();
                             let command = split[0];
-                            let args = split.slice_from(1).iter().map(|s| s.to_string())
+                            let args = split[1..].iter().map(|s| s.to_string())
                                         .collect::<Vec<String>>();
                             try!(self.dispatch_command(&plugins, command, channel, args, &message.mask));
                             command_matched = true;
@@ -129,9 +129,9 @@ impl Dispatch {
                 // People can just say 'command args' in a private message. If the channel is the
                 // sender's nick, the message is being sent in a private message.
                 if !command_matched && message.mask.nick() == Some(channel) {
-                    // slice_from(1) to remove the `:` at the beginning of privmsg content.
-                    let command = message.args[1].slice_from(1);
-                    let args = message.args.slice_from(2).iter().map(|s| s.clone())
+                    // [1..] to remove the `:` at the beginning of privmsg content.
+                    let command = &message.args[1][1..];
+                    let args = message.args[2..].iter().map(|s| s.clone())
                                 .collect::<Vec<String>>();
                     try!(self.dispatch_command(&plugins, command, channel, args, &message.mask));
                 }
@@ -145,7 +145,7 @@ impl Dispatch {
             -> Result<(), mpsc::SendError<PluginTask>> {
         if let Some(list) = plugins.commands.get(&command.to_ascii_lowercase()) {
             let command_event = events::CommandTransport::new(channel, args, mask);
-            for closure in list.iter() {
+            for closure in list {
                 try!(self.execute(PluginTask::Command((closure.clone(), command_event.clone()))));
             }
         }
@@ -164,7 +164,7 @@ enum PluginTask {
     Ctcp((sync::Arc<client::CtcpListener>, events::CtcpTransport)),
 }
 
-impl fmt::Show for PluginTask {
+impl fmt::Display for PluginTask {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         fmt.write_str(match self {
             &PluginTask::Command(_) => "command",
@@ -220,7 +220,7 @@ impl PluginExecutor {
             };
             match message {
                 Ok(next) => {
-                    let desc = format!("{:?}", &next);
+                    let desc = format!("{}", &next);
                     debug!("Executing {}", desc);
                     next.execute(&self.interface);
                     debug!("Done executing {}", desc);

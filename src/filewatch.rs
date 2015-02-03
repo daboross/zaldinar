@@ -40,7 +40,7 @@ pub fn watch_binary(client: interface::IrcInterface)
                     return;
                 },
             };
-            for event in events.iter() {
+            for event in events {
                 if event.is_ignored() {
                     warning!(
                         "File watch on binary removed due to a deleted directory or unmounted \

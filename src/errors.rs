@@ -1,11 +1,11 @@
 use std::error;
-use std::io;
+use std::old_io as io;
 use std::sync;
 use std::fmt;
 use rustc_serialize::json;
 use regex;
 
-#[derive(Show)]
+#[derive(Debug)]
 pub enum InitializationError {
     Io(io::IoError),
     Regex(regex::Error),
@@ -43,28 +43,28 @@ impl error::FromError<json::DecoderError> for InitializationError {
 
 impl <T> error::FromError<sync::PoisonError<T>> for InitializationError {
     fn from_error(error: sync::PoisonError<T>) -> InitializationError {
-        InitializationError::Generic(format!("{:?}", error))
+        InitializationError::Generic(format!("{}", error))
     }
 }
 
-impl fmt::String for InitializationError {
+impl fmt::Display for InitializationError {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         match self {
             &InitializationError::Io(ref e) => {
                 try!(fmt.write_str("IO Error: "));
-                fmt::String::fmt(e, fmt)
+                fmt::Display::fmt(e, fmt)
             },
             &InitializationError::Regex(ref e) => {
                 try!(fmt.write_str("Regex Error: "));
-                fmt::String::fmt(e, fmt)
+                fmt::Display::fmt(e, fmt)
             },
             &InitializationError::Decoder(ref e) => {
                 try!(fmt.write_str("JSON Error: "));
-                fmt::Show::fmt(e, fmt)
+                fmt::Display::fmt(e, fmt)
             },
             &InitializationError::Generic(ref s) => {
                 try!(fmt.write_str("Error: "));
-                fmt::String::fmt(s, fmt)
+                fmt::Display::fmt(s, fmt)
             }
         }
     }

@@ -13,20 +13,24 @@ pub struct FullIrcMask {
 }
 
 impl FullIrcMask {
+    #[inline(always)]
     pub fn mask(&self) -> &str {
-        self.mask.as_slice()
+        &self.mask
     }
 
+    #[inline(always)]
     pub fn nick(&self) -> &str {
-        self.nick.as_slice()
+        &self.nick
     }
 
+    #[inline(always)]
     pub fn user(&self) -> &str {
-        self.user.as_slice()
+        &self.user
     }
 
+    #[inline(always)]
     pub fn host(&self) -> &str {
-        self.host.as_slice()
+        &self.host
     }
 }
 
@@ -75,15 +79,15 @@ impl IrcMask {
 
     pub fn mask(&self) -> Option<&str> {
         match self {
-            &IrcMask::Full(ref m) => Some(m.mask.as_slice()),
-            &IrcMask::Unparseable(ref m) => Some(m.as_slice()),
+            &IrcMask::Full(ref m) => Some(&m.mask),
+            &IrcMask::Unparseable(ref m) => Some(&m),
             &IrcMask::Nonexistent => None
         }
     }
 
     pub fn nick(&self) -> Option<&str> {
         match self {
-            &IrcMask::Full(ref m) => Some(m.nick.as_slice()),
+            &IrcMask::Full(ref m) => Some(&m.nick),
             &IrcMask::Unparseable(_) => None,
             &IrcMask::Nonexistent => None
         }
@@ -177,24 +181,27 @@ impl MessageTransport {
         };
     }
 
+    #[inline(always)]
     pub fn command(&self) -> &str {
-        self.command.as_slice()
+        &self.command
     }
 
+    #[inline(always)]
     pub fn args(&self) -> &[String] {
-        self.args.as_slice()
+        &self.args
     }
 
+    #[inline(always)]
     pub fn mask(&self) -> &IrcMask {
         &self.mask
     }
 
     pub fn ctcp(&self) -> Option<(&str, &str)> {
-        self.ctcp.as_ref().map(|t| (t.0.as_slice(), t.1.as_slice()))
+        self.ctcp.as_ref().map(|t| (&t.0[], &t.1[]))
     }
 
     pub fn channel(&self) -> Option<&str> {
-        self.channel.as_ref().map(|s| s.as_slice())
+        self.channel.as_ref().map(|s| &s[])
     }
 }
 
@@ -214,16 +221,19 @@ impl CommandTransport {
         }
     }
 
+    #[inline(always)]
     pub fn mask(&self) -> &IrcMask {
         &self.mask
     }
 
+    #[inline(always)]
     pub fn channel(&self) -> &str {
-        self.channel.as_slice()
+        &self.channel
     }
 
+    #[inline(always)]
     pub fn args(&self) -> &[String] {
-        self.args.as_slice()
+        &self.args
     }
 }
 
@@ -250,18 +260,22 @@ impl CtcpTransport {
         };
     }
 
+    #[inline(always)]
     pub fn channel(&self) -> &str {
-        self.channel.as_slice()
+        &self.channel
     }
 
+    #[inline(always)]
     pub fn command(&self) -> &str {
-        self.command.as_slice()
+        &self.command
     }
 
+    #[inline(always)]
     pub fn content(&self) -> &str {
-        self.content.as_slice()
+        &self.content
     }
 
+    #[inline(always)]
     pub fn mask(&self) -> &IrcMask {
         &self.mask
     }

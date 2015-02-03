@@ -1,5 +1,5 @@
 use std::ascii::AsciiExt;
-use std::io;
+use std::old_io as io;
 use std::thread;
 use std::sync;
 use std::sync::mpsc;
@@ -69,11 +69,11 @@ impl IrcConnection {
                 let (command, args, possible_mask): (&str, &[&str], IrcMask) = if message_split[0]
                         .starts_with(":") {
                     (
-                        message_split[1], message_split.slice_from(2),
-                        IrcMask::parse_from_str(message_split[0].slice_from(1))
+                        message_split[1], &message_split[2..],
+                        IrcMask::parse_from_str(&message_split[0][1..])
                     )
                 } else {
-                    (message_split[0], message_split.slice_from(1), IrcMask::Nonexistent)
+                    (message_split[0], &message_split[1..], IrcMask::Nonexistent)
                 };
 
                 let ctcp = if command.eq_ignore_ascii_case("PRIVMSG")
@@ -82,12 +82,12 @@ impl IrcConnection {
                     let ctcp_command;
                     let mut ctcp_message;
                     if args.len() > 2 {
-                        ctcp_command = args[1].slice_from(2).to_string(); // to remove :\x01
-                        ctcp_message = args.slice_from(2).connect(" ");
+                        ctcp_command = args[1][2..].to_string(); // to remove :\x01
+                        ctcp_message = args[2..].connect(" ");
                         ctcp_message.pop(); // to remove last \x01
                     } else {
                         // remove starting :\x01 and ending \x01
-                        ctcp_command = args[1].slice(2, args[1].len() - 1).to_string();
+                        ctcp_command = args[1][2..(args[1].len() - 1)].to_string();
                         ctcp_message = "".to_string();
                     }
                     Some((ctcp_command, ctcp_message))
@@ -102,7 +102,7 @@ impl IrcConnection {
                         // If the channel is our bots nick, and the sender has a nick, the message
                         // is a private message. For the sake of plugins trying to reply,  we set
                         // the channel to the sender's nick instead of our nick.
-                        if args[0] == self.client.state.read().unwrap().nick.as_slice() {
+                        if args[0] == self.client.state.read().unwrap().nick {
                             match possible_mask.nick() {
                                 Some(v) => Some(v.to_string()),
                                 None => Some(args[0].to_string()),
@@ -142,9 +142,7 @@ impl IrcConnection {
                 if !command.starts_with("PONG ") {
                     info!(">>> {}", command);
                 }
-                log_error_then!(self.socket.write(command.as_bytes()), return,
-                    "Failed to write to stream: {e}");
-                log_error_then!(self.socket.write(b"\n"), return,
+                log_error_then!(self.socket.write_line(&command), return,
                     "Failed to write to stream: {e}");
                 log_error_then!(self.socket.flush(), return,
                     "Failed to write to stream: {e}");
@@ -222,7 +220,7 @@ impl IrcMask {
 
     pub fn nick(&self) -> Option<&str> {
         match self {
-            &IrcMask::Full(ref mask) => Some(mask.nick.as_slice()),
+            &IrcMask::Full(ref mask) => Some(&mask.nick),
             &IrcMask::Unparseable(_) => None,
             &IrcMask::Nonexistent => None
         }
