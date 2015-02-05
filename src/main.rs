@@ -1,9 +1,11 @@
-#![feature(io, os, path, collections)]
+#![feature(io, path, env, std_misc, core, os)]
+
 extern crate zaldinar;
 extern crate getopts;
 
-use std::os;
+use std::env;
 use std::old_io::stdio;
+use std::ffi::AsOsStr;
 
 macro_rules! print_err {
     ($($arg:tt)*) => (
@@ -16,15 +18,27 @@ macro_rules! print_err {
 }
 
 fn main() {
-    let args = os::args();
-    let program = &args[0];
+    let mut args = env::args();
+    let program = match args.next() {
+        // TODO: some error catching of lossy strings here or not?
+        Some(v) => v.as_os_str().to_string_lossy().into_owned(),
+        None => match env::current_exe() {
+            Ok(path) => path.as_os_str().to_string_lossy().into_owned(),
+            Err(e) => {
+                print_err!("Warning: failed to find current executable: {}", e);
+                "<unknown executable>".to_string()
+            },
+        }
+    };
     let opts = &[
         getopts::optopt("c", "config", "set config file name", "FILE"),
         getopts::optflag("h", "help", "print this help menu"),
         getopts::optflag("v", "version", "print program version"),
     ];
 
-    let matches = match getopts::getopts(args.tail(), opts) {
+    // TODO: Bug getopts to use OsString
+    let matches = match getopts::getopts(
+            &args.map(|s| s.to_string_lossy().into_owned()).collect::<Vec<String>>()[], opts) {
         Ok(v) => v,
         Err(e) => {
             print_err!("{}", e.to_string());
@@ -33,22 +47,24 @@ fn main() {
     };
 
     if matches.opt_present("help") {
-        println!("{}", getopts::usage(&getopts::short_usage(program, opts), opts));
+        println!("{}", getopts::usage(&getopts::short_usage(&program, opts), opts));
         return;
     } else if matches.opt_present("version") {
         println!("zaldinar version {}", zaldinar::VERSION);
         return;
     }
 
+    let current_dir = match env::current_dir() {
+        Ok(v) => v,
+        Err(e) => {
+            print_err!("Warning: failed to get current directory: {}", e);
+            Path::new("") // TODO: return here or just not be absolute?
+        }
+    };
+
     let config_path = match matches.opt_str("config") {
         Some(v) => {
-            let absolute = match os::make_absolute(&Path::new(v)) {
-                Ok(v) => v,
-                Err(e) => {
-                    print_err!("Failed to make path absolute: {}", e);
-                    return;
-                }
-            };
+            let absolute = current_dir.join(&Path::new(v));
             println!("Using configuration: {}", absolute.display());
             absolute
         },
@@ -60,7 +76,7 @@ fn main() {
             Ok(v) => v,
             Err(e) => {
                 print_err!("Error loading configuration: {}", e);
-                std::os::set_exit_status(1);
+                env::set_exit_status(1);
                 return;
             },
         };
@@ -80,9 +96,7 @@ fn main() {
             }
             Err(e) => {
                 println!("Error running client: {}", e);
-                std::os::set_exit_status(1);
-                // There is no need to stop other tasks at this point, because the only time
-                // client.connect() returns Err is before any tasks are started
+                env::set_exit_status(1);
             },
         };
     }

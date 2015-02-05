@@ -1,4 +1,4 @@
-use std::os;
+use std::env;
 use std::thread;
 
 use inotify;
@@ -11,10 +11,10 @@ use errors::InitializationError;
 pub fn watch_binary(client: interface::IrcInterface)
         -> Result<thread::Thread, InitializationError> {
     let mut watch = try!(inotify::INotify::init());
-    let program = match os::self_exe_name() {
-        Some(v) => v,
-        None => return Err(InitializationError::from_string(
-            format!("Failed to get the path of the running executable!"))),
+    let program = match env::current_exe() {
+        Ok(v) => v,
+        Err(e) => return Err(InitializationError::from_string(
+            format!("Failed to get the path of the running executable: {}", e))),
     };
 
     let filename = match program.filename_str() {
@@ -22,6 +22,7 @@ pub fn watch_binary(client: interface::IrcInterface)
         None => return Err(InitializationError::from_string(
             format!("Failed to get filename from program Path ({})", program.display()))),
     };
+
 
     // IN_CLOSE_WRITE, IN_MOVED_TO and IN_CREATE are the only events which modify a file, and also
     // leave a fully intact file that is ready to be executed.

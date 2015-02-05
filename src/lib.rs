@@ -1,4 +1,5 @@
-#![feature(plugin, box_syntax, core, std_misc, io, path, os, rand, collections)]
+#![feature(plugin, box_syntax, core, std_misc, io, path, rand, collections)]
+#![cfg_attr(target_os = "linux", feature(env))] // for filewatch
 
 extern crate "rustc-serialize" as rustc_serialize;
 extern crate chrono;
@@ -29,6 +30,7 @@ mod irc;
 mod plugins;
 mod dispatch;
 mod events;
+#[cfg(target_os = "linux")]
 mod filewatch;
 
 pub const VERSION: &'static str = env!("CARGO_PKG_VERSION");

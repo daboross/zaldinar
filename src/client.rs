@@ -14,6 +14,7 @@ use config;
 use dispatch;
 use irc;
 use events;
+#[cfg(target_os = "linux")]
 use filewatch;
 
 pub type CommandListener = Box<Fn(&events::CommandEvent) + Sync + Send>;
@@ -141,6 +142,20 @@ impl ops::Deref for Client {
     }
 }
 
+#[cfg(target_os = "linux")]
+fn start_file_watch(client: &sync::Arc<Client>, interface: &interface::IrcInterface) {
+    if client.watch_binary {
+        if let Err(e) = filewatch::watch_binary(interface.clone()) {
+            warning!("Failed to start binary watch thread: {}", e);
+        }
+    }
+}
+
+#[cfg(not(target_os = "linux"))]
+fn start_file_watch(_client: &sync::Arc<Client>, _interface: &interface::IrcInterface) {
+    // TODO: Maybe support this?
+}
+
 pub fn run(config: config::ClientConfiguration) -> Result<ExecutingState, InitializationError> {
     run_with_plugins(config, PluginRegister::new())
 }
@@ -170,11 +185,7 @@ pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: Plugin
     let interface = try!(interface::IrcInterface::new(data_out, client.clone()));
 
     // Load file watcher
-    if client.watch_binary {
-        if let Err(e) = filewatch::watch_binary(interface.clone()) {
-            warning!("Failed to start binary watch thread: {}", e);
-        }
-    }
+    start_file_watch(&client, &interface);
 
     // Send PASS, NICK and USER, the initial IRC commands. Because an IrcConnection hasn't been
     // created to receive these yet, they will just go on hold and get sent as soon as the
