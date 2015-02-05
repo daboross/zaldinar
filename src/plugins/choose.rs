@@ -1,5 +1,5 @@
-use std::rand;
-use std::rand::Rng;
+use rand;
+use rand::Rng;
 use client::PluginRegister;
 use events::CommandEvent;
 

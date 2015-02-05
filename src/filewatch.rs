@@ -1,6 +1,7 @@
 use std::env;
 use std::thread;
-
+use std::path::Path;
+use std::ffi::AsOsStr;
 use inotify;
 
 use interface;
@@ -11,22 +12,32 @@ use errors::InitializationError;
 pub fn watch_binary(client: interface::IrcInterface)
         -> Result<thread::Thread, InitializationError> {
     let mut watch = try!(inotify::INotify::init());
-    let program = match env::current_exe() {
+    let program_old_path = match env::current_exe() {
         Ok(v) => v,
         Err(e) => return Err(InitializationError::from_string(
             format!("Failed to get the path of the running executable: {}", e))),
     };
+    let program = Path::new(program_old_path.as_os_str());
 
-    let filename = match program.filename_str() {
-        Some(v) => v.to_string(),
+    let filename = match program.file_name() {
+        Some(v) => match v.to_str() {
+            Some(v) => v.to_string(),
+            None => return Err(InitializationError::from_string(
+                format!("Program filename invalid utf8!"))),
+        },
         None => return Err(InitializationError::from_string(
             format!("Failed to get filename from program Path ({})", program.display()))),
     };
 
+    let parent_dir = match program.parent() {
+        Some(v) => v,
+        None => return Err(InitializationError::from_string(
+            format!("Couldn't get parent dir of {:?}", program))),
+    };
 
     // IN_CLOSE_WRITE, IN_MOVED_TO and IN_CREATE are the only events which modify a file, and also
     // leave a fully intact file that is ready to be executed.
-    try!(watch.add_watch(&program.dir_path(),
+    try!(watch.add_watch(&parent_dir,
         inotify::ffi::IN_CLOSE_WRITE |
         inotify::ffi::IN_MOVED_TO |
         inotify::ffi::IN_CREATE
