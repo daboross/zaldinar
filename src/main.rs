@@ -30,15 +30,14 @@ fn main() {
             },
         }
     };
-    let opts = &[
-        getopts::optopt("c", "config", "set config file name", "FILE"),
-        getopts::optflag("h", "help", "print this help menu"),
-        getopts::optflag("v", "version", "print program version"),
-    ];
+    let mut opts = getopts::Options::new();
+    opts.optopt("c", "config", "set config file name", "FILE");
+    opts.optflag("h", "help", "print this help menu");
+    opts.optflag("v", "version", "print program version");
 
     // TODO: Bug getopts to use OsString
-    let matches = match getopts::getopts(
-            &args.map(|s| s.to_string_lossy().into_owned()).collect::<Vec<String>>()[], opts) {
+    let matches = match opts.parse(
+            &args.map(|s| s.to_string_lossy().into_owned()).collect::<Vec<String>>()[]) {
         Ok(v) => v,
         Err(e) => {
             print_err!("{}", e.to_string());
@@ -47,7 +46,8 @@ fn main() {
     };
 
     if matches.opt_present("help") {
-        println!("{}", getopts::usage(&getopts::short_usage(&program, opts), opts));
+        let brief = format!("Usage: {} [options]", program);
+        println!("{}", opts.usage(brief.as_slice()));
         return;
     } else if matches.opt_present("version") {
         println!("zaldinar version {}", zaldinar::VERSION);
