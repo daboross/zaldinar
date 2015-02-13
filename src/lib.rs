@@ -1,5 +1,6 @@
 #![feature(plugin, box_syntax, core, std_misc, io, path, collections)]
 #![cfg_attr(target_os = "linux", feature(env, os))] // for filewatch
+#![plugin(regex_macros)]
 
 extern crate "rustc-serialize" as rustc_serialize;
 extern crate chrono;
@@ -7,8 +8,6 @@ extern crate regex;
 extern crate fern;
 extern crate inotify;
 extern crate rand;
-#[plugin] #[no_link]
-extern crate regex_macros;
 #[macro_use]
 extern crate fern_macros;
 
