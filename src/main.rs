@@ -36,7 +36,7 @@ fn main() {
     opts.optflag("v", "version", "print program version");
 
     // TODO: Bug getopts to use OsString
-    let matches = match opts.parse(args.skip(1).collect::<Vec<String>>()) {
+    let matches = match opts.parse(args.collect::<Vec<String>>()) {
         Ok(v) => v,
         Err(e) => {
             print_err!("{}", e.to_string());
