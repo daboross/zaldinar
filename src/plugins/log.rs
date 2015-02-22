@@ -5,7 +5,7 @@ use events::MessageEvent;
 
 fn log_message(event: &MessageEvent) {
     let nick = event.mask.nick().unwrap_or_else(|| event.mask.mask().unwrap_or("*unknown*"));
-    let message = match &event.command.to_ascii_uppercase()[] {
+    let message = match &*event.command.to_ascii_uppercase() {
         "PRIVMSG" => match event.ctcp() {
             Some((ctcp_command, ctcp_message)) => match ctcp_command {
                 "ACTION" => format!("[{}] * {} {}", event.args[0], nick, ctcp_message),

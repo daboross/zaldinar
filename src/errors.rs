@@ -1,5 +1,6 @@
 use std::error;
-use std::old_io as io;
+use std::old_io;
+use std::io;
 use std::sync;
 use std::fmt;
 use rustc_serialize::json;
@@ -7,7 +8,8 @@ use regex;
 
 #[derive(Debug)]
 pub enum InitializationError {
-    Io(io::IoError),
+    OldIo(old_io::IoError),
+    Io(io::Error),
     Regex(regex::Error),
     Decoder(json::DecoderError),
     Generic(String),
@@ -23,8 +25,14 @@ impl InitializationError {
     }
 }
 
-impl error::FromError<io::IoError> for InitializationError {
-    fn from_error(error: io::IoError) -> InitializationError {
+impl error::FromError<old_io::IoError> for InitializationError {
+    fn from_error(error: old_io::IoError) -> InitializationError {
+        InitializationError::OldIo(error)
+    }
+}
+
+impl error::FromError<io::Error> for InitializationError {
+    fn from_error(error: io::Error) -> InitializationError {
         InitializationError::Io(error)
     }
 }
@@ -51,6 +59,10 @@ impl fmt::Display for InitializationError {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         match self {
             &InitializationError::Io(ref e) => {
+                try!(fmt.write_str("IO Error: "));
+                fmt::Display::fmt(e, fmt)
+            },
+            &InitializationError::OldIo(ref e) => {
                 try!(fmt.write_str("IO Error: "));
                 fmt::Display::fmt(e, fmt)
             },

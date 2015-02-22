@@ -39,7 +39,7 @@ impl PluginRegister {
     }
 
     pub fn register_irc<T>(&mut self, irc_command: &str, f: T)
-            where T: Fn(&events::MessageEvent) + Send + Sync {
+            where T: Fn(&events::MessageEvent) + Send + Sync + 'static {
         let boxed = sync::Arc::new(box f as MessageListener);
         let command_string = irc_command.to_string().to_ascii_lowercase();
 
@@ -53,7 +53,7 @@ impl PluginRegister {
     }
 
     pub fn register_ctcp<T>(&mut self, ctcp_command: &str, f: T)
-            where T: Fn(&events::CtcpEvent) + Send + Sync {
+            where T: Fn(&events::CtcpEvent) + Send + Sync + 'static {
         let boxed = sync::Arc::new(box f as CtcpListener);
         let command_string = ctcp_command.to_string().to_ascii_lowercase();
 
@@ -68,12 +68,12 @@ impl PluginRegister {
 
 
     pub fn register_catch_all<T>(&mut self, f: T)
-            where T: Fn(&events::MessageEvent) + Send + Sync {
+            where T: Fn(&events::MessageEvent) + Send + Sync + 'static {
         self.catch_all.push(sync::Arc::new(box f as MessageListener));
     }
 
     pub fn register_command<T>(&mut self, command: &str, f: T)
-            where T: Fn(&events::CommandEvent) + Send + Sync {
+            where T: Fn(&events::CommandEvent) + Send + Sync + 'static {
         let boxed = sync::Arc::new(box f as CommandListener);
         let command_lower = command.to_string().to_ascii_lowercase();
 

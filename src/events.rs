@@ -197,11 +197,11 @@ impl MessageTransport {
     }
 
     pub fn ctcp(&self) -> Option<(&str, &str)> {
-        self.ctcp.as_ref().map(|t| (&t.0[], &t.1[]))
+        self.ctcp.as_ref().map(|t| (t.0.as_slice(), t.1.as_slice()))
     }
 
     pub fn channel(&self) -> Option<&str> {
-        self.channel.as_ref().map(|s| &s[])
+        self.channel.as_ref().map(|s| s.as_slice())
     }
 }
 

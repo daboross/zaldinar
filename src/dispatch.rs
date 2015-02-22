@@ -3,6 +3,7 @@ use std::sync;
 use std::sync::mpsc;
 use std::thread;
 use std::fmt;
+use std::io;
 
 use interface;
 use irc;
@@ -49,10 +50,12 @@ impl Dispatch {
         }
     }
 
-    pub fn start_dispatch_loop(self) -> thread::Result<()>{
-        return thread::Builder::new().name("dispatch".to_string()).scoped(move || {
+    pub fn start_dispatch_loop(self) -> io::Result<()> {
+        try!(thread::Builder::new().name("dispatch".to_string()).scoped(move || {
             self.dispatch_loop();
-        }).join();
+        })).join();
+
+        return Ok(());
     }
 
     fn process_message<'a>(&self, message: &'a irc::IrcMessage)
@@ -234,10 +237,11 @@ impl PluginExecutor {
     }
 
     fn start_worker_thread(mut self) {
-        thread::Builder::new().name("worker_thread".to_string()).spawn(move || {
+        let r = thread::Builder::new().name("worker_thread".to_string()).spawn(move || {
             fern::local::set_thread_logger(self.logger.clone());
             self.worker_loop();
         });
+        log_error!(r, "Failed to start new worker thread! Severe! {e}");
     }
 }
 

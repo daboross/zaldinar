@@ -50,7 +50,7 @@ impl IrcConnection {
             None => return Err(InitializationError::new(
                 "Can't start reading thread without data_out")),
         };
-        thread::Builder::new().name("socket_reading_task".to_string()).spawn(move || {
+        try!(thread::Builder::new().name("socket_reading_task".to_string()).spawn(move || {
             fern::local::set_thread_logger(logger);
             let mut reader = io::BufferedReader::new(self.socket.clone());
             loop {
@@ -123,7 +123,7 @@ impl IrcConnection {
                     return;
                 }
             }
-        });
+        }));
         return Ok(());
     }
 
@@ -131,7 +131,7 @@ impl IrcConnection {
         if (&self.data_in).is_none() {
             return Err(InitializationError::new("Can't start writing thread without data_in"));
         }
-        thread::Builder::new().name("socket_writing_task".to_string()).spawn(move || {
+        try!(thread::Builder::new().name("socket_writing_task".to_string()).spawn(move || {
             fern::local::set_thread_logger(logger);
             let data_in = self.data_in.expect("Already confirmed above");
             loop {
@@ -147,7 +147,7 @@ impl IrcConnection {
                 log_error_then!(self.socket.flush(), return,
                     "Failed to write to stream: {e}");
             }
-        });
+        }));
         return Ok(());
     }
 }

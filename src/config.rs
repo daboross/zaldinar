@@ -43,7 +43,7 @@ impl ClientConfiguration {
                     error_code, line, col, path.display())));
             },
             Err(json::DecoderError::ParseError(json::ParserError::IoError(kind, desc))) => {
-                return Err(InitializationError::Io(
+                return Err(InitializationError::OldIo(
                     io::IoError{ kind: kind, desc: desc, detail: None}));
             },
             Ok(v) => Ok(v),

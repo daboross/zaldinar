@@ -1,4 +1,4 @@
-#![feature(io, path, env, std_misc, core, os)]
+#![feature(old_io, old_path, env, std_misc, os)]
 
 extern crate zaldinar;
 extern crate getopts;

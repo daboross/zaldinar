@@ -10,7 +10,7 @@ use errors::InitializationError;
 
 
 pub fn watch_binary(client: interface::IrcInterface)
-        -> Result<thread::Thread, InitializationError> {
+        -> Result<thread::JoinHandle, InitializationError> {
     let mut watch = try!(inotify::INotify::init());
     let program_old_path = match env::current_exe() {
         Ok(v) => v,
@@ -43,7 +43,7 @@ pub fn watch_binary(client: interface::IrcInterface)
         inotify::ffi::IN_CREATE
     ));
 
-    let thread = thread::Thread::spawn(move || {
+    let thread = thread::spawn(move || {
         loop {
             let events = match watch.wait_for_events() {
                 Ok(v) => v,
