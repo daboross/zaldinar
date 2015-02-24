@@ -1,4 +1,4 @@
-#![feature(plugin, box_syntax, core, std_misc, io, path, old_io, old_path, collections)]
+#![feature(plugin, box_syntax, core, std_misc, io, fs, path, old_io, old_path, collections)]
 #![cfg_attr(target_os = "linux", feature(env, os))] // for filewatch
 #![plugin(regex_macros)]
 

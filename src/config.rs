@@ -1,4 +1,6 @@
-use std::old_io as io;
+use std::io::prelude::*;
+use std::fs;
+use std::old_io;
 use rustc_serialize::json;
 
 use errors::InitializationError;
@@ -30,7 +32,11 @@ pub struct ClientConfiguration {
 
 impl ClientConfiguration {
     pub fn load_from_file(path: &Path) -> Result<ClientConfiguration, InitializationError> {
-        let config_contents = try!(io::File::open(path).read_to_string());
+        let config_contents = {
+            let mut buf = String::new();
+            try!(try!(fs::File::open(path)).read_to_string(&mut buf));
+            buf
+        };
         return Ok(try!(match json::decode::<ClientConfiguration>(&config_contents) {
             Err(json::DecoderError::MissingFieldError(s)) => {
                 return Err(InitializationError::from_string(format!("Field {} not found in {}",
@@ -44,7 +50,7 @@ impl ClientConfiguration {
             },
             Err(json::DecoderError::ParseError(json::ParserError::IoError(kind, desc))) => {
                 return Err(InitializationError::OldIo(
-                    io::IoError{ kind: kind, desc: desc, detail: None}));
+                    old_io::IoError{ kind: kind, desc: desc, detail: None}));
             },
             Ok(v) => Ok(v),
             Err(e) => Err(e),
