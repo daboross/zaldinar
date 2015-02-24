@@ -1,5 +1,7 @@
+use std::io::prelude::*;
 use std::ascii::AsciiExt;
-use std::old_io as io;
+use std::io;
+use std::net;
 use std::thread;
 use std::sync;
 use std::sync::mpsc;
@@ -12,7 +14,7 @@ use client;
 static IRC_COLOR_REGEX: regex::Regex = regex!("(\x03(\\d+,\\d+|\\d)|[\x0f\x02\x16\x1f\x02])");
 
 pub struct IrcConnection {
-    socket: io::TcpStream,
+    socket: net::TcpStream,
     data_out: Option<mpsc::Sender<IrcMessage>>,
     data_in: Option<mpsc::Receiver<Option<String>>>,
     client: sync::Arc<client::Client>,
@@ -21,10 +23,10 @@ pub struct IrcConnection {
 impl IrcConnection {
     pub fn create(addr: &str, data_out: mpsc::Sender<IrcMessage>, data_in: mpsc::Receiver<Option<String>>,
             logger: fern::ArcLogger, client: sync::Arc<client::Client>)
-            -> Result<(), io::IoError> {
-        let socket = try!(io::TcpStream::connect(addr));
+            -> Result<(), io::Error> {
+        let socket = try!(net::TcpStream::connect(addr));
         let connection_receiving = IrcConnection {
-            socket: socket.clone(),
+            socket: try!(socket.try_clone()),
             data_out: Some(data_out),
             data_in: None,
             client: client.clone(),
@@ -52,18 +54,13 @@ impl IrcConnection {
         };
         try!(thread::Builder::new().name("socket_reading_task".to_string()).spawn(move || {
             fern::local::set_thread_logger(logger);
-            let mut reader = io::BufferedReader::new(self.socket.clone());
+            let mut reader = io::BufReader::new(self.socket);
             loop {
-                let whole_input = match reader.read_line() {
-                    Ok(v) => v,
-                    Err(e) => {
-                        match e.kind {
-                            io::IoErrorKind::EndOfFile => (),
-                            _ => severe!("Error in reading thread: {}", e),
-                        }
-                        break;
-                    },
-                };
+                let mut whole_input = String::new();
+                try!(reader.read_line(&mut whole_input));
+                if whole_input.is_empty() {
+                    break; // end of file
+                }
                 let input = IRC_COLOR_REGEX.replace_all(whole_input.trim_right(), "");
                 let message_split: Vec<&str> = input.split(' ').collect();
                 let (command, args, possible_mask): (&str, &[&str], IrcMask) = if message_split[0]
@@ -142,7 +139,9 @@ impl IrcConnection {
                 if !command.starts_with("PONG ") {
                     info!(">>> {}", command);
                 }
-                log_error_then!(self.socket.write_line(&command), return,
+                log_error_then!(self.socket.write(command.as_bytes()), return,
+                    "Failed to write to stream: {e}");
+                log_error_then!(self.socket.write(&b"\n"), return,
                     "Failed to write to stream: {e}");
                 log_error_then!(self.socket.flush(), return,
                     "Failed to write to stream: {e}");
