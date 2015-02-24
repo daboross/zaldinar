@@ -57,7 +57,10 @@ impl IrcConnection {
             let mut reader = io::BufReader::new(self.socket);
             loop {
                 let mut whole_input = String::new();
-                try!(reader.read_line(&mut whole_input));
+                if let Err(e) = reader.read_line(&mut whole_input) {
+                    severe!("Error decoding IRC input: {}", e);
+                    break;
+                }
                 if whole_input.is_empty() {
                     break; // end of file
                 }
