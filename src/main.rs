@@ -1,4 +1,4 @@
-#![feature(old_io, old_path, env, std_misc, os)]
+#![feature(old_io, path, env, std_misc, os)]
 
 extern crate zaldinar;
 extern crate getopts;
@@ -6,6 +6,8 @@ extern crate getopts;
 use std::env;
 use std::old_io::stdio;
 use std::ffi::AsOsStr;
+use std::path::PathBuf;
+use std::path::Path;
 
 macro_rules! print_err {
     ($($arg:tt)*) => (
@@ -57,17 +59,17 @@ fn main() {
         Ok(v) => v,
         Err(e) => {
             print_err!("Warning: failed to get current directory: {}", e);
-            Path::new("") // TODO: return here or just not be absolute?
+            PathBuf::new("") // TODO: return here or just not be absolute?
         }
     };
 
     let config_path = match matches.opt_str("config") {
         Some(v) => {
-            let absolute = current_dir.join(&Path::new(v));
+            let absolute = current_dir.join(&Path::new(&v));
             println!("Using configuration: {}", absolute.display());
             absolute
         },
-        None => Path::new("config.json"),
+        None => current_dir.join(Path::new("config.json")),
     };
 
     loop {

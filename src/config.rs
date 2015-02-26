@@ -2,6 +2,7 @@ use std::io::prelude::*;
 use std::fs;
 use std::old_io;
 use rustc_serialize::json;
+use std::path::Path;
 
 use errors::InitializationError;
 
