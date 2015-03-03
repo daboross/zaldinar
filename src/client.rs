@@ -3,6 +3,7 @@ use std::sync;
 use std::sync::mpsc;
 use std::ops;
 use std::collections;
+use std::collections::hash_map;
 
 use chrono;
 use fern;
@@ -43,12 +44,9 @@ impl PluginRegister {
         let boxed = sync::Arc::new(box f as MessageListener);
         let command_string = irc_command.to_string().to_ascii_lowercase();
 
-        // I can't use a match here because then I would be borrowing listener_map mutably twice:
-        // Once for the match statement, and a second time inside the None branch
-        if self.raw_listeners.contains_key(&command_string) {
-            self.raw_listeners.get_mut(&command_string).expect("Confirmed above").push(boxed);
-        } else {
-            self.raw_listeners.insert(command_string, vec!(boxed));
+        match self.raw_listeners.entry(command_string) {
+            hash_map::Entry::Occupied(mut e) => e.get_mut().push(boxed),
+            hash_map::Entry::Vacant(e) => drop(e.insert(vec!(boxed))),
         }
     }
 
@@ -57,12 +55,9 @@ impl PluginRegister {
         let boxed = sync::Arc::new(box f as CtcpListener);
         let command_string = ctcp_command.to_string().to_ascii_lowercase();
 
-        // I can't use a match here because then I would be borrowing listener_map mutably twice:
-        // Once for the match statement, and a second time inside the None branch
-        if self.ctcp_listeners.contains_key(&command_string) {
-            self.ctcp_listeners.get_mut(&command_string).expect("Confirmed above").push(boxed);
-        } else {
-            self.ctcp_listeners.insert(command_string, vec!(boxed));
+        match self.ctcp_listeners.entry(command_string) {
+            hash_map::Entry::Occupied(mut e) => e.get_mut().push(boxed),
+            hash_map::Entry::Vacant(e) => drop(e.insert(vec!(boxed))),
         }
     }
 
@@ -77,13 +72,9 @@ impl PluginRegister {
         let boxed = sync::Arc::new(box f as CommandListener);
         let command_lower = command.to_string().to_ascii_lowercase();
 
-        // I can't use a match here because then I would be borrowing the command_map mutably
-        // twice:
-        // Once for the match statement, and a second time inside the None branch
-        if self.commands.contains_key(&command_lower) {
-            self.commands.get_mut(&command_lower).expect("Confirmed above").push(boxed);
-        } else {
-            self.commands.insert(command_lower, vec!(boxed));
+        match self.commands.entry(command_lower) {
+            hash_map::Entry::Occupied(mut e) => e.get_mut().push(boxed),
+            hash_map::Entry::Vacant(e) => drop(e.insert(vec!(boxed))),
         }
     }
 }
