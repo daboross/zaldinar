@@ -44,29 +44,37 @@ fn execv_if_possible(program_path: &Path) {
 
     // We're just going to exit the program anyways if we succeed or fail, so this function won't do anything other than unwrap IO errors.
 
+    // Get the program as a CString
     let program = program_path.as_os_str().to_cstring().unwrap();
+
+    // Argument vector, passed to execv.
     let mut argv_vec = Vec::new();
-    for arg in env::args().skip(1) {
-        argv_vec.push(ffi::CString::new(arg).unwrap().as_ptr());
+    // Printable argument vector, used for printing arguments before executing.
+    let mut printable_args = Vec::new();
+
+    // We don't use skip(1) on env::args() here, because the execv() needs the first argument to
+    // be the program, just like env::args().
+    for arg in env::args() {
+        // Just use &*arg so that printable_args can then have the ownership.
+        argv_vec.push(ffi::CString::new(&*arg).unwrap().as_ptr());
+        printable_args.push(arg);
     }
+    // Push a null pointer so that argv_vec is null terminated for execv.
     argv_vec.push(ptr::null());
 
-    println!("Executing `{:?}`", program_path);
+    println!("Executing `{:?}` (arguments: `{:?}`", program_path, printable_args);
 
     unsafe {
         unistd::execv(program.as_ptr(), argv_vec.as_mut_ptr());
     }
-    println!("Oh hi, executing didn't work.");
-    unsafe {
-        unistd::execv(ffi::CString::new("/bin/bash").unwrap().as_ptr(), vec!().as_mut_ptr());
-    }
-    println!("Oh hi, executing didn't work *again*.");
+    println!("Executing using execv failed!");
+    env::set_exit_status(1);
 }
 
 #[cfg(not(target_os = "linux"))]
 #[inline]
 fn execv_if_possible(_program_path: &Path) {
-    println!("Can't execv! Invalid action for this platform.");
+    println!("Can't restart using execv on this platform!");
 }
 
 fn get_program() -> io::Result<PathBuf> {
