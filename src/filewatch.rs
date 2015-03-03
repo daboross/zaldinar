@@ -2,6 +2,8 @@ use std::env;
 use std::thread;
 use std::path::Path;
 use std::ffi::AsOsStr;
+use std::old_io;
+use std::time;
 use inotify;
 
 use interface;
@@ -37,14 +39,14 @@ pub fn watch_binary(client: interface::IrcInterface)
 
     // IN_CLOSE_WRITE, IN_MOVED_TO and IN_CREATE are the only events which modify a file, and also
     // leave a fully intact file that is ready to be executed.
-    try!(watch.add_watch(&parent_dir,
+    let watch_instance = try!(watch.add_watch(&parent_dir,
         inotify::ffi::IN_CLOSE_WRITE |
         inotify::ffi::IN_MOVED_TO |
         inotify::ffi::IN_CREATE
     ));
 
     let thread = thread::spawn(move || {
-        loop {
+        'thread_loop: loop {
             let events = match watch.wait_for_events() {
                 Ok(v) => v,
                 Err(e) => {
@@ -119,11 +121,13 @@ pub fn watch_binary(client: interface::IrcInterface)
                 if event.is_ignored() {
                     debug!("\tevent is: ignored");
                 }
-
+                info!("Restarting to update to latest binary in 10 seconds.");
+                old_io::timer::sleep(time::Duration::seconds(10));
                 client.quit(Some("Updating to latest binary"), client::ExecutingState::Restart);
-                return;
+                break 'thread_loop;
             }
         }
+        watch.rm_watch(watch_instance).unwrap();
     });
     return Ok(thread);
 }
