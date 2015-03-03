@@ -35,7 +35,6 @@ macro_rules! print_err {
 #[cfg(target_os = "linux")]
 #[inline]
 fn execv_if_possible(program_path: &Path) {
-
     if program_path == Path::new(UNKNOWN_EXECUTABLE) {
         print_err!("Couldn't restart using exec: executable unknown! See previous \"failed to \
                     find current executable\" error.");
@@ -83,7 +82,7 @@ fn main() {
     // get the original program path as soon as we start.
     // We have two `program` variables because we still want to use the program gotten from
     // env::args() to print help strings.
-    let original_program = match get_program(){
+    let original_program = match get_program() {
         Ok(v) => v,
         Err(e) => {
             print_err!("Warning: failed to find current executable: {}", e);
@@ -92,7 +91,7 @@ fn main() {
     };
 
     let mut args = env::args();
-    let program = match args.next() {
+    let display_program = match args.next() {
         // TODO: some error catching of lossy strings here or not?
         Some(v) => v,
         None => original_program.as_os_str().to_string_lossy().into_owned(),
@@ -112,7 +111,7 @@ fn main() {
     };
 
     if matches.opt_present("help") {
-        let brief = format!("Usage: {} [options]", program);
+        let brief = format!("Usage: {} [options]", display_program);
         println!("{}", opts.usage(brief.as_slice()));
         return;
     } else if matches.opt_present("version") {
@@ -141,7 +140,7 @@ fn main() {
         let config = match zaldinar::ClientConfiguration::load_from_file(&config_path) {
             Ok(v) => v,
             Err(e) => {
-                print_err!("Error loading configuration: {}", e);
+                print_err!("Error loading configuration from `{}`: {}",config_path.display(), e);
                 env::set_exit_status(1);
                 return;
             },

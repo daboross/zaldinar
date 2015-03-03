@@ -124,8 +124,8 @@ pub fn watch_binary(client: interface::IrcInterface, logger: fern::ArcLogger)
                 if event.is_ignored() {
                     debug!("\tevent is: ignored");
                 }
-                info!("Restarting to update to latest binary in 10 seconds.");
-                old_io::timer::sleep(time::Duration::seconds(10));
+                info!("Restarting to update to latest binary momentarily.");
+                old_io::timer::sleep(time::Duration::seconds(1));
                 client.quit(Some("Updating to latest binary"), client::ExecutingState::Restart);
                 break 'thread_loop;
             }
