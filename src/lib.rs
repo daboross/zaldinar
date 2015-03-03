@@ -1,5 +1,5 @@
 #![feature(plugin, box_syntax, core, std_misc, io, fs, net, path, old_io, old_path, collections)]
-#![cfg_attr(target_os = "linux", feature(env, os))] // for filewatch
+#![cfg_attr(target_os = "linux", feature(os))] // for filewatch
 #![plugin(regex_macros)]
 
 extern crate "rustc-serialize" as rustc_serialize;
