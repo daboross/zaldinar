@@ -4,14 +4,16 @@ use std::path::Path;
 use std::ffi::AsOsStr;
 use std::old_io;
 use std::time;
+
 use inotify;
+use fern;
 
 use interface;
 use client;
 use errors::InitializationError;
 
 
-pub fn watch_binary(client: interface::IrcInterface)
+pub fn watch_binary(client: interface::IrcInterface, logger: fern::ArcLogger)
         -> Result<thread::JoinHandle, InitializationError> {
     let mut watch = try!(inotify::INotify::init());
     let program_old_path = match env::current_exe() {
@@ -46,6 +48,7 @@ pub fn watch_binary(client: interface::IrcInterface)
     ));
 
     let thread = thread::spawn(move || {
+        fern::local::set_thread_logger(logger);
         'thread_loop: loop {
             let events = match watch.wait_for_events() {
                 Ok(v) => v,

@@ -134,16 +134,18 @@ impl ops::Deref for Client {
 }
 
 #[cfg(target_os = "linux")]
-fn start_file_watch(client: &sync::Arc<Client>, interface: &interface::IrcInterface) {
+fn start_file_watch(client: &sync::Arc<Client>, interface: &interface::IrcInterface,
+                    logger: &fern::ArcLogger) {
     if client.watch_binary {
-        if let Err(e) = filewatch::watch_binary(interface.clone()) {
+        if let Err(e) = filewatch::watch_binary(interface.clone(), logger.clone()) {
             warning!("Failed to start binary watch thread: {}", e);
         }
     }
 }
 
 #[cfg(not(target_os = "linux"))]
-fn start_file_watch(_client: &sync::Arc<Client>, _interface: &interface::IrcInterface) {
+fn start_file_watch(_client: &sync::Arc<Client>, _interface: &interface::IrcInterface,
+                    _logger: &fern::ArcLogger) {
     // TODO: Maybe support this?
 }
 
@@ -176,7 +178,7 @@ pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: Plugin
     let interface = try!(interface::IrcInterface::new(data_out, client.clone()));
 
     // Load file watcher
-    start_file_watch(&client, &interface);
+    start_file_watch(&client, &interface, &logger);
 
     // Send PASS, NICK and USER, the initial IRC commands. Because an IrcConnection hasn't been
     // created to receive these yet, they will just go on hold and get sent as soon as the
