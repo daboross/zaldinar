@@ -124,6 +124,11 @@ impl Client {
     }
 }
 
+impl irc::HasNick for sync::Arc<Client> {
+    fn with_current_nick<T, F>(&self, fun: F) -> T where F: Fn(&str) -> T {
+        fun(&self.state.read().unwrap().nick)
+    }
+}
 /// This allows access to configuration fields directly on Client
 impl ops::Deref for Client {
     type Target = config::ClientConfiguration;
@@ -190,8 +195,8 @@ pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: Plugin
     interface.send_command("USER".to_string(), &[&client.user, "0", "*",
         &format!(":{}", client.real_name)]);
 
-    try!(irc::IrcConnection::create(&client.address, connection_data_out,
-        connection_data_in, logger.clone(), client.clone()));
+    try!(irc::connect(&client.address, connection_data_out, connection_data_in,
+        logger.clone(), client.clone()));
 
     // Create dispatch, and start the worker threads for plugin execution
     let dispatch = dispatch::Dispatch::new(interface, client.clone(), data_in, logger);
