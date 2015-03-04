@@ -1,4 +1,4 @@
-#![feature(plugin, box_syntax, core, std_misc, io, fs, net, path, old_io, old_path, collections)]
+#![feature(plugin, box_syntax, core, std_misc, io, fs, path, old_io, old_path, collections)]
 #![cfg_attr(target_os = "linux", feature(os))] // for filewatch
 #![plugin(regex_macros)]
 
@@ -10,6 +10,8 @@ extern crate inotify;
 extern crate rand;
 #[macro_use]
 extern crate fern_macros;
+
+extern crate "irclib" as irc;
 
 pub use errors::InitializationError;
 pub use config::ClientConfiguration;
@@ -26,7 +28,6 @@ pub mod errors;
 pub mod config;
 pub mod interface;
 pub mod client;
-mod irc;
 mod plugins;
 mod dispatch;
 mod events;

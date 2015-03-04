@@ -1,12 +1,16 @@
+#![feature(plugin, io, net, old_io)]
+#![plugin(regex_macros)]
+extern crate regex;
+extern crate fern;
+#[macro_use]
+extern crate fern_macros;
+
 use std::io::prelude::*;
 use std::ascii::AsciiExt;
 use std::io;
 use std::net;
 use std::thread;
 use std::sync::mpsc;
-
-use regex;
-use fern;
 
 static IRC_COLOR_REGEX: regex::Regex = regex!("(\x03(\\d+,\\d+|\\d)|[\x0f\x02\x16\x1f\x02])");
 

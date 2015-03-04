@@ -14,3 +14,6 @@ fern_macros = "0.1.4"
 chrono = "0.2.1"
 getopts = "0.2.3"
 inotify = "0.1.4"
+
+[dependencies.irclib]
+path = "irclib"

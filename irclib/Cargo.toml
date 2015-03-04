@@ -1,0 +1,11 @@
+[package]
+
+name = "irclib"
+version = "0.0.1"
+authors = ["Dabo Ross <daboross@daboross.net>"]
+
+[dependencies]
+fern = "0.1.12"
+fern_macros = "0.1.6"
+regex = "0.1.16"
+regex_macros = "0.1.10"
