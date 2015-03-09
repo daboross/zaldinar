@@ -9,7 +9,6 @@ use interface;
 use irc;
 use client;
 use events;
-use fern;
 
 pub struct Dispatch {
     interface: interface::IrcInterface,
@@ -20,12 +19,11 @@ pub struct Dispatch {
 
 impl Dispatch {
     pub fn new(interface: interface::IrcInterface, state: sync::Arc<client::Client>,
-            data_in: mpsc::Receiver<irc::IrcMessage>, logger: fern::ArcLogger) -> Dispatch {
+            data_in: mpsc::Receiver<irc::IrcMessage>) -> Dispatch {
         let (dispatch_out, workers_in) = mpsc::channel();
         let workers_in_arc = sync::Arc::new(sync::Mutex::new(workers_in));
         for _ in range::<u8>(0, 4) {
-            let executor = PluginExecutor::new(interface.clone(), workers_in_arc.clone(),
-                                                logger.clone());
+            let executor = PluginExecutor::new(interface.clone(), workers_in_arc.clone());
             executor.start_worker_thread();
         }
 
@@ -44,7 +42,7 @@ impl Dispatch {
                 Err(_) => break,
             };
             if let Err(_) = self.process_message(&message) {
-                severe!("Failed to send to workers_out from Dispatch. Exiting.");
+                error!("Failed to send to workers_out from Dispatch. Exiting.");
                 return;
             }
         }
@@ -197,18 +195,16 @@ impl PluginTask {
 struct PluginExecutor {
     interface: interface::IrcInterface,
     data_in: sync::Arc<sync::Mutex<mpsc::Receiver<PluginTask>>>,
-    logger: fern::ArcLogger,
     active: bool,
 }
 
 impl PluginExecutor {
     fn new(interface: interface::IrcInterface,
-            data_in: sync::Arc<sync::Mutex<mpsc::Receiver<PluginTask>>>, logger: fern::ArcLogger)
+            data_in: sync::Arc<sync::Mutex<mpsc::Receiver<PluginTask>>>)
             -> PluginExecutor {
         return PluginExecutor {
             interface: interface,
             data_in: data_in,
-            logger: logger,
             active: true,
         };
     }
@@ -238,19 +234,21 @@ impl PluginExecutor {
 
     fn start_worker_thread(mut self) {
         let r = thread::Builder::new().name("worker_thread".to_string()).spawn(move || {
-            fern::local::set_thread_logger(self.logger.clone());
             self.worker_loop();
         });
-        log_error!(r, "Failed to start new worker thread! Severe! {e}");
+        if let Err(e) = r {
+            error!("Failed to start new worker thread! Plugins will no longer have a full set of \
+                workers to run on! Error: {}", e)
+        }
     }
 }
 
 impl Drop for PluginExecutor {
     fn drop(&mut self) {
         if self.active {
-            warning!("Worker panicked!");
-            PluginExecutor::new(self.interface.clone(), self.data_in.clone(),
-                self.logger.clone()).start_worker_thread();
+            warn!("Worker panicked!");
+            PluginExecutor::new(self.interface.clone(), self.data_in.clone(),)
+                .start_worker_thread();
         }
     }
 }

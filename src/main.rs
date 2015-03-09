@@ -1,13 +1,13 @@
-#![feature(old_io, io, path, std_misc, os, exit_status)]
+#![feature(io, path, std_misc, exit_status)]
 #![cfg_attr(target_os = "linux", feature(libc))]
 extern crate zaldinar;
 extern crate getopts;
 #[cfg(target_os = "linux")]
 extern crate libc;
 
+use std::io::prelude::*;
 use std::env;
 use std::io;
-use std::old_io::stdio;
 use std::ffi::AsOsStr;
 #[cfg(target_os = "linux")]
 use std::os::unix::OsStrExt;
@@ -24,7 +24,7 @@ const UNKNOWN_EXECUTABLE: &'static str = "<unknown executable>";
 
 macro_rules! print_err {
     ($($arg:tt)*) => (
-        if let Err(e) = write!(&mut stdio::stderr_raw(), $($arg)*) {
+        if let Err(e) = write!(&mut io::stderr(), $($arg)*) {
             panic!("Failed to write to stderr.\
                 \nOriginal error output: {}\
                 \nSecondary error writing to stderr: {}", format!($($arg)*), e);
@@ -85,6 +85,7 @@ fn get_program() -> io::Result<PathBuf> {
     return Ok(buf);
 }
 
+
 fn main() {
     // Because env::current_exe() will change if the executing file is moved, we need to securely
     // get the original program path as soon as we start.
@@ -120,7 +121,7 @@ fn main() {
 
     if matches.opt_present("help") {
         let brief = format!("Usage: {} [options]", display_program);
-        println!("{}", opts.usage(brief.as_slice()));
+        println!("{}", opts.usage(&brief));
         return;
     } else if matches.opt_present("version") {
         println!("zaldinar version {}", zaldinar::VERSION);

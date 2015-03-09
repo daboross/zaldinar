@@ -1,12 +1,14 @@
 use std::ascii::AsciiExt;
 use std::sync;
 use std::sync::mpsc;
+use std::path;
 use std::ops;
 use std::collections;
 use std::collections::hash_map;
 
 use chrono;
 use fern;
+use log;
 
 use errors::InitializationError;
 use plugins;
@@ -139,19 +141,30 @@ impl ops::Deref for Client {
 }
 
 #[cfg(target_os = "linux")]
-fn start_file_watch(client: &sync::Arc<Client>, interface: &interface::IrcInterface,
-                    logger: &fern::ArcLogger) {
+fn start_file_watch(client: &sync::Arc<Client>, interface: &interface::IrcInterface) {
     if client.watch_binary {
-        if let Err(e) = filewatch::watch_binary(interface.clone(), logger.clone()) {
-            warning!("Failed to start binary watch thread: {}", e);
+        if let Err(e) = filewatch::watch_binary(interface.clone()) {
+            warn!("Failed to start binary watch thread: {}", e);
         }
     }
 }
 
 #[cfg(not(target_os = "linux"))]
-fn start_file_watch(_client: &sync::Arc<Client>, _interface: &interface::IrcInterface,
-                    _logger: &fern::ArcLogger) {
+fn start_file_watch(_client: &sync::Arc<Client>, _interface: &interface::IrcInterface) {
     // TODO: Maybe support this?
+}
+
+fn setup_logger(config: &config::ClientConfiguration) -> Result<(), fern::InitError> {
+    let config = fern::DispatchConfig {
+        format: Box::new(|msg: &str, level: &log::LogLevel, _location: &log::LogLocation| {
+            return format!("[{}][{:?}] {}", chrono::Local::now().format("%Y-%m-%d][%H:%M:%S"),
+                level, msg);
+        }),
+        output: vec![fern::OutputConfig::Stdout, fern::OutputConfig::File(
+                                                    path::PathBuf::new(&config.log_file))],
+        level: log::LogLevelFilter::Info,
+    };
+    return fern::init_global_logger(config, log::LogLevelFilter::Info);
 }
 
 pub fn run(config: config::ClientConfiguration) -> Result<ExecutingState, InitializationError> {
@@ -160,20 +173,11 @@ pub fn run(config: config::ClientConfiguration) -> Result<ExecutingState, Initia
 
 pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: PluginRegister)
         -> Result<ExecutingState, InitializationError> {
+
+    try!(setup_logger(&config));
+
     // Register built-in plugins
     plugins::register_plugins(&mut plugins);
-
-    let logger = sync::Arc::new(try!(fern::LoggerConfig {
-        format: box |msg: &str, level: &fern::Level| {
-            return format!("[{}][{:?}] {}", chrono::Local::now().format("%Y-%m-%d][%H:%M:%S"),
-                level, msg);
-        },
-        output: vec![fern::OutputConfig::Stdout, fern::OutputConfig::File(
-                                                    Path::new(&config.log_file))],
-        level: fern::Level::Info,
-    }.into_logger()));
-
-    fern::local::set_thread_logger(logger.clone());
 
     let client = sync::Arc::new(Client::new(plugins, config));
 
@@ -183,7 +187,7 @@ pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: Plugin
     let interface = try!(interface::IrcInterface::new(data_out, client.clone()));
 
     // Load file watcher
-    start_file_watch(&client, &interface, &logger);
+    start_file_watch(&client, &interface);
 
     // Send PASS, NICK and USER, the initial IRC commands. Because an IrcConnection hasn't been
     // created to receive these yet, they will just go on hold and get sent as soon as the
@@ -195,24 +199,20 @@ pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: Plugin
     interface.send_command("USER".to_string(), &[&client.user, "0", "*",
         &format!(":{}", client.real_name)]);
 
-    try!(irc::connect(&client.address, connection_data_out, connection_data_in,
-        logger.clone(), client.clone()));
+    try!(irc::connect(&client.address, connection_data_out, connection_data_in, client.clone()));
 
     // Create dispatch, and start the worker threads for plugin execution
-    let dispatch = dispatch::Dispatch::new(interface, client.clone(), data_in, logger);
+    let dispatch = dispatch::Dispatch::new(interface, client.clone(), data_in);
 
     // This statement will run until the bot exists
     if let Err(..) = dispatch.start_dispatch_loop() {
-        severe!("Dispatch loop panicked!");
+        error!("Dispatch loop panicked!");
     }
 
     let done = {
         let state = try!(client.state.read());
         state.done_executing
     };
-
-    // Possibly drop the thread logger
-    fern::local::set_thread_logger(sync::Arc::new(box fern::NullLogger as fern::BoxedLogger));
 
     return Ok(done);
 }

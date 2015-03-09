@@ -2,24 +2,15 @@
 name = "irclib"
 version = "0.0.1"
 dependencies = [
- "fern 0.1.12 (registry+https://github.com/rust-lang/crates.io-index)",
- "fern_macros 0.1.6 (registry+https://github.com/rust-lang/crates.io-index)",
+ "log 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 0.1.16 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex_macros 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
-name = "fern"
-version = "0.1.12"
+name = "log"
+version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-
-[[package]]
-name = "fern_macros"
-version = "0.1.6"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "fern 0.1.12 (registry+https://github.com/rust-lang/crates.io-index)",
-]
 
 [[package]]
 name = "regex"

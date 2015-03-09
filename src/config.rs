@@ -1,6 +1,5 @@
 use std::io::prelude::*;
 use std::fs;
-use std::old_io;
 use rustc_serialize::json;
 use std::path::Path;
 
@@ -49,9 +48,8 @@ impl ClientConfiguration {
                     "Syntax error ({:?}) on line {} column {} in {}",
                     error_code, line, col, path.display())));
             },
-            Err(json::DecoderError::ParseError(json::ParserError::IoError(kind, desc))) => {
-                return Err(InitializationError::OldIo(
-                    old_io::IoError{ kind: kind, desc: desc, detail: None}));
+            Err(json::DecoderError::ParseError(json::ParserError::IoError(err))) => {
+                return Err(InitializationError::Io(err));
             },
             Ok(v) => Ok(v),
             Err(e) => Err(e),

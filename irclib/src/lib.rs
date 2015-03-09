@@ -1,9 +1,8 @@
-#![feature(plugin, io, net, old_io)]
+#![feature(plugin, io, net)]
 #![plugin(regex_macros)]
 extern crate regex;
-extern crate fern;
 #[macro_use]
-extern crate fern_macros;
+extern crate log;
 
 use std::io::prelude::*;
 use std::ascii::AsciiExt;
@@ -22,7 +21,7 @@ pub trait HasNick {
 }
 
 pub fn connect<T>(addr: &str, data_out: mpsc::Sender<IrcMessage>,
-        data_in: mpsc::Receiver<Option<String>>, logger: fern::ArcLogger, client: T)
+        data_in: mpsc::Receiver<Option<String>>, client: T)
         -> io::Result<()> where T: HasNick + Send + 'static {
     let socket = try!(net::TcpStream::connect(addr));
     let irc_read = IrcRead {
@@ -35,8 +34,8 @@ pub fn connect<T>(addr: &str, data_out: mpsc::Sender<IrcMessage>,
         data_in: data_in,
     };
 
-    try!(irc_read.spawn_reading_thread(logger.clone()));
-    try!(irc_write.spawn_writing_thread(logger));
+    try!(irc_read.spawn_reading_thread());
+    try!(irc_write.spawn_writing_thread());
 
     return Ok(());
 }
@@ -48,9 +47,8 @@ pub struct IrcRead<T: io::BufRead, C: HasNick> {
 }
 
 impl <T: io::BufRead + Send + 'static, C: HasNick + Send + 'static> IrcRead<T, C> {
-    fn spawn_reading_thread(mut self, logger: fern::ArcLogger) -> io::Result<thread::JoinHandle> {
+    fn spawn_reading_thread(mut self) -> io::Result<thread::JoinHandle> {
         thread::Builder::new().name("irc_read_thread".to_string()).spawn(move || {
-            fern::local::set_thread_logger(logger);
             self.read_loop();
         })
     }
@@ -63,7 +61,7 @@ impl <T: io::BufRead, C: HasNick> IrcRead<T, C> {
         loop {
             let mut whole_input = String::new();
             if let Err(e) = self.socket.read_line(&mut whole_input) {
-                severe!("Error decoding IRC input: {}", e);
+                error!("Error decoding IRC input: {}", e);
                 break;
             }
             if whole_input.is_empty() {
@@ -124,7 +122,7 @@ impl <T: io::BufRead, C: HasNick> IrcRead<T, C> {
             let message = IrcMessage::new(command.to_string(), args_owned, possible_mask, ctcp,
                 channel);
             if let Err(_) = self.data_out.send(message) {
-                severe!("Failed to send to data_out from IrcRead.");
+                error!("Failed to send to data_out from IrcRead.");
                 return;
             }
         }
@@ -137,16 +135,17 @@ pub struct IrcWrite<T: io::Write> {
 }
 
 impl <T: io::Write + Send + 'static> IrcWrite<T> {
-    fn spawn_writing_thread(mut self, logger: fern::ArcLogger) -> io::Result<thread::JoinHandle> {
+    fn spawn_writing_thread(mut self) -> io::Result<thread::JoinHandle> {
         thread::Builder::new().name("irc_write_thread".to_string()).spawn(move || {
-            fern::local::set_thread_logger(logger);
-            self.write_loop();
+            if let Err(e) = self.write_loop() {
+                error!("Error writing to irc socket: {}", e);
+            }
         })
     }
 }
 
 impl <T: io::Write> IrcWrite<T> {
-    fn write_loop(&mut self) {
+    fn write_loop(&mut self) -> io::Result<()> {
         loop {
             let command = match self.data_in.recv() {
                 Ok(Some(v)) => v,
@@ -155,13 +154,11 @@ impl <T: io::Write> IrcWrite<T> {
             if !command.starts_with("PONG ") {
                 info!(">>> {}", command);
             }
-            log_error_then!(self.socket.write(command.as_bytes()), return,
-                "Failed to write to stream: {e}");
-            log_error_then!(self.socket.write(&b"\n"), return,
-                "Failed to write to stream: {e}");
-            log_error_then!(self.socket.flush(), return,
-                "Failed to write to stream: {e}");
+            try!(self.socket.write(command.as_bytes()));
+            try!(self.socket.write(b"\n"));
+            try!(self.socket.flush());
         }
+        return Ok(());
     }
 }
 

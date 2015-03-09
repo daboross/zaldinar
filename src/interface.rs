@@ -32,7 +32,7 @@ impl IrcInterface {
 
     pub fn send_raw(&self, line: String) {
         if let Err(_) = self.data_out.send(Some(line)) {
-            warning!("Unable to send to data_out from IrcInterface.");
+            warn!("Unable to send to data_out from IrcInterface.");
         }
     }
 
@@ -82,7 +82,7 @@ impl IrcInterface {
         }
         self.send_raw(line);
         if let Err(_) =  self.data_out.send(None) {
-            warning!("Unable to send to data_out from IrcInterface. (running quit)");
+            warn!("Unable to send to data_out from IrcInterface. (running quit)");
         }
     }
 

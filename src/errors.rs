@@ -1,17 +1,18 @@
 use std::error;
-use std::old_io;
 use std::io;
 use std::sync;
 use std::fmt;
+
 use rustc_serialize::json;
 use regex;
+use fern;
 
 #[derive(Debug)]
 pub enum InitializationError {
-    OldIo(old_io::IoError),
     Io(io::Error),
     Regex(regex::Error),
     Decoder(json::DecoderError),
+    FernInit(fern::InitError),
     Generic(String),
 }
 
@@ -22,12 +23,6 @@ impl InitializationError {
 
     pub fn from_string(detail: String) -> InitializationError {
         InitializationError::Generic(detail)
-    }
-}
-
-impl error::FromError<old_io::IoError> for InitializationError {
-    fn from_error(error: old_io::IoError) -> InitializationError {
-        InitializationError::OldIo(error)
     }
 }
 
@@ -55,14 +50,16 @@ impl <T> error::FromError<sync::PoisonError<T>> for InitializationError {
     }
 }
 
+impl error::FromError<fern::InitError> for InitializationError {
+    fn from_error(error: fern::InitError) -> InitializationError {
+        InitializationError::FernInit(error)
+    }
+}
+
 impl fmt::Display for InitializationError {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         match self {
             &InitializationError::Io(ref e) => {
-                try!(fmt.write_str("IO Error: "));
-                fmt::Display::fmt(e, fmt)
-            },
-            &InitializationError::OldIo(ref e) => {
                 try!(fmt.write_str("IO Error: "));
                 fmt::Display::fmt(e, fmt)
             },
@@ -72,6 +69,10 @@ impl fmt::Display for InitializationError {
             },
             &InitializationError::Decoder(ref e) => {
                 try!(fmt.write_str("JSON Error: "));
+                fmt::Display::fmt(e, fmt)
+            },
+            &InitializationError::FernInit(ref e) => {
+                try!(fmt.write_str("Fern Initialization Error: "));
                 fmt::Display::fmt(e, fmt)
             },
             &InitializationError::Generic(ref s) => {

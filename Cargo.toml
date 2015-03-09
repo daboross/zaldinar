@@ -8,12 +8,12 @@ authors = ["Dabo Ross <daboross@daboross.net>"]
 regex = "0.1.14"
 regex_macros = "0.1.8"
 rand = "0.1.2"
-rustc-serialize = "0.2.12"
-fern = "0.1.10"
-fern_macros = "0.1.4"
+rustc-serialize = "0.3.1"
 chrono = "0.2.1"
 getopts = "0.2.3"
 inotify = "0.1.4"
+log = "0.2.5"
+fern = "0.2.0"
 
 [dependencies.irclib]
 path = "irclib"

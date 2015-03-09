@@ -2,18 +2,17 @@ use std::env;
 use std::thread;
 use std::path::Path;
 use std::ffi::AsOsStr;
-use std::old_io;
 use std::time;
+use std::old_io::timer;
 
 use inotify;
-use fern;
 
 use interface;
 use client;
 use errors::InitializationError;
 
 
-pub fn watch_binary(client: interface::IrcInterface, logger: fern::ArcLogger)
+pub fn watch_binary(client: interface::IrcInterface)
         -> Result<thread::JoinHandle, InitializationError> {
     let mut watch = try!(inotify::INotify::init());
     let program_old_path = match env::current_exe() {
@@ -48,18 +47,17 @@ pub fn watch_binary(client: interface::IrcInterface, logger: fern::ArcLogger)
     ));
 
     let thread = thread::spawn(move || {
-        fern::local::set_thread_logger(logger);
         'thread_loop: loop {
             let events = match watch.wait_for_events() {
                 Ok(v) => v,
                 Err(e) => {
-                    warning!("INotify error: {}. Exiting.", e);
+                    error!("INotify error: {}. Exiting.", e);
                     return;
                 },
             };
             for event in events {
                 if event.is_ignored() {
-                    warning!(
+                    warn!(
                         "File watch on binary removed due to a deleted directory or unmounted \
                         filesystem. Exiting watch thread, bot will no longer watch binary for \
                         restarting.");
@@ -125,7 +123,7 @@ pub fn watch_binary(client: interface::IrcInterface, logger: fern::ArcLogger)
                     debug!("\tevent is: ignored");
                 }
                 info!("Restarting to update to latest binary momentarily.");
-                old_io::timer::sleep(time::Duration::seconds(1));
+                timer::sleep(time::Duration::seconds(1));
                 client.quit(Some("Updating to latest binary"), client::ExecutingState::Restart);
                 break 'thread_loop;
             }
