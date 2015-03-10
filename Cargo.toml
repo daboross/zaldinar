@@ -17,3 +17,6 @@ fern = "0.2.0"
 
 [dependencies.irclib]
 path = "irclib"
+
+[profile.release]
+lto = true
