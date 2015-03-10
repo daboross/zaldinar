@@ -2,23 +2,22 @@
 #![cfg_attr(target_os = "linux", feature(libc))]
 extern crate zaldinar;
 extern crate getopts;
+
 #[cfg(target_os = "linux")]
 extern crate libc;
+
+#[cfg(target_os = "linux")]
+mod execv_linux;
 
 use std::io::prelude::*;
 use std::env;
 use std::io;
 use std::ffi::AsOsStr;
-#[cfg(target_os = "linux")]
-use std::os::unix::OsStrExt;
 use std::path::PathBuf;
 use std::path::Path;
+
 #[cfg(target_os = "linux")]
-use std::ffi;
-#[cfg(target_os = "linux")]
-use libc::funcs::posix88::unistd;
-#[cfg(target_os = "linux")]
-use std::ptr;
+use execv_linux::execv_if_possible;
 
 const UNKNOWN_EXECUTABLE: &'static str = "<unknown executable>";
 
@@ -32,54 +31,14 @@ macro_rules! print_err {
     )
 }
 
-#[cfg(target_os = "linux")]
-#[inline]
-fn execv_if_possible(program_path: &Path) {
-    if program_path == Path::new(UNKNOWN_EXECUTABLE) {
-        print_err!("Couldn't restart using exec: executable unknown! See previous \"failed to \
-                    find current executable\" error.");
-        env::set_exit_status(1);
-        return;
-    }
-
-    // We're just going to exit the program anyways if we succeed or fail, so this function won't do anything other than unwrap IO errors.
-
-    // Get the program as a CString
-    let program = program_path.as_os_str().to_cstring().unwrap();
-
-    // Argument vector, passed to execv.
-    let mut argv_vec = Vec::new();
-    // Printable argument vector, used for printing arguments before executing.
-    let mut printable_args = Vec::new();
-
-    // We don't use skip(1) on env::args() here, because the execv() needs the first argument to
-    // be the program, just like env::args().
-    for arg in env::args() {
-        // Just use &*arg so that printable_args can then have the ownership.
-        argv_vec.push(ffi::CString::new(&*arg).unwrap().as_ptr());
-        printable_args.push(arg);
-    }
-    // Push a null pointer so that argv_vec is null terminated for execv.
-    argv_vec.push(ptr::null());
-
-    println!("Executing `{:?}` (arguments: `{:?}`", program_path, printable_args);
-
-    unsafe {
-        unistd::execv(program.as_ptr(), argv_vec.as_mut_ptr());
-    }
-    println!("Executing using execv failed!");
-    env::set_exit_status(1);
-}
-
 #[cfg(not(target_os = "linux"))]
-#[inline]
 fn execv_if_possible(_program_path: &Path) {
     println!("Can't restart using execv on this platform!");
 }
 
 fn get_program() -> io::Result<PathBuf> {
-    // This essentially joins current_dir() and current_exe(), resulting in an absolute path
-    // to of the current executable
+    // This joins current_dir() and current_exe(), resulting in an absolute path to of the current
+    // executable
     let mut buf = try!(env::current_dir());
     buf.push(&try!(env::current_exe()));
     return Ok(buf);
@@ -87,8 +46,8 @@ fn get_program() -> io::Result<PathBuf> {
 
 
 fn main() {
-    // Because env::current_exe() will change if the executing file is moved, we need to securely
-    // get the original program path as soon as we start.
+    // Because env::current_exe() will change if the executing file is moved, we need to get the
+    // original program path as soon as we start.
     // We have two `program` variables because we still want to use the program gotten from
     // env::args() to print help strings.
     let original_program = match get_program() {
