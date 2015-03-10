@@ -155,7 +155,7 @@ fn main() {
             },
         };
 
-        match zaldinar::client::run(config) {
+        match zaldinar::run(config) {
             Ok(zaldinar::client::ExecutingState::Done) => {
                 println!("Done, exiting.");
                 break

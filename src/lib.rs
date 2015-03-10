@@ -20,13 +20,14 @@ pub use events::{
     CommandEvent,
     CtcpEvent,
 };
-pub use client::run;
-pub use client::run_with_plugins;
+pub use startup::run;
+pub use startup::run_with_plugins;
 
 pub mod errors;
 pub mod config;
 pub mod interface;
 pub mod client;
+mod startup;
 mod plugins;
 mod dispatch;
 mod events;

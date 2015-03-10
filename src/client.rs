@@ -1,24 +1,12 @@
 use std::ascii::AsciiExt;
 use std::sync;
-use std::sync::mpsc;
-use std::path;
 use std::ops;
 use std::collections;
 use std::collections::hash_map;
 
-use chrono;
-use fern;
-use log;
-
-use errors::InitializationError;
-use plugins;
-use interface;
 use config;
-use dispatch;
 use irc;
 use events;
-#[cfg(target_os = "linux")]
-use filewatch;
 
 pub type CommandListener = Box<Fn(&events::CommandEvent) + Sync + Send>;
 pub type CtcpListener = Box<Fn(&events::CtcpEvent) + Sync + Send>;
@@ -127,10 +115,12 @@ impl Client {
 }
 
 impl irc::HasNick for sync::Arc<Client> {
-    fn with_current_nick<T, F>(&self, fun: F) -> T where F: Fn(&str) -> T {
+    fn with_current_nick<T, F>(&self, fun: F) -> T
+            where F: Fn(&str) -> T {
         fun(&self.state.read().unwrap().nick)
     }
 }
+
 /// This allows access to configuration fields directly on Client
 impl ops::Deref for Client {
     type Target = config::ClientConfiguration;
@@ -138,81 +128,4 @@ impl ops::Deref for Client {
     fn deref<'a>(&'a self) -> &'a config::ClientConfiguration {
         return &self.config;
     }
-}
-
-#[cfg(target_os = "linux")]
-fn start_file_watch(client: &sync::Arc<Client>, interface: &interface::IrcInterface) {
-    if client.watch_binary {
-        if let Err(e) = filewatch::watch_binary(interface.clone()) {
-            warn!("Failed to start binary watch thread: {}", e);
-        }
-    }
-}
-
-#[cfg(not(target_os = "linux"))]
-fn start_file_watch(_client: &sync::Arc<Client>, _interface: &interface::IrcInterface) {
-    // TODO: Maybe support this?
-}
-
-fn setup_logger(config: &config::ClientConfiguration) -> Result<(), fern::InitError> {
-    let config = fern::DispatchConfig {
-        format: Box::new(|msg: &str, level: &log::LogLevel, _location: &log::LogLocation| {
-            return format!("[{}][{:?}] {}", chrono::Local::now().format("%Y-%m-%d][%H:%M:%S"),
-                level, msg);
-        }),
-        output: vec![fern::OutputConfig::Stdout, fern::OutputConfig::File(
-                                                    path::PathBuf::new(&config.log_file))],
-        level: log::LogLevelFilter::Info,
-    };
-    return fern::init_global_logger(config, log::LogLevelFilter::Info);
-}
-
-pub fn run(config: config::ClientConfiguration) -> Result<ExecutingState, InitializationError> {
-    run_with_plugins(config, PluginRegister::new())
-}
-
-pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: PluginRegister)
-        -> Result<ExecutingState, InitializationError> {
-
-    try!(setup_logger(&config));
-
-    // Register built-in plugins
-    plugins::register_plugins(&mut plugins);
-
-    let client = sync::Arc::new(Client::new(plugins, config));
-
-    let (data_out, connection_data_in) = mpsc::channel();
-    let (connection_data_out, data_in) = mpsc::channel();
-
-    let interface = try!(interface::IrcInterface::new(data_out, client.clone()));
-
-    // Load file watcher
-    start_file_watch(&client, &interface);
-
-    // Send PASS, NICK and USER, the initial IRC commands. Because an IrcConnection hasn't been
-    // created to receive these yet, they will just go on hold and get sent as soon as the
-    // IrcConnection connects.
-    if let Some(ref pass) = client.password {
-        interface.send_command("PASS".to_string(), &[&pass]);
-    }
-    interface.send_command("NICK".to_string(), &[&client.nick]);
-    interface.send_command("USER".to_string(), &[&client.user, "0", "*",
-        &format!(":{}", client.real_name)]);
-
-    try!(irc::connect(&client.address, connection_data_out, connection_data_in, client.clone()));
-
-    // Create dispatch, and start the worker threads for plugin execution
-    let dispatch = dispatch::Dispatch::new(interface, client.clone(), data_in);
-
-    // This statement will run until the bot exists
-    if let Err(..) = dispatch.start_dispatch_loop() {
-        error!("Dispatch loop panicked!");
-    }
-
-    let done = {
-        let state = try!(client.state.read());
-        state.done_executing
-    };
-
-    return Ok(done);
 }
