@@ -1,8 +1,8 @@
 sudo: false
 language: rust
 script:
-  - cd plugin-generator && cargo run
-  - cd zaldinar-runtime && cargo build
+  - cd "$TRAVIS_BUILD_DIR/plugin-generator" && cargo run --release
+  - cd "$TRAVIS_BUILD_DIR/zaldinar-runtime" && cargo build
 cache:
   directories:
     # Cache compiled dependencies
