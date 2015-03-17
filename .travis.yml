@@ -1,8 +1,9 @@
 sudo: false
 language: rust
 script:
-  - cargo build
+  - cd plugin-generator && cargo run
+  - cd zaldinar-runtime && cargo build
 cache:
   directories:
     # Cache compiled dependencies
-    - target/
+    - zaldinar-runtime/target/

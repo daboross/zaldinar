@@ -1,5 +1,5 @@
-#![feature(plugin, box_syntax, core, std_misc, io, path, collections)]
-#![cfg_attr(target_os = "linux", feature(old_io))] // for filewatch - old_io::timer
+#![feature(plugin)] // For regex_macros
+#![feature(std_misc)] // For hash_map::Entry
 #![plugin(regex_macros)]
 
 extern crate "rustc-serialize" as rustc_serialize;
@@ -10,7 +10,7 @@ extern crate log;
 extern crate fern;
 extern crate inotify;
 extern crate rand;
-extern crate "irclib" as irc;
+extern crate "zaldinar-irclib" as irc;
 
 pub use errors::InitializationError;
 pub use config::ClientConfiguration;
@@ -20,18 +20,11 @@ pub use events::{
     CommandEvent,
     CtcpEvent,
 };
-pub use startup::run;
-pub use startup::run_with_plugins;
 
 pub mod errors;
 pub mod config;
 pub mod interface;
 pub mod client;
-mod startup;
-mod plugins;
-mod dispatch;
-mod events;
-#[cfg(target_os = "linux")]
-mod filewatch;
+pub mod events;
 
 pub const VERSION: &'static str = env!("CARGO_PKG_VERSION");

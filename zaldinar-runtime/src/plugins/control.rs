@@ -1,4 +1,5 @@
-/// This file contains commands to generally control and administer the bot.
+//! This file contains commands to generally control and administer the bot.
+
 use client::{
     PluginRegister,
     ExecutingState,

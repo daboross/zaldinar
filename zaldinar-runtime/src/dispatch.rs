@@ -5,16 +5,16 @@ use std::thread;
 use std::fmt;
 use std::io;
 
-use interface;
+use core::interface;
+use core::client;
+use core::events;
 use irc;
-use client;
-use events;
 
 pub struct Dispatch {
     interface: interface::IrcInterface,
     state: sync::Arc<client::Client>,
     data_in: mpsc::Receiver<irc::IrcMessage>,
-    workers_out: mpsc::Sender<PluginTask>,
+    workers_out: mpsc::Sender<PluginThunk>,
 }
 
 impl Dispatch {
@@ -22,7 +22,7 @@ impl Dispatch {
             data_in: mpsc::Receiver<irc::IrcMessage>) -> Dispatch {
         let (dispatch_out, workers_in) = mpsc::channel();
         let workers_in_arc = sync::Arc::new(sync::Mutex::new(workers_in));
-        for _ in range::<u8>(0, 4) {
+        for _ in 0..4 {
             let executor = PluginExecutor::new(interface.clone(), workers_in_arc.clone());
             executor.start_worker_thread();
         }
@@ -52,12 +52,11 @@ impl Dispatch {
         try!(thread::Builder::new().name("dispatch".to_string()).scoped(move || {
             self.dispatch_loop();
         })).join();
-
         return Ok(());
     }
 
     fn process_message<'a>(&self, message: &'a irc::IrcMessage)
-            -> Result<(), mpsc::SendError<PluginTask>> {
+            -> Result<(), mpsc::SendError<PluginThunk>> {
         let plugins = self.state.plugins.read().unwrap();
 
         // PING
@@ -69,13 +68,13 @@ impl Dispatch {
 
         // Catch all listeners
         for listener in &plugins.catch_all {
-            try!(self.execute(PluginTask::Message((listener.clone(), message_event.clone()))));
+            try!(self.execute(PluginThunk::Message((listener.clone(), message_event.clone()))));
         }
 
         // Raw listeners
         if let Some(list) = plugins.raw_listeners.get(&message.command.to_ascii_lowercase()) {
             for listener in list {
-                try!(self.execute(PluginTask::Message((listener.clone(), message_event.clone()))));
+                try!(self.execute(PluginThunk::Message((listener.clone(), message_event.clone()))));
             }
         }
 
@@ -88,7 +87,7 @@ impl Dispatch {
                 if let Some(list) = plugins.ctcp_listeners.get(&ctcp_event.command
                         .to_ascii_lowercase()) {
                     for ctcp_listener in list {
-                        try!(self.execute(PluginTask::Ctcp((ctcp_listener.clone(),
+                        try!(self.execute(PluginThunk::Ctcp((ctcp_listener.clone(),
                             ctcp_event.clone()))));
                     }
                 }
@@ -143,64 +142,64 @@ impl Dispatch {
 
     fn dispatch_command(&self, plugins: &sync::RwLockReadGuard<client::PluginRegister>,
             command: &str, channel: &str, args: Vec<String>, mask: &irc::IrcMask)
-            -> Result<(), mpsc::SendError<PluginTask>> {
+            -> Result<(), mpsc::SendError<PluginThunk>> {
         if let Some(list) = plugins.commands.get(&command.to_ascii_lowercase()) {
             let command_event = events::CommandTransport::new(channel, args, mask);
             for closure in list {
-                try!(self.execute(PluginTask::Command((closure.clone(), command_event.clone()))));
+                try!(self.execute(PluginThunk::Command((closure.clone(), command_event.clone()))));
             }
         }
         return Ok(());
     }
 
-    fn execute(&self, task: PluginTask) -> Result<(), mpsc::SendError<PluginTask>> {
+    fn execute(&self, task: PluginThunk) -> Result<(), mpsc::SendError<PluginThunk>> {
         self.workers_out.send(task)
     }
 }
 
 /// TODO: Better name for this
-enum PluginTask {
+enum PluginThunk {
     Command((sync::Arc<client::CommandListener>, events::CommandTransport)),
     Message((sync::Arc<client::MessageListener>, events::MessageTransport)),
     Ctcp((sync::Arc<client::CtcpListener>, events::CtcpTransport)),
 }
 
-impl fmt::Display for PluginTask {
-    fn fmt(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::Error> {
-        fmt.write_str(match self {
-            &PluginTask::Command(_) => "command",
-            &PluginTask::Message(_) => "message",
-            &PluginTask::Ctcp(_) => "ctcp",
-        })
-    }
-}
-
-impl PluginTask {
+impl PluginThunk {
     fn execute(self, interface: &interface::IrcInterface) {
         match self {
-            PluginTask::Command((closure, event)) => {
+            PluginThunk::Command((closure, event)) => {
                 (*closure)(&events::CommandEvent::new(interface, &event));
             },
-            PluginTask::Message((closure, event)) => {
+            PluginThunk::Message((closure, event)) => {
                 (*closure)(&events::MessageEvent::new(interface, &event));
             },
-            PluginTask::Ctcp((closure, event)) => {
+            PluginThunk::Ctcp((closure, event)) => {
                 (*closure)(&events::CtcpEvent::new(interface, &event));
             },
         }
     }
 }
 
+impl fmt::Display for PluginThunk {
+    fn fmt(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        fmt.write_str(match self {
+            &PluginThunk::Command(_) => "command",
+            &PluginThunk::Message(_) => "message",
+            &PluginThunk::Ctcp(_) => "ctcp",
+        })
+    }
+}
+
 
 struct PluginExecutor {
     interface: interface::IrcInterface,
-    data_in: sync::Arc<sync::Mutex<mpsc::Receiver<PluginTask>>>,
+    data_in: sync::Arc<sync::Mutex<mpsc::Receiver<PluginThunk>>>,
     active: bool,
 }
 
 impl PluginExecutor {
     fn new(interface: interface::IrcInterface,
-            data_in: sync::Arc<sync::Mutex<mpsc::Receiver<PluginTask>>>)
+            data_in: sync::Arc<sync::Mutex<mpsc::Receiver<PluginThunk>>>)
             -> PluginExecutor {
         return PluginExecutor {
             interface: interface,
@@ -212,8 +211,7 @@ impl PluginExecutor {
     fn worker_loop(&mut self) {
         loop {
             let message = {
-                // Only lock jobs for the time it takes
-                // to get a job, not run it.
+                // Only lock data_in for the time it takes to get a job, not run it.
                 let lock = self.data_in.lock().unwrap();
                 lock.recv()
             };
@@ -233,9 +231,8 @@ impl PluginExecutor {
     }
 
     fn start_worker_thread(mut self) {
-        let r = thread::Builder::new().name("worker_thread".to_string()).spawn(move || {
-            self.worker_loop();
-        });
+        let r = thread::Builder::new().name("worker_thread".to_string()).spawn(move ||
+            self.worker_loop());
         if let Err(e) = r {
             error!("Failed to start new worker thread! Plugins will no longer have a full set of \
                 workers to run on! Error: {}", e)

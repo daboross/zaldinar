@@ -56,6 +56,12 @@ impl error::FromError<fern::InitError> for InitializationError {
     }
 }
 
+impl error::FromError<String> for InitializationError {
+    fn from_error(error: String) -> InitializationError {
+        InitializationError::Generic(error)
+    }
+}
+
 impl fmt::Display for InitializationError {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         match self {

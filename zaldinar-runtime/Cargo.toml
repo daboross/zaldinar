@@ -7,7 +7,6 @@ authors = ["Dabo Ross <daboross@daboross.net>"]
 [dependencies]
 regex = "0.1.14"
 regex_macros = "0.1.8"
-rand = "0.1.2"
 rustc-serialize = "0.3.1"
 chrono = "0.2.1"
 getopts = "0.2.3"
@@ -15,8 +14,14 @@ inotify = "0.1.4"
 log = "0.2.5"
 fern = "0.2.0"
 
-[dependencies.irclib]
-path = "irclib"
+[dependencies.zaldinar-irclib]
+path = "../zaldinar-irclib"
+
+[dependencies.zaldinar-core]
+path = "../zaldinar-core"
+
+[dependencies.generated-plugins-crate]
+path = "../build-out/cumulative-crate"
 
 [profile.release]
 lto = true

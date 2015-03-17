@@ -1,5 +1,20 @@
-#![feature(io, path, std_misc, exit_status)]
+#![feature(std_misc)] // For ffi::AsOsStr & os::unix::OsStrExt
+#![feature(exit_status)] // For env::set_exit_status
 #![cfg_attr(target_os = "linux", feature(libc))]
+
+macro_rules! print_err {
+    ($($arg:tt)*) => (
+        {
+            use std::io::prelude::*;
+            if let Err(e) = write!(&mut ::std::io::stderr(), "{}\n", format_args!($($arg)*)) {
+                panic!("Failed to write to stderr.\
+                    \nOriginal error output: {}\
+                    \nSecondary error writing to stderr: {}", format!($($arg)*), e);
+            }
+        }
+    )
+}
+
 extern crate zaldinar;
 extern crate getopts;
 
@@ -9,7 +24,6 @@ extern crate libc;
 #[cfg(target_os = "linux")]
 mod execv_linux;
 
-use std::io::prelude::*;
 use std::env;
 use std::io;
 use std::ffi::AsOsStr;
@@ -20,16 +34,6 @@ use std::path::Path;
 use execv_linux::execv_if_possible;
 
 const UNKNOWN_EXECUTABLE: &'static str = "<unknown executable>";
-
-macro_rules! print_err {
-    ($($arg:tt)*) => (
-        if let Err(e) = write!(&mut io::stderr(), $($arg)*) {
-            panic!("Failed to write to stderr.\
-                \nOriginal error output: {}\
-                \nSecondary error writing to stderr: {}", format!($($arg)*), e);
-        }
-    )
-}
 
 #[cfg(not(target_os = "linux"))]
 fn execv_if_possible(_program_path: &Path) {
@@ -46,6 +50,7 @@ fn get_program() -> io::Result<PathBuf> {
 
 
 fn main() {
+    println!("hi");
     // Because env::current_exe() will change if the executing file is moved, we need to get the
     // original program path as soon as we start.
     // We have two `program` variables because we still want to use the program gotten from
@@ -131,6 +136,7 @@ fn main() {
             Err(e) => {
                 println!("Error running client: {}", e);
                 env::set_exit_status(1);
+                return;
             },
         };
     }

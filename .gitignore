@@ -1,4 +1,5 @@
-/target
-irclib/target
+**/target
 config.json
 zaldinar.log
+/build-out/
+/zaldinar

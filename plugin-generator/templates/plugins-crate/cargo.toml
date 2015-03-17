@@ -1,0 +1,10 @@
+[package]
+
+name = "generated-plugins-crate"
+version = "0.0.1"
+authors = ["Dabo Ross <daboross@daboross.net>"]
+
+{{dependency_lines}}
+
+[dependencies.zaldinar-core]
+path = "{{zaldinar_core_path}}"

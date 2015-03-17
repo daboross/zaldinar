@@ -10,8 +10,10 @@ use UNKNOWN_EXECUTABLE;
 
 pub fn execv_if_possible(program_path: &path::Path) {
     if program_path == path::Path::new(UNKNOWN_EXECUTABLE) {
-        panic!("Couldn't restart using exec: executable unknown!  See previous \"failed to find \
-            current executable\" error.");
+        print_err!("Couldn't restart using exec: executable unknown!  See previous \"failed to \
+            find current executable\" error.");
+        env::set_exit_status(1);
+        return;
     }
 
     // We're just going to exit the program anyways if we succeed or fail, so this function won't do anything other than unwrap IO errors.

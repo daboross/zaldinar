@@ -1,9 +1,7 @@
+extern crate libc;
 use std::env;
+use std::io;
 use std::thread;
-use std::path::Path;
-use std::ffi::AsOsStr;
-use std::time;
-use std::old_io::timer;
 
 use inotify;
 
@@ -11,16 +9,30 @@ use interface;
 use client;
 use errors::InitializationError;
 
+/// This method was taken from
+/// https://github.com/rust-lang/rust/blob/3e4be02b80a3dd27bce20870958fe0aef7e7336d
+/// /src/libstd/sys/unix/timer.rs#L230
+#[allow(deprecated)]
+fn sleep(ms: u64) {
+    let mut to_sleep = libc::timespec {
+        tv_sec: (ms / 1000) as libc::time_t,
+        tv_nsec: ((ms % 1000) * 1000000) as libc::c_long,
+    };
+    while unsafe { libc::nanosleep(&to_sleep, &mut to_sleep) } != 0 {
+        if io::Error::last_os_error().kind() != io::ErrorKind::Interrupted {
+            panic!("failed to sleep, but not because of EINTR?");
+        }
+    }
+}
 
 pub fn watch_binary(client: interface::IrcInterface)
         -> Result<thread::JoinHandle, InitializationError> {
     let mut watch = try!(inotify::INotify::init());
-    let program_old_path = match env::current_exe() {
+    let program = match env::current_exe() {
         Ok(v) => v,
         Err(e) => return Err(InitializationError::from_string(
             format!("Failed to get the path of the running executable: {}", e))),
     };
-    let program = Path::new(program_old_path.as_os_str());
 
     let filename = match program.file_name() {
         Some(v) => match v.to_str() {
@@ -123,7 +135,7 @@ pub fn watch_binary(client: interface::IrcInterface)
                     debug!("\tevent is: ignored");
                 }
                 info!("Restarting to update to latest binary momentarily.");
-                timer::sleep(time::Duration::seconds(1));
+                sleep(1000u64); // 1000ms = 1 second
                 client.quit(Some("Updating to latest binary"), client::ExecutingState::Restart);
                 break 'thread_loop;
             }

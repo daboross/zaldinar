@@ -1,7 +1,14 @@
-use rand;
+//! depends: rand = "0.2.0"
+//! depends: regex = "0.1.19"
+//! depends: regex_macros = "0.1.12"
+#![feature(plugin)]
+#![plugin(regex_macros)]
+extern crate "zaldinar-core" as zaldinar;
+extern crate regex;
+extern crate rand;
 use rand::Rng;
-use client::PluginRegister;
-use events::CommandEvent;
+use zaldinar::client::PluginRegister;
+use zaldinar::events::CommandEvent;
 
 fn choose(event: &CommandEvent) {
     let content = event.args.connect(" ");
@@ -25,7 +32,7 @@ fn coin(event: &CommandEvent) {
     event.client.send_message(event.channel(), &message);
 }
 
-fn rand(event: &CommandEvent) {
+fn rand_command(event: &CommandEvent) {
     if event.args.len() != 1 {
         event.client.send_message(event.channel(), "Please specify exactly one argument.");
         return;
@@ -45,5 +52,5 @@ fn rand(event: &CommandEvent) {
 pub fn register(register: &mut PluginRegister) {
     register.register_command("choose", choose);
     register.register_command("coin", coin);
-    register.register_command("rand", rand);
+    register.register_command("rand", rand_command);
 }

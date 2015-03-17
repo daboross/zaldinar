@@ -22,8 +22,7 @@ fn on_connect(event: &MessageEvent) {
     }
     {
         let mut state = event.client.state.write().unwrap();
-        state.channels.push_all(&event.client.channels.iter()
-            .map(|s: &String| s.clone()).collect::<Vec<String>>());
+        state.channels.extend(event.client.channels.iter().map(|s: &String| s.clone()));
     }
 }
 

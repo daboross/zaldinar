@@ -1,0 +1,11 @@
+[package]
+
+name = "{{name}}"
+version = "0.0.1"
+authors = ["Dabo Ross <daboross@daboross.net>"]
+
+[dependencies]
+{{dependencies}}
+
+[dependencies.zaldinar-core]
+path = "{{zaldinar_core_path}}"

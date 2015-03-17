@@ -2,6 +2,7 @@ use std::sync;
 use std::sync::mpsc;
 use std::path;
 
+use generated_plugins_crate;
 use chrono;
 use fern;
 use log;
@@ -40,7 +41,11 @@ fn setup_logger(config: &config::ClientConfiguration) -> Result<(), fern::InitEr
                                                     path::PathBuf::new(&config.log_file))],
         level: log::LogLevelFilter::Info,
     };
-    return fern::init_global_logger(config, log::LogLevelFilter::Info);
+    return match fern::init_global_logger(config, log::LogLevelFilter::Info) {
+        Err(fern::InitError::SetLoggerError(_)) => Ok(()),
+        Ok(()) => Ok(()),
+        Err(e) => Err(e),
+    };
 }
 
 pub fn run(config: config::ClientConfiguration)
@@ -55,6 +60,7 @@ pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: client
 
     // Register built-in plugins
     plugins::register_plugins(&mut plugins);
+    generated_plugins_crate::register(&mut plugins);
 
     let client = sync::Arc::new(client::Client::new(plugins, config));
 
