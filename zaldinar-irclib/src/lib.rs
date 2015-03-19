@@ -1,4 +1,4 @@
-#![feature(plugin, io, net)]
+#![feature(plugin)] // For regex_macros
 #![plugin(regex_macros)]
 extern crate regex;
 #[macro_use]

@@ -3,14 +3,14 @@ name = "zaldinar"
 version = "0.1.1-dev"
 dependencies = [
  "chrono 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "fern 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "fern 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "generated-plugins-crate 0.0.1",
  "getopts 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
- "inotify 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "inotify 0.1.7 (git+https://github.com/daboross/inotify-rs.git)",
  "log 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 0.1.20 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex_macros 0.1.12 (registry+https://github.com/rust-lang/crates.io-index)",
- "rustc-serialize 0.3.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustc-serialize 0.3.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "zaldinar-core 0.0.1",
  "zaldinar-irclib 0.0.1",
 ]
@@ -25,7 +25,7 @@ dependencies = [
 
 [[package]]
 name = "fern"
-version = "0.2.0"
+version = "0.2.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 dependencies = [
  "log 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -41,9 +41,9 @@ name = "generated-plugins-crate"
 version = "0.0.1"
 dependencies = [
  "zaldinar-core 0.0.1",
- "zaldinar-plugin-asdf 0.0.1",
  "zaldinar-plugin-choose 0.0.1",
  "zaldinar-plugin-eightball 0.0.1",
+ "zaldinar-plugin-info 0.0.1",
 ]
 
 [[package]]
@@ -57,7 +57,7 @@ dependencies = [
 [[package]]
 name = "inotify"
 version = "0.1.7"
-source = "registry+https://github.com/rust-lang/crates.io-index"
+source = "git+https://github.com/daboross/inotify-rs.git#2a45ec83cf252ecc55330c76637413dde556a9a3"
 
 [[package]]
 name = "libc"
@@ -68,15 +68,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "log"
 version = "0.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-
-[[package]]
-name = "rand"
-version = "0.1.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "libc 0.1.3 (registry+https://github.com/rust-lang/crates.io-index)",
- "log 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
-]
 
 [[package]]
 name = "rand"
@@ -102,7 +93,7 @@ dependencies = [
 
 [[package]]
 name = "rustc-serialize"
-version = "0.3.5"
+version = "0.3.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
@@ -118,15 +109,11 @@ dependencies = [
 name = "zaldinar-core"
 version = "0.0.1"
 dependencies = [
- "chrono 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "fern 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "getopts 0.2.4 (registry+https://github.com/rust-lang/crates.io-index)",
- "inotify 0.1.7 (registry+https://github.com/rust-lang/crates.io-index)",
+ "fern 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
- "rand 0.1.4 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 0.1.20 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex_macros 0.1.12 (registry+https://github.com/rust-lang/crates.io-index)",
- "rustc-serialize 0.3.5 (registry+https://github.com/rust-lang/crates.io-index)",
+ "rustc-serialize 0.3.6 (registry+https://github.com/rust-lang/crates.io-index)",
  "zaldinar-irclib 0.0.1",
 ]
 
@@ -137,14 +124,6 @@ dependencies = [
  "log 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 0.1.20 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex_macros 0.1.12 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
-name = "zaldinar-plugin-asdf"
-version = "0.0.1"
-dependencies = [
- "rand 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
- "zaldinar-core 0.0.1",
 ]
 
 [[package]]
@@ -162,6 +141,13 @@ name = "zaldinar-plugin-eightball"
 version = "0.0.1"
 dependencies = [
  "rand 0.2.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "zaldinar-core 0.0.1",
+]
+
+[[package]]
+name = "zaldinar-plugin-info"
+version = "0.0.1"
+dependencies = [
  "zaldinar-core 0.0.1",
 ]
 
