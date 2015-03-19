@@ -3,13 +3,10 @@
 #![plugin(regex_macros)]
 
 extern crate "rustc-serialize" as rustc_serialize;
-extern crate chrono;
 extern crate regex;
 #[macro_use]
 extern crate log;
 extern crate fern;
-extern crate inotify;
-extern crate rand;
 extern crate "zaldinar-irclib" as irc;
 
 pub use errors::InitializationError;
