@@ -42,7 +42,7 @@ fn eightball(event: &CommandEvent) {
     let mut rng = rand::thread_rng();
     let message = rng.choose(&messages).unwrap()
                     .replace("<yes>", "\x0305").replace("<no>", "\x0303");
-    event.client.send_message(event.channel(), &format!("\x01ACTION shakes the magic 8 ball... \x02{}\x01", message));
+    event.client.send_message(event.channel(), format!("\x01ACTION shakes the magic 8 ball... \x02{}\x01", message));
 }
 
 pub fn register(register: &mut PluginRegister) {

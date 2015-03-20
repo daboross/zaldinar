@@ -29,7 +29,7 @@ fn coin(event: &CommandEvent) {
     let mut rng = rand::thread_rng();
     let message = format!("\x01ACTION flips a coin... \x02{}\x02\x01", rng.choose(&["heads",
                                                                             "tails"]).unwrap());
-    event.client.send_message(event.channel(), &message);
+    event.client.send_message(event.channel(), message);
 }
 
 fn rand_command(event: &CommandEvent) {
@@ -41,12 +41,12 @@ fn rand_command(event: &CommandEvent) {
         Ok(v) => v,
         Err(_) => {
             event.client.send_message(event.channel(),
-                                        &format!("Invalid number '{}'", event.args[0]));
+                                        format!("Invalid number '{}'", event.args[0]));
             return;
         },
     };
     let mut rng = rand::thread_rng();
-    event.client.send_message(event.channel(), &format!("{}", rng.gen_range(0, max) + 1));
+    event.client.send_message(event.channel(), format!("{}", rng.gen_range(0, max) + 1));
 }
 
 pub fn register(register: &mut PluginRegister) {

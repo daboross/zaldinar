@@ -10,7 +10,7 @@ fn ctcp_version(event: &CtcpEvent) {
     }
     let message = format!("zaldinar - by Dabo - https://github.com/daboross/zaldinar - version {}",
         VERSION);
-    event.client.send_ctcp_reply(event.mask.nick().unwrap(), event.command(), &message);
+    event.client.send_ctcp_reply(event.mask.nick().unwrap(), event.command(), message);
 }
 
 fn ctcp_ping(event: &CtcpEvent) {
@@ -26,7 +26,7 @@ fn ctcp_time(event: &CtcpEvent) {
         return; // CTCP must come from a user
     }
     let message = format!("Current time: {}", Local::now().to_string());
-    event.client.send_ctcp_reply(event.mask.nick().unwrap(), event.command(), &message);
+    event.client.send_ctcp_reply(event.mask.nick().unwrap(), event.command(), message);
 }
 
 pub fn register(register: &mut PluginRegister) {

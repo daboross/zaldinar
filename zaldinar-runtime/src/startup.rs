@@ -76,10 +76,10 @@ pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: client
     // created to receive these yet, they will just go on hold and get sent as soon as the
     // IrcConnection connects.
     if let Some(ref pass) = client.password {
-        interface.send_command("PASS".to_string(), &[&pass]);
+        interface.send_command::<&str, &str>("PASS", &[&pass]);
     }
-    interface.send_command("NICK".to_string(), &[&client.nick]);
-    interface.send_command("USER".to_string(), &[&client.user, "0", "*",
+    interface.send_command::<&str, &str>("NICK", &[&client.nick]);
+    interface.send_command::<&str, &str>("USER", &[&client.user, "0", "*",
         &format!(":{}", client.real_name)]);
 
     try!(irc::connect(&client.address, connection_data_out, connection_data_in, client.clone()));

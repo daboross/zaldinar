@@ -1,3 +1,5 @@
+use std::borrow::IntoCow;
+use std::borrow::Borrow;
 use std::sync;
 use std::sync::mpsc;
 use std::ops;
@@ -36,44 +38,58 @@ impl IrcInterface {
         }
     }
 
-    pub fn send_command(&self, command: String, args: &[&str]) {
-        let mut line = command;
-        line.push(' ');
-        line.push_str(&args.connect(" "));
+    pub fn send_command<'_, CT, I>(&self, command: CT, args: &[I]) where
+            CT: IntoCow<'_, str>, I: Borrow<str>, {
+        let mut line: String = command.into_cow().into_owned();
+        for item in args {
+            line.push(' ');
+            line.push_str(item.borrow());
+        }
         self.send_raw(line);
     }
 
-    pub fn send_message(&self, target: &str, message: &str) {
-        let line = format!("PRIVMSG {} :{}", target, message);
+    pub fn send_message<T1: Borrow<str>, T2: Borrow<str>>(&self, target: T1, message: T2) {
+        let line = format!("PRIVMSG {} :{}", target.borrow(), message.borrow());
         self.send_raw(line);
     }
 
-    pub fn send_notice(&self, target: &str, message: &str) {
-        let line = format!("NOTICE {} :{}", target, message);
+    pub fn send_notice<T1: Borrow<str>, T2: Borrow<str>>(&self, target: T1, message: T2) {
+        let line = format!("NOTICE {} :{}", target.borrow(), message.borrow());
         self.send_raw(line);
     }
 
-    pub fn send_ctcp_reply(&self, target: &str, command: &str, content: &str) {
-        let line = format!("NOTICE {} :\x01{} {}\x01", target, command, content);
+    pub fn send_ctcp<T1, T2, T3>(&self, target: T1, command: T2, message: T3)
+            where T1: Borrow<str>, T2: Borrow<str>, T3: Borrow<str> {
+
+        let line = format!("MESSAGE {} :\x01{} {}\x01", target.borrow(), command.borrow(),
+            message.borrow());
         self.send_raw(line);
     }
 
-    pub fn join(&self, channel: &str) {
-        let line = format!("JOIN :{}", channel);
+    pub fn send_ctcp_reply<T1, T2, T3>(&self, target: T1, command: T2, content: T3)
+            where T1: Borrow<str>, T2: Borrow<str>, T3: Borrow<str> {
+
+        let line = format!("NOTICE {} :\x01{} {}\x01",
+            target.borrow(), command.borrow(), content.borrow());
         self.send_raw(line);
     }
 
-    pub fn part(&self, channel: &str, message: Option<&str>) {
+    pub fn join<T: Borrow<str>>(&self, channel: T) {
+        let line = format!("JOIN :{}", channel.borrow());
+        self.send_raw(line);
+    }
+
+    pub fn part<T1: Borrow<str>, T2: Borrow<str>>(&self, channel: T1, message: Option<T2>) {
         let line = match message {
-            Some(m) => format!("PART {} :{}", channel, m),
-            None => format!("PART {}", channel),
+            Some(m) => format!("PART {} :{}", channel.borrow(), m.borrow()),
+            None => format!("PART {}", channel.borrow()),
         };
         self.send_raw(line);
     }
 
-    pub fn quit(&self, message: Option<&str>, restart: client::ExecutingState) {
+    pub fn quit<T: Borrow<str>>(&self, message: Option<T>, restart: client::ExecutingState) {
         let line = match message {
-            Some(m) => format!("QUIT :{}", m),
+            Some(m) => format!("QUIT :{}", m.borrow()),
             None => format!("QUIT"),
         };
         {

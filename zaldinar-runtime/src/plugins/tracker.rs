@@ -3,22 +3,22 @@ use events::MessageEvent;
 
 fn on_connect(event: &MessageEvent) {
     for command in &event.client.on_connect {
-        event.client.send_command(command.clone(), &[]);
+        event.client.send_command::<&str, &str>(command, &[]);
     }
 
     let nickserv = &event.client.nickserv;
     if nickserv.enabled {
         if nickserv.account.len() != 0 {
-            event.client.send_message(&nickserv.name, &format!("{} {} {}",
+            event.client.send_message(&*nickserv.name, format!("{} {} {}",
                 nickserv.command, nickserv.account, nickserv.password));
         } else {
-            event.client.send_message(&nickserv.name, &format!("{} {}",
+            event.client.send_message(&*nickserv.name, format!("{} {}",
                 nickserv.command, nickserv.password));
         }
     }
 
     for channel in &event.client.channels {
-        event.client.send_command("JOIN".to_string(), &[&channel]);
+        event.client.send_command("JOIN", &[&**channel]);
     }
     {
         let mut state = event.client.state.write().unwrap();
