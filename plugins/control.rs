@@ -4,14 +4,14 @@ use zaldinar::client::PluginRegister;
 use zaldinar::events::CommandEvent;
 use zaldinar::client::ExecutingState;
 
-fn act(event: &CommandEvent) {
+fn action(event: &CommandEvent) {
     if !event.client.is_admin(event) {
         return;
     }
     if event.args[0].starts_with("#") {
-        event.client.send_message(&*event.args[0], event.args[1..].connect(" "));
+        event.client.send_ctcp(&*event.args[0], "ACTION", event.args[1..].connect(" "));
     } else {
-        event.client.send_message(event.channel(), event.args.connect(" "));
+        event.client.send_ctcp(event.channel(), "ACTION", event.args.connect(" "));
     }
 }
 
@@ -77,7 +77,7 @@ fn message(event: &CommandEvent) {
 pub fn register(register: &mut PluginRegister) {
     register.register_command("say", say);
     register.register_command("message", message);
-    // register.register_command("action", action);
+    register.register_command("action", action);
     register.register_command("raw", raw);
     register.register_command("join", join);
     register.register_command("part", part);

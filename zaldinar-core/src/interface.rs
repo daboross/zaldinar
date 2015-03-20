@@ -61,7 +61,7 @@ impl IrcInterface {
     pub fn send_ctcp<T1, T2, T3>(&self, target: T1, command: T2, message: T3)
             where T1: Borrow<str>, T2: Borrow<str>, T3: Borrow<str> {
 
-        let line = format!("MESSAGE {} :\x01{} {}\x01", target.borrow(), command.borrow(),
+        let line = format!("PRIVMSG {} :\x01{} {}\x01", target.borrow(), command.borrow(),
             message.borrow());
         self.send_raw(line);
     }
