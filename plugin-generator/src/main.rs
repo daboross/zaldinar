@@ -16,15 +16,14 @@ const TOP_CARGO_TEMPLATE: &'static str = include_str!("../templates/plugins-crat
 const TOP_LIB_TEMPLATE: &'static str = include_str!("../templates/plugins-crate/lib.rs");
 
 fn main() {
-    setup_logger().unwrap();
     if let Err(e) = main_possibly_errors() {
         panic!("Build error! Error: {} ({:?})", e, e);
     }
 }
 
-fn setup_logger() -> Result<(), fern::InitError> {
+fn setup_logger(out_dir: &Path) -> Result<(), fern::InitError> {
     fern::init_global_logger(
-        fern::OutputConfig::File(PathBuf::new("output.log")),
+        fern::OutputConfig::File(out_dir.join("output.log")),
         log::LogLevelFilter::Trace
     )
 }
@@ -39,6 +38,9 @@ fn main_possibly_errors() -> io::Result<()> {
 
     let output_dir = Path::new(&zaldinar_runtime_dir_str).parent().unwrap()
         .join("build-out");
+
+
+    setup_logger(&output_dir).unwrap();
 
     let generated_plugin_directory = output_dir.join("plugin-crates");
 
