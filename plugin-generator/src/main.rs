@@ -22,6 +22,7 @@ fn main() {
 }
 
 fn setup_logger(out_dir: &Path) -> Result<(), fern::InitError> {
+    try!(fs::create_dir_all(out_dir));
     fern::init_global_logger(
         fern::OutputConfig::File(out_dir.join("output.log")),
         log::LogLevelFilter::Trace
@@ -39,8 +40,9 @@ fn main_possibly_errors() -> io::Result<()> {
     let output_dir = Path::new(&zaldinar_runtime_dir_str).parent().unwrap()
         .join("build-out");
 
-
-    setup_logger(&output_dir).unwrap();
+    if let Err(e) = setup_logger(&output_dir) {
+        panic!("Error setting up logging: {}", e);
+    }
 
     let generated_plugin_directory = output_dir.join("plugin-crates");
 
