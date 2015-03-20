@@ -10,7 +10,7 @@ regex_macros = "0.1.8"
 rustc-serialize = "0.3.1"
 chrono = "0.2.1"
 getopts = "0.2.3"
-# inotify = "0.1.4"
+inotify = "0.1.8"
 log = "0.2.5"
 fern = "0.2.0"
 
@@ -22,9 +22,6 @@ path = "../zaldinar-core"
 
 [dependencies.generated-plugins-crate]
 path = "../build-out/cumulative-crate"
-
-[dependencies.inotify]
-git = "https://github.com/daboross/inotify-rs.git"
 
 [profile.release]
 lto = true
