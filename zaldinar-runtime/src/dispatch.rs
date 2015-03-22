@@ -68,13 +68,13 @@ impl Dispatch {
 
         // Catch all listeners
         for listener in &plugins.catch_all {
-            try!(self.execute(PluginThunk::Message((listener.clone(), message_event.clone()))));
+            try!(self.execute(PluginThunk::Message(listener.clone(), message_event.clone())));
         }
 
         // Raw listeners
         if let Some(list) = plugins.raw_listeners.get(&message.command.to_ascii_lowercase()) {
             for listener in list {
-                try!(self.execute(PluginThunk::Message((listener.clone(), message_event.clone()))));
+                try!(self.execute(PluginThunk::Message(listener.clone(), message_event.clone())));
             }
         }
 
@@ -87,8 +87,8 @@ impl Dispatch {
                 if let Some(list) = plugins.ctcp_listeners.get(&ctcp_event.command
                         .to_ascii_lowercase()) {
                     for ctcp_listener in list {
-                        try!(self.execute(PluginThunk::Ctcp((ctcp_listener.clone(),
-                            ctcp_event.clone()))));
+                        try!(self.execute(PluginThunk::Ctcp(ctcp_listener.clone(),
+                            ctcp_event.clone())));
                     }
                 }
             }
@@ -143,12 +143,25 @@ impl Dispatch {
     fn dispatch_command(&self, plugins: &sync::RwLockReadGuard<client::PluginRegister>,
             command: &str, channel: &str, args: Vec<String>, mask: &irc::IrcMask)
             -> Result<(), mpsc::SendError<PluginThunk>> {
-        if let Some(list) = plugins.commands.get(&command.to_ascii_lowercase()) {
+        if let Some(closure) = plugins.commands.get(&command.to_ascii_lowercase()) {
             let command_event = events::CommandTransport::new(channel, args, mask);
-            for closure in list {
-                try!(self.execute(PluginThunk::Command((closure.clone(), command_event.clone()))));
+
+            try!(self.execute(PluginThunk::Command(closure.clone(), command_event.clone())));
+        } else {
+            if let Some(closure) = plugins.admin_commands.get(&command.to_ascii_lowercase()) {
+                if !self.interface.is_internal_mask_admin(&mask) {
+                    if let Some(nick) = mask.nick() {
+                        self.interface.send_notice(nick, "Permission denied");
+                    }
+                } else {
+                    let command_event = events::CommandTransport::new(channel, args, mask);
+
+                    try!(self.execute(PluginThunk::Command(
+                        closure.clone(), command_event.clone())));
+                }
             }
         }
+
         return Ok(());
     }
 
@@ -159,21 +172,21 @@ impl Dispatch {
 
 /// TODO: Better name for this
 enum PluginThunk {
-    Command((sync::Arc<client::CommandListener>, events::CommandTransport)),
-    Message((sync::Arc<client::MessageListener>, events::MessageTransport)),
-    Ctcp((sync::Arc<client::CtcpListener>, events::CtcpTransport)),
+    Command(sync::Arc<client::CommandListener>, events::CommandTransport),
+    Message(sync::Arc<client::MessageListener>, events::MessageTransport),
+    Ctcp(sync::Arc<client::CtcpListener>, events::CtcpTransport),
 }
 
 impl PluginThunk {
     fn execute(self, interface: &interface::IrcInterface) {
         match self {
-            PluginThunk::Command((closure, event)) => {
+            PluginThunk::Command(closure, event) => {
                 (*closure)(&events::CommandEvent::new(interface, &event));
             },
-            PluginThunk::Message((closure, event)) => {
+            PluginThunk::Message(closure, event) => {
                 (*closure)(&events::MessageEvent::new(interface, &event));
             },
-            PluginThunk::Ctcp((closure, event)) => {
+            PluginThunk::Ctcp(closure, event) => {
                 (*closure)(&events::CtcpEvent::new(interface, &event));
             },
         }
@@ -183,9 +196,9 @@ impl PluginThunk {
 impl fmt::Display for PluginThunk {
     fn fmt(&self, fmt: &mut fmt::Formatter) -> Result<(), fmt::Error> {
         fmt.write_str(match self {
-            &PluginThunk::Command(_) => "command",
-            &PluginThunk::Message(_) => "message",
-            &PluginThunk::Ctcp(_) => "ctcp",
+            &PluginThunk::Command(..) => "command",
+            &PluginThunk::Message(..) => "message",
+            &PluginThunk::Ctcp(..) => "ctcp",
         })
     }
 }

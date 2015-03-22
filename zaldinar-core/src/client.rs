@@ -13,7 +13,8 @@ pub type CtcpListener = Box<Fn(&events::CtcpEvent) + Sync + Send>;
 pub type MessageListener = Box<Fn(&events::MessageEvent) + Sync + Send>;
 
 pub struct PluginRegister {
-    pub commands: collections::HashMap<String, Vec<sync::Arc<CommandListener>>>,
+    pub commands: collections::HashMap<String, sync::Arc<CommandListener>>,
+    pub admin_commands: collections::HashMap<String, sync::Arc<CommandListener>>,
     pub ctcp_listeners: collections::HashMap<String, Vec<sync::Arc<CtcpListener>>>,
     pub raw_listeners: collections::HashMap<String, Vec<sync::Arc<MessageListener>>>,
     pub catch_all: Vec<sync::Arc<MessageListener>>,
@@ -23,6 +24,7 @@ impl PluginRegister {
     pub fn new() -> PluginRegister {
         return PluginRegister {
             commands: collections::HashMap::new(),
+            admin_commands: collections::HashMap::new(),
             raw_listeners: collections::HashMap::new(),
             ctcp_listeners: collections::HashMap::new(),
             catch_all: Vec::new(),
@@ -63,8 +65,27 @@ impl PluginRegister {
         let command_lower = command.to_string().to_ascii_lowercase();
 
         match self.commands.entry(command_lower) {
-            hash_map::Entry::Occupied(mut e) => e.get_mut().push(boxed),
-            hash_map::Entry::Vacant(e) => drop(e.insert(vec!(boxed))),
+            hash_map::Entry::Occupied(mut e) => {
+                warn!("Replacing already registered command {} with newly registered command.",
+                    command.to_ascii_lowercase());
+                e.insert(boxed);
+            },
+            hash_map::Entry::Vacant(e) => drop(e.insert(boxed)),
+        }
+    }
+
+    pub fn register_admin_command<T>(&mut self, command: &str, f: T)
+            where T: Fn(&events::CommandEvent) + Send + Sync + 'static {
+        let boxed = sync::Arc::new(Box::new(f) as CommandListener);
+        let command_lower = command.to_string().to_ascii_lowercase();
+
+        match self.admin_commands.entry(command_lower) {
+            hash_map::Entry::Occupied(mut e) => {
+                warn!("Replacing already registered command {} with newly registered command.",
+                    command.to_ascii_lowercase());
+                e.insert(boxed);
+            },
+            hash_map::Entry::Vacant(e) => drop(e.insert(boxed)),
         }
     }
 }

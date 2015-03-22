@@ -236,4 +236,12 @@ impl IrcMask {
             &IrcMask::Nonexistent => None
         }
     }
+
+    pub fn mask(&self) -> Option<&str> {
+        match self {
+            &IrcMask::Full(ref mask) => Some(&mask.mask),
+            &IrcMask::Unparseable(ref mask) => Some(&mask),
+            &IrcMask::Nonexistent => None
+        }
+    }
 }

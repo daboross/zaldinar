@@ -9,6 +9,7 @@ use regex;
 use errors::InitializationError;
 use client;
 use events;
+use irc;
 
 #[derive(Clone)]
 pub struct IrcInterface {
@@ -58,6 +59,13 @@ impl IrcInterface {
         self.send_raw(line);
     }
 
+    pub fn reply_notice<T: Borrow<str>>(&self, event: &events::CommandEvent, message: T) {
+        if let Some(nick) = event.mask().nick() {
+            let line = format!("NOTICE {} :{}", nick, message.borrow());
+            self.send_raw(line);
+        }
+    }
+
     pub fn send_ctcp<T1, T2, T3>(&self, target: T1, command: T2, message: T3)
             where T1: Borrow<str>, T2: Borrow<str>, T3: Borrow<str> {
 
@@ -103,13 +111,29 @@ impl IrcInterface {
     }
 
     pub fn is_admin(&self, event: &events::CommandEvent) -> bool {
-        if event.mask().has_mask() {
-            let mask = &event.mask().mask().unwrap();
-            if self.admins.iter().any(|r| r.is_match(mask)) {
+        if self.is_mask_admin(event.mask()) {
+            return true;
+        } else {
+            self.send_message(event.channel(), "Permission denied");
+            return false;
+        }
+    }
+
+    pub fn is_mask_admin(&self, mask: &events::IrcMask) -> bool {
+        if let Some(mask_internal) = mask.mask() {
+            if self.admins.iter().any(|r| r.is_match(mask_internal)) {
                 return true;
             }
         }
-        self.send_message(event.channel(), "Permission denied");
+        return false;
+    }
+
+    pub fn is_internal_mask_admin(&self, mask: &irc::IrcMask) -> bool {
+        if let Some(mask_internal) = mask.mask() {
+            if self.admins.iter().any(|r| r.is_match(mask_internal)) {
+                return true;
+            }
+        }
         return false;
     }
 }
