@@ -1,5 +1,3 @@
-#![feature(io)] // For io::ErrorKind
-
 #[macro_use]
 extern crate log;
 extern crate fern;
@@ -227,7 +225,7 @@ fn is_same(path: &Path, expected_contents: &str) -> io::Result<bool> {
     debug!("Checking differences for {}", path.display());
     let metadata = match fs::metadata(path) {
         Ok(v) => v,
-        Err(e) => if e.kind() == io::ErrorKind::FileNotFound {
+        Err(e) => if e.kind() == io::ErrorKind::NotFound {
             return Ok(false); // File does not exist
         } else {
             return Err(e);

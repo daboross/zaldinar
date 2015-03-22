@@ -1,6 +1,5 @@
 #![feature(plugin)] // For regex_macros
-// For filewatch - libc::nanosleep and io::ErrorKind::Interrupted
-#![cfg_attr(target_os = "linux", feature(libc, io))]
+#![cfg_attr(target_os = "linux", feature(libc))] // For filewatch - libc::nanosleep
 #![plugin(regex_macros)]
 
 extern crate "rustc-serialize" as rustc_serialize;
