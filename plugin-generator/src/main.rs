@@ -47,8 +47,8 @@ fn main_possibly_errors() -> io::Result<()> {
     let zaldinar_core_path = Path::new(&zaldinar_runtime_dir_str).parent().unwrap()
         .join("zaldinar-core");
 
-    let core_path_str = zaldinar_core_path.to_str()
-        .expect("Expected valid UTF8 zaldinar-core path (for embedding in Cargo.toml), found None");
+    let core_path_str = zaldinar_core_path.to_str().expect(
+            "Expected valid UTF8 zaldinar-core path (for embedding in Cargo.toml), found None");
 
     debug!("Creating generated plugin directory: {}", generated_plugin_directory.display());
     try!(fs::create_dir_all(&generated_plugin_directory));

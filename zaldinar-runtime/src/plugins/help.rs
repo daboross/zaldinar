@@ -16,7 +16,7 @@ fn help(event: &CommandEvent) {
     }
     {
         let state = event.client.state.read().unwrap();
-        event.client.send_message(event.channel(),
+        event.client.reply_notice(event.channel(),
             format!("Use a command with `{}command_name` or `{}, command_name`",
                 event.client.command_prefix, state.nick));
     }
