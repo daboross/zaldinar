@@ -17,5 +17,6 @@
     },
     "on_connect": [],
     "log_file": "zaldinar.log",
+    "log_level": "INFO",
     "watch_binary": true
 }

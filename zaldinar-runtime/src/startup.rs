@@ -1,6 +1,7 @@
 use std::sync;
 use std::sync::mpsc;
 use std::path;
+use std::error::FromError;
 
 use generated_plugins_crate;
 use chrono;
@@ -31,7 +32,12 @@ fn start_file_watch(_client: &sync::Arc<client::Client>, _interface: &interface:
     // TODO: Maybe support this?
 }
 
-fn setup_logger(config: &config::ClientConfiguration) -> Result<(), fern::InitError> {
+fn setup_logger(config: &config::ClientConfiguration) -> Result<(), InitializationError> {
+    let level = match config.log_level.parse() {
+        Ok(v) => v,
+        Err(_) => return Err(InitializationError::from_string(
+            format!("Failed to parse log_level '{}'", config.log_level))),
+    };
     let config = fern::DispatchConfig {
         format: Box::new(|msg: &str, level: &log::LogLevel, _location: &log::LogLocation| {
             return format!("[{}][{:?}] {}", chrono::Local::now().format("%Y-%m-%d][%H:%M:%S"),
@@ -39,12 +45,12 @@ fn setup_logger(config: &config::ClientConfiguration) -> Result<(), fern::InitEr
         }),
         output: vec![fern::OutputConfig::Stdout, fern::OutputConfig::File(
                                                     path::PathBuf::new(&config.log_file))],
-        level: log::LogLevelFilter::Info,
+        level: level,
     };
     return match fern::init_global_logger(config, log::LogLevelFilter::Info) {
         Err(fern::InitError::SetLoggerError(_)) => Ok(()),
         Ok(()) => Ok(()),
-        Err(e) => Err(e),
+        Err(e) => Err(FromError::from_error(e)),
     };
 }
 
