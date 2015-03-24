@@ -62,14 +62,17 @@ pub fn watch_binary(client: interface::IrcInterface)
             let events = match watch.wait_for_events() {
                 Ok(v) => v,
                 Err(e) => {
-                    error!("INotify error: {}. Exiting.", e);
+                    if e.kind() == io::ErrorKind::Interrupted {
+                        continue 'thread_loop;
+                    }
+                    error!("INotify error: {}. Exiting watch thread, bot will no longer watch \
+                        binary for restarting.", e);
                     return;
                 },
             };
             for event in events {
                 if event.is_ignored() {
-                    warn!(
-                        "File watch on binary removed due to a deleted directory or unmounted \
+                    warn!("File watch on binary removed due to a deleted directory or unmounted \
                         filesystem. Exiting watch thread, bot will no longer watch binary for \
                         restarting.");
                 }
