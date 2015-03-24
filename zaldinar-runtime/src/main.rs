@@ -1,6 +1,5 @@
 #![feature(std_misc)] // For ffi::AsOsStr & os::unix::OsStrExt
 #![feature(exit_status)] // For env::set_exit_status
-#![cfg_attr(target_os = "linux", feature(libc))]
 
 macro_rules! print_err {
     ($($arg:tt)*) => (
@@ -18,10 +17,7 @@ macro_rules! print_err {
 extern crate zaldinar;
 extern crate getopts;
 
-#[cfg(target_os = "linux")]
-extern crate libc;
-
-#[cfg(target_os = "linux")]
+#[cfg(feature = "binary-filewatch")]
 mod execv_linux;
 
 use std::env;
@@ -30,12 +26,12 @@ use std::ffi::AsOsStr;
 use std::path::PathBuf;
 use std::path::Path;
 
-#[cfg(target_os = "linux")]
+#[cfg(feature = "binary-filewatch")]
 use execv_linux::execv_if_possible;
 
 const UNKNOWN_EXECUTABLE: &'static str = "<unknown executable>";
 
-#[cfg(not(target_os = "linux"))]
+#[cfg(not(feature = "binary-filewatch"))]
 fn execv_if_possible(_program_path: &Path) {
     println!("Can't restart using execv on this platform!");
 }

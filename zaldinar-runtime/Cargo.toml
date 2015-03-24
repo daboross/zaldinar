@@ -14,6 +14,10 @@ inotify = "0.1.8"
 log = "0.2.5"
 fern = "0.2.0"
 
+[dependencies.libc]
+version = "0.1.3"
+optional = true
+
 [dependencies.zaldinar-irclib]
 path = "../zaldinar-irclib"
 
@@ -22,6 +26,11 @@ path = "../zaldinar-core"
 
 [dependencies.generated-plugins-crate]
 path = "../build-out/cumulative-crate"
+
+[features]
+default = ["binary-filewatch"]
+
+binary-filewatch = ["libc"]
 
 [profile.release]
 lto = true

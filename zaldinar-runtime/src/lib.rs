@@ -1,5 +1,4 @@
 #![feature(plugin)] // For regex_macros
-#![cfg_attr(target_os = "linux", feature(libc))] // For filewatch - libc::nanosleep
 #![plugin(regex_macros)]
 
 extern crate "rustc-serialize" as rustc_serialize;
@@ -26,7 +25,7 @@ pub use startup::run_with_plugins;
 mod startup;
 mod plugins;
 mod dispatch;
-#[cfg(target_os = "linux")]
+#[cfg(feature = "binary-filewatch")]
 mod filewatch;
 
 pub const VERSION: &'static str = env!("CARGO_PKG_VERSION");

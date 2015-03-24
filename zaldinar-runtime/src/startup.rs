@@ -15,10 +15,10 @@ use config;
 use dispatch;
 use irc;
 use client;
-#[cfg(target_os = "linux")]
+#[cfg(feature = "binary-filewatch")]
 use filewatch;
 
-#[cfg(target_os = "linux")]
+#[cfg(feature = "binary-filewatch")]
 fn start_file_watch(client: &sync::Arc<client::Client>, interface: &interface::IrcInterface) {
     if client.watch_binary {
         if let Err(e) = filewatch::watch_binary(interface.clone()) {
@@ -27,7 +27,7 @@ fn start_file_watch(client: &sync::Arc<client::Client>, interface: &interface::I
     }
 }
 
-#[cfg(not(target_os = "linux"))]
+#[cfg(not(feature = "binary-filewatch"))]
 fn start_file_watch(_client: &sync::Arc<client::Client>, _interface: &interface::IrcInterface) {
     // TODO: Maybe support this?
 }

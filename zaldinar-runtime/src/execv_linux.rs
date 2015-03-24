@@ -1,3 +1,5 @@
+extern crate libc;
+
 use std::env;
 use std::ffi;
 use std::ffi::AsOsStr;
@@ -5,7 +7,8 @@ use std::ptr;
 use std::path;
 use std::os::unix::prelude::OsStrExt;
 
-use libc::funcs::posix88::unistd;
+use self::libc::funcs::posix88::unistd;
+
 use UNKNOWN_EXECUTABLE;
 
 pub fn execv_if_possible(program_path: &path::Path) {
