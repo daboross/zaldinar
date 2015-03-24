@@ -79,7 +79,6 @@ pub fn register(register: &mut PluginRegister) {
     register.register_admin_command("raw", raw);
     register.register_admin_command("join", join);
     register.register_admin_command("part", part);
-    register.register_admin_command("leave", part);
     register.register_admin_command("quit", quit);
     // register.register_command("nick", nick);
 }
