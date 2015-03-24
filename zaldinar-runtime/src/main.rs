@@ -50,7 +50,6 @@ fn get_program() -> io::Result<PathBuf> {
 
 
 fn main() {
-    println!("hi");
     // Because env::current_exe() will change if the executing file is moved, we need to get the
     // original program path as soon as we start.
     // We have two `program` variables because we still want to use the program gotten from

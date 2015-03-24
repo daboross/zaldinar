@@ -12,7 +12,6 @@ use errors::InitializationError;
 /// This method was taken from
 /// https://github.com/rust-lang/rust/blob/3e4be02b80a3dd27bce20870958fe0aef7e7336d
 /// /src/libstd/sys/unix/timer.rs#L230
-#[allow(deprecated)]
 fn sleep(ms: u64) {
     let mut to_sleep = libc::timespec {
         tv_sec: (ms / 1000) as libc::time_t,
