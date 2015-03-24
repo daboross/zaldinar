@@ -92,9 +92,20 @@ impl PluginRegister {
 
 #[derive(Copy, Clone)]
 pub enum ExecutingState {
+    /// Marker for when the bot is still running - if the bot exits with this, the start function
+    /// will just be re-run.
     Running,
+    /// The bot is done executing - no restart will be attempted.
     Done,
-    Restart,
+    /// The bot should be restarted just by running the start() function again - the process will
+    /// not be restarted, the bot will.
+    RestartNoExec,
+    /// The bot will be restarted using exec() on the executable binary if possible, or if that
+    /// isn't supported on this platform, it will just be restarted within the same process.
+    RestartTryExec,
+    /// Restart using exec(), or exit the process  if exec isn't supported, this will print an
+    /// error message and exit.
+    RestartExec,
 }
 
 pub struct ClientState {

@@ -119,14 +119,21 @@ fn main() {
                 println!("Done, exiting.");
                 break
             },
-            Ok(zaldinar::client::ExecutingState::Running) => {
+            Ok(zaldinar::client::ExecutingState::Running)
+                | Ok(zaldinar::client::ExecutingState::RestartNoExec) => {
                 println!("Restarting zaldinar main loop.");
                 continue;
             },
-            Ok(zaldinar::client::ExecutingState::Restart) => {
+            Ok(zaldinar::client::ExecutingState::RestartExec) => {
                 println!("Restarting zaldinar using exec.");
                 execv_if_possible(&original_program);
                 return;
+            },
+            Ok(zaldinar::client::ExecutingState::RestartTryExec) => {
+                println!("Restarting zaldinar using exec.");
+                execv_if_possible(&original_program);
+                println!("Restarting using exec failed, restarting main loop.");
+                continue;
             }
             Err(e) => {
                 println!("Error running client: {}", e);

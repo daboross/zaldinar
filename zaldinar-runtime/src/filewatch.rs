@@ -138,7 +138,8 @@ pub fn watch_binary(client: interface::IrcInterface)
                 }
                 info!("Restarting to update to latest binary momentarily.");
                 sleep(1000u64); // 1000ms = 1 second
-                client.quit(Some("Updating to latest binary"), client::ExecutingState::Restart);
+                client.quit(Some("Updating to latest binary"),
+                    client::ExecutingState::RestartExec);
                 break 'thread_loop;
             }
         }

@@ -26,10 +26,20 @@ fn say(event: &CommandEvent) {
 }
 
 fn quit(event: &CommandEvent) {
+    event.client.reply_notice(event, format!("Leaving server."));
     if event.args.len() != 0 {
         event.client.quit(Some(event.args.connect(" ")), ExecutingState::Done);
     } else {
         event.client.quit::<&str>(None, ExecutingState::Done);
+    }
+}
+
+fn restart(event: &CommandEvent) {
+    event.client.reply_notice(event, format!("Restarting."));
+    if event.args.len() != 0 {
+        event.client.quit(Some(event.args.connect(" ")), ExecutingState::RestartTryExec);
+    } else {
+        event.client.quit(Some("Restarting"), ExecutingState::RestartTryExec);
     }
 }
 
@@ -80,5 +90,6 @@ pub fn register(register: &mut PluginRegister) {
     register.register_admin_command("join", join);
     register.register_admin_command("part", part);
     register.register_admin_command("quit", quit);
+    register.register_admin_command("restart", restart);
     // register.register_command("nick", nick);
 }
