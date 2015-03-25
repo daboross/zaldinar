@@ -1,0 +1,12 @@
+#!/bin/zsh
+
+ZALDINAR_PATH="$PWD"
+
+cd "${ZALDINAR_PATH}/plugin-generator" &&
+cargo run --release &&
+cd "${ZALDINAR_PATH}/zaldinar-runtime" &&
+if [[ ! -z "$@" ]]; then
+    cargo build "$@"
+else
+    cargo build
+fi
