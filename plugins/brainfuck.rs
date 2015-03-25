@@ -1,13 +1,39 @@
-#![feature(collections)] // for escape_default()
+#![feature(collections)] // for str.escape_default()
 extern crate zaldinar_core;
 
-use std::borrow::Cow;
+use std::fmt;
 
 use zaldinar_core::client::PluginRegister;
 use zaldinar_core::events::CommandEvent;
 
 const MAX_ITERATIONS: u32 = 134217728u32;
 const MAX_OUTPUT: usize = 256usize;
+
+#[derive(Debug)]
+pub enum Error {
+    /// A right bracket was found with no unmatched left brackets preceding it.
+    UnbalancedRightBracket,
+    /// The input ended before right brackets were found to match all left brackets.
+    UnbalancedLeftBracket,
+    /// `,` is unsupported
+    CommaUnsupported,
+}
+
+impl fmt::Display for Error {
+    fn fmt(&self, formatter: &mut fmt::Formatter) -> Result<(), fmt::Error> {
+        match self {
+            &Error::UnbalancedRightBracket => {
+                write!(formatter, "Expected matching `[` before `]`, found lone `]` first.")
+            },
+            &Error::UnbalancedLeftBracket => {
+                write!(formatter, "Unbalanced `[`. Expected matching `]`, found end of file.")
+            },
+            &Error::CommaUnsupported => {
+                write!(formatter, "Unsupported command: `,`.")
+            }
+        }
+    }
+}
 
 #[derive(Debug)]
 enum Instruction {
@@ -31,15 +57,14 @@ enum Instruction {
     JumpToRight(usize),
 }
 
-fn parse_instructions(event: &CommandEvent) -> Result<Vec<Instruction>, Cow<'static, str>> {
+fn parse_instructions(event: &CommandEvent) -> Result<Vec<Instruction>, Error> {
     // Vec of opening jumps waiting for a closing jump to find
     // each u16 is a position in the instructions vec.
     let mut waiting_opening_jumps = Vec::new();
     let mut instructions = Vec::new();
-    let mut current_parsing_position = 0u64;
+
     for arg in &event.args {
         for c in arg.chars() {
-            current_parsing_position += 1;
             let instruction = match c {
                 '>' => Instruction::MoveRight,
                 '<' => Instruction::MoveLeft,
@@ -47,8 +72,7 @@ fn parse_instructions(event: &CommandEvent) -> Result<Vec<Instruction>, Cow<'sta
                 '-' => Instruction::Decrement,
                 '.' => Instruction::Output,
                 ',' => {
-                    return Err(Cow::Owned(format!("Error: Unsupported command `,` found at \
-                        position {}.", current_parsing_position)));
+                    return Err(Error::CommaUnsupported);
                 },
                 '[' => {
                     // instructions.len() is the position where JumpTo is going to end up
@@ -65,8 +89,7 @@ fn parse_instructions(event: &CommandEvent) -> Result<Vec<Instruction>, Cow<'sta
                             Instruction::JumpToRight(left_jump)
                         },
                         None => {
-                            return Err(Cow::Owned(format!("Error: Unbalanced `]` found at \
-                                position {}, no matching `[` found.", current_parsing_position)));
+                            return Err(Error::UnbalancedRightBracket);
                         }
                     }
                 },
@@ -74,11 +97,10 @@ fn parse_instructions(event: &CommandEvent) -> Result<Vec<Instruction>, Cow<'sta
             };
             instructions.push(instruction);
         }
-        current_parsing_position += 1; // because each argument was originally separated by a space
     }
 
     if !waiting_opening_jumps.is_empty() {
-        return Err(Cow::Borrowed("Error: Unbalanced `[`, no matching `]` found."));
+        return Err(Error::UnbalancedLeftBracket);
     }
 
     return Ok(instructions);
@@ -88,7 +110,7 @@ fn brainfuck(event: &CommandEvent) {
     let instructions = match parse_instructions(event) {
         Ok(instructions) => instructions,
         Err(e) => {
-            event.client.send_message(event.channel(), e);
+            event.client.send_message(event.channel(), format!("Error: {}", e));
             return;
         }
     };
