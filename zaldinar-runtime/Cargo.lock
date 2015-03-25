@@ -42,6 +42,7 @@ name = "generated-plugins-crate"
 version = "0.0.1"
 dependencies = [
  "zaldinar-core 0.0.1",
+ "zaldinar-plugin-brainfuck 0.0.1",
  "zaldinar-plugin-choose 0.0.1",
  "zaldinar-plugin-control 0.0.1",
  "zaldinar-plugin-eightball 0.0.1",
@@ -126,6 +127,13 @@ dependencies = [
  "log 0.2.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 0.1.20 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex_macros 0.1.12 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "zaldinar-plugin-brainfuck"
+version = "0.0.1"
+dependencies = [
+ "zaldinar-core 0.0.1",
 ]
 
 [[package]]
