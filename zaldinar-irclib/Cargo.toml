@@ -6,11 +6,5 @@ authors = ["Dabo Ross <daboross@daboross.net>"]
 
 [dependencies]
 log = "0.3.*"
-# regex = "0.1.*"
-# regex_macros = "0.1.*"
-
-[dependencies.regex]
-git = "https://github.com/rust-lang/regex.git"
-
-[dependencies.regex_macros]
-git = "https://github.com/rust-lang/regex.git"
+regex = "0.1.*"
+regex_macros = "0.1.*"

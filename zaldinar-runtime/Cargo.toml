@@ -5,21 +5,14 @@ version = "0.1.1-dev"
 authors = ["Dabo Ross <daboross@daboross.net>"]
 
 [dependencies]
-# regex = "0.1.*"
-# regex_macros = "0.1.*"
+regex = "0.1.*"
+regex_macros = "0.1.*"
 rustc-serialize = "0.3.*"
 chrono = "0.2.*"
 getopts = "0.2.*"
 inotify = "0.1.*"
 log = "0.3.*"
 fern = "0.3.*"
-
-[dependencies.regex]
-git = "https://github.com/rust-lang/regex.git"
-
-[dependencies.regex_macros]
-git = "https://github.com/rust-lang/regex.git"
-
 
 [dependencies.libc]
 version = "0.1.3"

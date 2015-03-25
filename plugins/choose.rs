@@ -1,10 +1,6 @@
-//! depends: rand = "0.2.0"
-//! # depends: regex = "0.1.19"
-//! # depends: regex_macros = "0.1.12"
-//! depends: [dependencies.regex]
-//! depends: git = "https://github.com/rust-lang/regex.git"
-//! depends: [dependencies.regex_macros]
-//! depends: git = "https://github.com/rust-lang/regex.git"
+//! depends: rand = "0.2.*"
+//! depends: regex = "0.1.*"
+//! depends: regex_macros = "0.1.*"
 #![feature(plugin)]
 #![plugin(regex_macros)]
 
