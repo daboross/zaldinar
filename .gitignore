@@ -5,7 +5,8 @@ target
 
 # Build files #
 ###############
-/Cargo.lock
+zaldinar-irclib/Cargo.lock
+zaldinar-core/Cargo.lock
 
 # Packages #
 ############
