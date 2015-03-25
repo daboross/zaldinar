@@ -1,16 +1,16 @@
 #![feature(plugin)] // For regex_macros
 #![plugin(regex_macros)]
 
-extern crate "rustc-serialize" as rustc_serialize;
+extern crate rustc_serialize;
 extern crate chrono;
 extern crate regex;
 #[macro_use]
 extern crate log;
 extern crate fern;
 extern crate inotify;
-extern crate "zaldinar-irclib" as irc;
-extern crate "zaldinar-core" as core;
-extern crate "generated-plugins-crate" as generated_plugins_crate;
+extern crate zaldinar_irclib as irc;
+extern crate zaldinar_core as core;
+extern crate generated_plugins_crate;
 
 pub use core::config::ClientConfiguration;
 pub use core::errors::InitializationError;

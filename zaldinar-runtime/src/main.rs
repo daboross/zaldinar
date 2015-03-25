@@ -1,3 +1,4 @@
+#![feature(convert)] // For path::PathBuf::from()
 #![feature(std_misc)] // For ffi::AsOsStr & os::unix::OsStrExt
 #![feature(exit_status)] // For env::set_exit_status
 
@@ -54,7 +55,7 @@ fn main() {
         Ok(v) => v,
         Err(e) => {
             print_err!("Warning: failed to find current executable: {}", e);
-            PathBuf::new(UNKNOWN_EXECUTABLE)
+            PathBuf::from(UNKNOWN_EXECUTABLE)
         }
     };
 
@@ -91,7 +92,7 @@ fn main() {
         Ok(v) => v,
         Err(e) => {
             print_err!("Warning: failed to get current directory: {}", e);
-            PathBuf::new("") // TODO: return here or just not be absolute?
+            PathBuf::from("") // TODO: return here or just not be absolute?
         }
     };
 

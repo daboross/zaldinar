@@ -1,9 +1,9 @@
 //! depends: rand = "0.2.0"
-extern crate "zaldinar-core" as zaldinar;
+extern crate zaldinar_core;
 extern crate rand;
 use rand::Rng;
-use zaldinar::client::PluginRegister;
-use zaldinar::events::CommandEvent;
+use zaldinar_core::client::PluginRegister;
+use zaldinar_core::events::CommandEvent;
 
 const MESSAGES: &'static str = "\
 <yes>As I see it, yes

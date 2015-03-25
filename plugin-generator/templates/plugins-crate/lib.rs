@@ -1,8 +1,8 @@
-extern crate "zaldinar-core" as zaldinar;
+extern crate zaldinar_core;
 
 {{extern_crate_lines}}
 
-pub fn register(register: &mut zaldinar::client::PluginRegister) {
+pub fn register(register: &mut zaldinar_core::client::PluginRegister) {
     {{register_lines}}
 }
 

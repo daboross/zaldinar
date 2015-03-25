@@ -1,7 +1,7 @@
-extern crate "zaldinar-core" as zaldinar;
+extern crate zaldinar_core;
 
-use zaldinar::client::PluginRegister;
-use zaldinar::events::CommandEvent;
+use zaldinar_core::client::PluginRegister;
+use zaldinar_core::events::CommandEvent;
 
 fn command(event: &CommandEvent) {
 

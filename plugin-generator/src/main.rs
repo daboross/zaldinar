@@ -22,7 +22,7 @@ fn main() {
 fn setup_logger(out_dir: &Path) -> Result<(), fern::InitError> {
     try!(fs::create_dir_all(out_dir));
     fern::init_global_logger(
-        fern::OutputConfig::File(out_dir.join("output.log")),
+        fern::OutputConfig::file(&out_dir.join("output.log")),
         log::LogLevelFilter::Trace
     )
 }
@@ -109,8 +109,8 @@ fn main_possibly_errors() -> io::Result<()> {
                 temp_name
             };
 
-            extern_crate_lines.push(format!("extern crate \"{}\" as {};",
-                                            crate_name, imported_name));
+            extern_crate_lines.push(format!("extern crate {} as {};",
+                                            crate_name.replace("-", "_"), imported_name));
             register_lines.push(format!("{}::register(register);", imported_name));
         }
 

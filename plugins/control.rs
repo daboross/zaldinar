@@ -1,8 +1,8 @@
-extern crate "zaldinar-core" as zaldinar;
+extern crate zaldinar_core;
 
-use zaldinar::client::PluginRegister;
-use zaldinar::events::CommandEvent;
-use zaldinar::client::ExecutingState;
+use zaldinar_core::client::PluginRegister;
+use zaldinar_core::events::CommandEvent;
+use zaldinar_core::client::ExecutingState;
 
 fn action(event: &CommandEvent) {
     if event.args[0].starts_with("#") {

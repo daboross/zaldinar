@@ -1,11 +1,11 @@
-extern crate "zaldinar-core" as zaldinar;
+extern crate zaldinar_core;
 
-use zaldinar::client::PluginRegister;
-use zaldinar::events::CommandEvent;
+use zaldinar_core::client::PluginRegister;
+use zaldinar_core::events::CommandEvent;
 
 fn info_command(event: &CommandEvent) {
     event.client.send_message(event.channel(), format!("Hi, I'm zaldinar version {} - \
-        created by Dabo - Powered by Rust!", zaldinar::VERSION));
+        created by Dabo - Powered by Rust!", zaldinar_core::VERSION));
     event.client.send_message(event.channel(), "Source code available at https://github.com/\
         daboross/zaldinar/");
 }

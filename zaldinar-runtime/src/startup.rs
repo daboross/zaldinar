@@ -1,6 +1,5 @@
 use std::sync;
 use std::sync::mpsc;
-use std::path;
 use std::error::FromError;
 
 use generated_plugins_crate;
@@ -43,8 +42,7 @@ fn setup_logger(config: &config::ClientConfiguration) -> Result<(), Initializati
             return format!("[{}][{:?}] {}", chrono::Local::now().format("%Y-%m-%d][%H:%M:%S"),
                 level, msg);
         }),
-        output: vec![fern::OutputConfig::Stdout, fern::OutputConfig::File(
-                                                    path::PathBuf::new(&config.log_file))],
+        output: vec![fern::OutputConfig::stdout(), fern::OutputConfig::file(&config.log_file)],
         level: level,
     };
     return match fern::init_global_logger(config, log::LogLevelFilter::Info) {

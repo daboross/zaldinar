@@ -1,13 +1,13 @@
 #![feature(plugin)] // For regex_macros
-#![feature(std_misc)] // For hash_map::Entry
+#![feature(into_cow)] // For borrow::IntoCow used in interface.rs
 #![plugin(regex_macros)]
 
-extern crate "rustc-serialize" as rustc_serialize;
+extern crate rustc_serialize;
 extern crate regex;
 #[macro_use]
 extern crate log;
 extern crate fern;
-extern crate "zaldinar-irclib" as irc;
+extern crate zaldinar_irclib as irc;
 
 pub use errors::InitializationError;
 pub use config::ClientConfiguration;

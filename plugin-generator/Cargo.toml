@@ -5,5 +5,5 @@ version = "0.0.1"
 authors = ["Dabo Ross <daboross@daboross.net>"]
 
 [dependencies]
-log = "0.2.*"
-fern = "0.2.*"
+log = "0.3.*"
+fern = "0.3.*"

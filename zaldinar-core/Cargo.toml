@@ -5,11 +5,17 @@ version = "0.0.1"
 authors = ["Dabo Ross <daboross@daboross.net>"]
 
 [dependencies]
-regex = "0.1.14"
-regex_macros = "0.1.8"
-rustc-serialize = "0.3.1"
-log = "0.2.5"
-fern = "0.2.0"
+# regex = "0.1.*"
+# regex_macros = "0.1.*"
+rustc-serialize = "0.3.*"
+log = "0.3.*"
+fern = "0.3.*"
+
+[dependencies.regex]
+git = "https://github.com/rust-lang/regex.git"
+
+[dependencies.regex_macros]
+git = "https://github.com/rust-lang/regex.git"
 
 [dependencies.zaldinar-irclib]
 path = "../zaldinar-irclib"

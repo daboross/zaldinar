@@ -1,11 +1,10 @@
 #![feature(collections)] // for escape_default()
-extern crate "zaldinar-core" as zaldinar;
+extern crate zaldinar_core;
 
-use std::borrow::IntoCow;
 use std::borrow::Cow;
 
-use zaldinar::client::PluginRegister;
-use zaldinar::events::CommandEvent;
+use zaldinar_core::client::PluginRegister;
+use zaldinar_core::events::CommandEvent;
 
 const MAX_ITERATIONS: u32 = 134217728u32;
 const MAX_OUTPUT: usize = 256usize;
@@ -48,8 +47,8 @@ fn parse_instructions(event: &CommandEvent) -> Result<Vec<Instruction>, Cow<'sta
                 '-' => Instruction::Decrement,
                 '.' => Instruction::Output,
                 ',' => {
-                    return Err(format!("Error: Unsupported command `,` found at position {}.",
-                        current_parsing_position).into_cow());
+                    return Err(Cow::Owned(format!("Error: Unsupported command `,` found at \
+                        position {}.", current_parsing_position)));
                 },
                 '[' => {
                     // instructions.len() is the position where JumpTo is going to end up
@@ -66,9 +65,8 @@ fn parse_instructions(event: &CommandEvent) -> Result<Vec<Instruction>, Cow<'sta
                             Instruction::JumpToRight(left_jump)
                         },
                         None => {
-                            return Err(format!("Error: Unbalanced `]` found at position {}, \
-                                                no matching `[` found.",
-                                current_parsing_position).into_cow());
+                            return Err(Cow::Owned(format!("Error: Unbalanced `]` found at \
+                                position {}, no matching `[` found.", current_parsing_position)));
                         }
                     }
                 },
@@ -80,7 +78,7 @@ fn parse_instructions(event: &CommandEvent) -> Result<Vec<Instruction>, Cow<'sta
     }
 
     if !waiting_opening_jumps.is_empty() {
-        return Err("Error: Unbalanced `[`, no matching `]` found.".into_cow());
+        return Err(Cow::Borrowed("Error: Unbalanced `[`, no matching `]` found."));
     }
 
     return Ok(instructions);
