@@ -12,8 +12,8 @@ dependencies = [
  "regex 0.1.21 (git+https://github.com/rust-lang/regex.git)",
  "regex_macros 0.1.12 (git+https://github.com/rust-lang/regex.git)",
  "rustc-serialize 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
- "zaldinar-core 0.0.1",
- "zaldinar-irclib 0.0.1",
+ "zaldinar-core 0.1.1-dev",
+ "zaldinar-irclib 0.1.1-dev",
 ]
 
 [[package]]
@@ -41,7 +41,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 name = "generated-plugins-crate"
 version = "0.0.1"
 dependencies = [
- "zaldinar-core 0.0.1",
+ "zaldinar-core 0.1.1-dev",
  "zaldinar-plugin-brainfuck 0.0.1",
  "zaldinar-plugin-choose 0.0.1",
  "zaldinar-plugin-control 0.0.1",
@@ -118,19 +118,19 @@ dependencies = [
 
 [[package]]
 name = "zaldinar-core"
-version = "0.0.1"
+version = "0.1.1-dev"
 dependencies = [
  "fern 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 0.1.21 (git+https://github.com/rust-lang/regex.git)",
  "regex_macros 0.1.12 (git+https://github.com/rust-lang/regex.git)",
  "rustc-serialize 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
- "zaldinar-irclib 0.0.1",
+ "zaldinar-irclib 0.1.1-dev",
 ]
 
 [[package]]
 name = "zaldinar-irclib"
-version = "0.0.1"
+version = "0.1.1-dev"
 dependencies = [
  "log 0.3.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 0.1.21 (git+https://github.com/rust-lang/regex.git)",
@@ -141,7 +141,7 @@ dependencies = [
 name = "zaldinar-plugin-brainfuck"
 version = "0.0.1"
 dependencies = [
- "zaldinar-core 0.0.1",
+ "zaldinar-core 0.1.1-dev",
 ]
 
 [[package]]
@@ -151,14 +151,14 @@ dependencies = [
  "rand 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 0.1.21 (git+https://github.com/rust-lang/regex.git)",
  "regex_macros 0.1.12 (git+https://github.com/rust-lang/regex.git)",
- "zaldinar-core 0.0.1",
+ "zaldinar-core 0.1.1-dev",
 ]
 
 [[package]]
 name = "zaldinar-plugin-control"
 version = "0.0.1"
 dependencies = [
- "zaldinar-core 0.0.1",
+ "zaldinar-core 0.1.1-dev",
 ]
 
 [[package]]
@@ -166,13 +166,13 @@ name = "zaldinar-plugin-eightball"
 version = "0.0.1"
 dependencies = [
  "rand 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
- "zaldinar-core 0.0.1",
+ "zaldinar-core 0.1.1-dev",
 ]
 
 [[package]]
 name = "zaldinar-plugin-info"
 version = "0.0.1"
 dependencies = [
- "zaldinar-core 0.0.1",
+ "zaldinar-core 0.1.1-dev",
 ]
 
