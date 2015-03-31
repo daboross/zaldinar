@@ -1,4 +1,4 @@
-//! depends: rand = "0.2.*"
+//! depends: rand = "0.3.*"
 //! depends: regex = "0.1.*"
 //! depends: regex_macros = "0.1.*"
 #![feature(plugin)]
