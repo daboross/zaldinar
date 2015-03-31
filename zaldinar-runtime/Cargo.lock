@@ -46,6 +46,7 @@ dependencies = [
  "zaldinar-plugin-choose 0.0.1",
  "zaldinar-plugin-control 0.0.1",
  "zaldinar-plugin-eightball 0.0.1",
+ "zaldinar-plugin-foods 0.0.1",
  "zaldinar-plugin-info 0.0.1",
 ]
 
@@ -163,6 +164,14 @@ dependencies = [
 
 [[package]]
 name = "zaldinar-plugin-eightball"
+version = "0.0.1"
+dependencies = [
+ "rand 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
+ "zaldinar-core 0.1.1-dev",
+]
+
+[[package]]
+name = "zaldinar-plugin-foods"
 version = "0.0.1"
 dependencies = [
  "rand 0.2.1 (registry+https://github.com/rust-lang/crates.io-index)",
