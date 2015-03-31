@@ -31,12 +31,14 @@ fn main_possibly_errors() -> io::Result<()> {
     let zaldinar_runtime_dir_str = env::var_os("CARGO_MANIFEST_DIR")
         .expect("Expected CARGO_MANIFEST_DIR, found None");
 
-    let source_plugin_directory = Path::new(&zaldinar_runtime_dir_str).parent()
-        .expect("CARGO_MANIFEST_DIR does not have a parent path.")
-        .join("plugins");
+    let project_root_dir = Path::new(&zaldinar_runtime_dir_str).parent()
+        .expect("CARGO_MANIFEST_DIR does not have a parent path.");
 
-    let output_dir = Path::new(&zaldinar_runtime_dir_str).parent().unwrap()
-        .join("build-out");
+    let source_plugin_directory = project_root_dir.join("plugins");
+
+    let resource_path = source_plugin_directory.join("resources");
+
+    let output_dir = project_root_dir.join("build-out");
 
     if let Err(e) = setup_logger(&output_dir) {
         panic!("Error setting up logging: {}", e);
@@ -44,8 +46,7 @@ fn main_possibly_errors() -> io::Result<()> {
 
     let generated_plugin_directory = output_dir.join("plugin-crates");
 
-    let zaldinar_core_path = Path::new(&zaldinar_runtime_dir_str).parent().unwrap()
-        .join("zaldinar-core");
+    let zaldinar_core_path = project_root_dir.join("zaldinar-core");
 
     let core_path_str = zaldinar_core_path.to_str().expect(
             "Expected valid UTF8 zaldinar-core path (for embedding in Cargo.toml), found None");
@@ -58,11 +59,12 @@ fn main_possibly_errors() -> io::Result<()> {
     debug!("Walking {}", source_plugin_directory.display());
     for dir_entry in try!(fs::read_dir(&source_plugin_directory)) {
         let plugin_path = try!(dir_entry).path();
-        if plugin_path.file_name().unwrap() == "template.rs" {
-            continue; // ignore template.rs!
+        let file_name = plugin_path.file_name().unwrap();
+        if file_name == "template.rs" || file_name == "resources" {
+            continue; // ignore template.rs and resources/
         }
-        let created = try!(create_plugin_crate(&plugin_path, &generated_plugin_directory,
-            &core_path_str));
+        let created = try!(create_plugin_crate(&plugin_path, &resource_path,
+            &generated_plugin_directory, &core_path_str));
         created_plugins.push(created);
     }
 
@@ -139,7 +141,7 @@ fn main_possibly_errors() -> io::Result<()> {
     return Ok(());
 }
 
-fn create_plugin_crate(path: &Path, output_dir: &Path, core_path_str: &str)
+fn create_plugin_crate(path: &Path, resource_path: &Path, output_dir: &Path, core_path_str: &str)
         -> io::Result<(String, PathBuf)> {
     debug!("Reading plugin source file: {}", path.display());
 
@@ -153,11 +155,10 @@ fn create_plugin_crate(path: &Path, output_dir: &Path, core_path_str: &str)
     let mut dependency_lines = Vec::new();
 
     for line in contents.lines_any() {
-        let split_iter = line.split("//! depends: ");
         // If the line has `//! depends: `, .skip(1) will remove all content before the
         // `//! depends: `. If it doesn't, then .skip(1) will leave an empty iterator, and this if
         // let statement won't run due to .next() returning None.
-        if let Some(dependency_line) = split_iter.skip(1).next() {
+        if let Some(dependency_line) = line.split("//! depends: ").skip(1).next() {
             dependency_lines.push(dependency_line);
         }
     }
@@ -189,16 +190,23 @@ fn create_plugin_crate(path: &Path, output_dir: &Path, core_path_str: &str)
         try!(write_file(&output_directory.join("Cargo.toml"), &cargo_contents));
     }
 
-    { // Scope for writing lib.rs
+    { // Scope for writing source files
         let src_path = output_directory.join("src");
 
         debug!("Creating source directory {}", src_path.display());
         try!(fs::create_dir_all(&src_path));
 
-        // This is just writing the contents which were originally read from the plugin.rs file.
+        // This is just writing the contents which were originally read from the plugin.rs file to
+        // lib.rs
         try!(write_file(&src_path.join("lib.rs"), &contents));
-    }
 
+        // Link the resources dir to $crate/src/resources/
+        match fs::soft_link(resource_path, src_path.join("resources")) {
+            Ok(()) => (),
+            Err(ref e) if e.kind() == io::ErrorKind::AlreadyExists => (),
+            e @ Err(..) => try!(e)
+        }
+    }
     return Ok((name, output_directory));
 }
 
