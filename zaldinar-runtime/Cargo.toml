@@ -18,6 +18,7 @@ optional = true
 
 [dependencies.inotify]
 version = "0.1.*"
+git = "https://github.com/daboross/inotify-rs.git"
 optional = true
 
 [dependencies.zaldinar-irclib]

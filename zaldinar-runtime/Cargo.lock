@@ -5,7 +5,7 @@ dependencies = [
  "fern 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "generated-plugins-crate 0.0.1",
  "getopts 0.2.9 (registry+https://github.com/rust-lang/crates.io-index)",
- "inotify 0.1.10 (registry+https://github.com/rust-lang/crates.io-index)",
+ "inotify 0.1.10 (git+https://github.com/daboross/inotify-rs.git)",
  "libc 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 0.1.26 (registry+https://github.com/rust-lang/crates.io-index)",
@@ -52,7 +52,10 @@ dependencies = [
 [[package]]
 name = "inotify"
 version = "0.1.10"
-source = "registry+https://github.com/rust-lang/crates.io-index"
+source = "git+https://github.com/daboross/inotify-rs.git#febaaa7d001cb66840c24c16b900b5693d6e66a8"
+dependencies = [
+ "libc 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
+]
 
 [[package]]
 name = "libc"
