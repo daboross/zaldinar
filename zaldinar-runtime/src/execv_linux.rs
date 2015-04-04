@@ -1,5 +1,6 @@
 extern crate libc;
 
+use std::os::unix::ffi::OsStrExt;
 use std::env;
 use std::ffi;
 use std::ptr;
@@ -19,7 +20,7 @@ pub fn execv_if_possible(program_path: &path::Path) -> i32 {
     // We're just going to exit the program anyways if we succeed or fail, so this function won't do anything other than unwrap IO errors.
 
     // Get the program as a CString
-    let program = program_path.as_os_str().to_cstring().unwrap();
+    let program = ffi::CString::new(program_path.as_os_str().as_bytes()).unwrap();
 
     // Argument vector, passed to execv.
     let mut argv_vec = Vec::new();

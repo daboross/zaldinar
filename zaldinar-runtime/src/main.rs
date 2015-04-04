@@ -1,5 +1,3 @@
-#![cfg_attr(feature = "binary-filewatch", feature(convert))] // For path::PathBuf::from()
-
 macro_rules! print_err {
     ($($arg:tt)*) => (
         {
