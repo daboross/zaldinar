@@ -1,6 +1,6 @@
 #!/bin/bash
 
-ZALDINAR_PATH="$PWD"
+ZALDINAR_PATH="$(dirname "$([[ $0 = /* ]] && echo "$0" || echo "$PWD/${0#./}")")"
 
 cd "${ZALDINAR_PATH}/plugin-generator" &&
 cargo run --release &&

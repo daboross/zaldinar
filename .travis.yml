@@ -1,27 +1,19 @@
 sudo: false
 language: rust
-script:
-  - cd "$TRAVIS_BUILD_DIR/plugin-generator" && cargo run --release
-  - |
-    cd "$TRAVIS_BUILD_DIR/zaldinar-runtime" &&
-    if [[ "$BUILD_FILEWATCH" == true ]]; then
-        cargo build
-    else
-        cargo build --no-default-features
-    fi
-cache:
-  directories:
-    # Cache compiled dependencies
-    - zaldinar-runtime/target/
-    - plugin-generator/target/
-
-rust:
-  - 1.0.0-beta
-  - nightly
-env:
-  - BUILD_FILEWATCH=true
-  - BUILD_FILEWATCH=false
 matrix:
-  exclude:
+  include:
     - rust: 1.0.0-beta
-      env: BUILD_FILEWATCH=true
+      script: '"$TRAVIS_BUILD_DIR/build-binary" --no-default-features'
+      env:
+        - RUST=1.0.0-beta
+        - FILEWATCH=false
+    - rust: nightly
+      script: '"$TRAVIS_BUILD_DIR/build-binary" --no-default-features'
+      env:
+        - RUST=nightly
+        - FILEWATCH=false
+    - rust: nightly
+      script: "$TRAVIS_BUILD_DIR/build-binary"
+      env:
+        - RUST=nightly
+        - FILEWATCH=true
