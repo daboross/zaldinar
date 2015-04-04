@@ -1,4 +1,3 @@
-#![feature(collections)] // for str.escape_default()
 extern crate zaldinar_core;
 
 use std::fmt;
@@ -176,10 +175,27 @@ fn brainfuck(event: &CommandEvent) {
     if output.is_empty() {
         event.client.send_message(event.channel(), "No output produced.");
     } else {
-        event.client.send_message(event.channel(), format!("Output: {}", output.escape_default()));
+        event.client.send_message(event.channel(), format!("Output: {}", escape_output(&output)));
     }
 }
 
 pub fn register(register: &mut PluginRegister) {
     register.register_command("brainfuck", brainfuck);
+}
+
+fn escape_output(input: &str) -> String {
+    let mut result = String::with_capacity(input.len());
+
+    for c in input.chars() {
+        match c {
+           '\t' => result.push_str("\\t"),
+            '\r' => result.push_str("\\r"),
+            '\n' => result.push_str("\\n"),
+            '\\' => result.push_str("\\\\"),
+            v @ '\x20' ... '\x7e' => result.push(v),
+            v @ _ => result.extend(v.escape_unicode()),
+        }
+    }
+
+    return result;
 }
