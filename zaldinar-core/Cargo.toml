@@ -6,7 +6,6 @@ authors = ["Dabo Ross <daboross@daboross.net>"]
 
 [dependencies]
 regex = "0.1.*"
-regex_macros = "0.1.*"
 rustc-serialize = "0.3.*"
 log = "0.3.*"
 fern = "0.3.*"

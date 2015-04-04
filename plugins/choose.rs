@@ -1,12 +1,13 @@
 //! depends: rand = "0.3.*"
 //! depends: regex = "0.1.*"
-//! depends: regex_macros = "0.1.*"
-#![feature(plugin)]
-#![plugin(regex_macros)]
 
 extern crate zaldinar_core;
 extern crate regex;
 extern crate rand;
+
+macro_rules! regex(
+    ($s:expr) => (regex::Regex::new($s).unwrap());
+);
 
 use rand::Rng;
 

@@ -1,8 +1,10 @@
-#![feature(plugin)] // For regex_macros
-#![plugin(regex_macros)]
 extern crate regex;
 #[macro_use]
 extern crate log;
+
+macro_rules! regex(
+    ($s:expr) => (::regex::Regex::new($s).unwrap());
+);
 
 use std::io::prelude::*;
 use std::ascii::AsciiExt;
@@ -10,8 +12,6 @@ use std::io;
 use std::net;
 use std::thread;
 use std::sync::mpsc;
-
-static IRC_COLOR_REGEX: regex::Regex = regex!("(\x03(\\d+,\\d+|\\d)|[\x0f\x02\x16\x1f\x02])");
 
 /// This trait represents something which store an internal string. However, in order to allow for
 /// the implementation to use an internal state like RwLock, this trait gives access using a
@@ -58,6 +58,9 @@ impl <T: io::BufRead, C: HasNick> IrcRead<T, C> {
     /// This will continue to read until either end of file is reached.
     /// or an error occurs either in `socket.read_line()` or `data_out.send()`.
     fn read_loop(&mut self) {
+        // TODO: Move this back to a `const IRC_COLOR_REGEX` definition at the top of the file
+        // once the regex_macros crate is available on stable rust
+        let irc_color_regex = regex!("(\x03(\\d+,\\d+|\\d)|[\x0f\x02\x16\x1f\x02])");
         loop {
             let mut whole_input = String::new();
             if let Err(e) = self.socket.read_line(&mut whole_input) {
@@ -67,7 +70,7 @@ impl <T: io::BufRead, C: HasNick> IrcRead<T, C> {
             if whole_input.is_empty() {
                 break; // end of file
             }
-            let input = IRC_COLOR_REGEX.replace_all(whole_input.trim_right(), "");
+            let input = irc_color_regex.replace_all(whole_input.trim_right(), "");
             let message_split: Vec<&str> = input.split(' ').collect();
             let (command, args, possible_mask): (&str, &[&str], IrcMask) = if message_split[0]
                     .starts_with(":") {

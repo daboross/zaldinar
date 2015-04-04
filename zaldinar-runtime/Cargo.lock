@@ -9,7 +9,6 @@ dependencies = [
  "libc 0.1.5 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 0.1.26 (registry+https://github.com/rust-lang/crates.io-index)",
- "regex_macros 0.1.14 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustc-serialize 0.3.12 (registry+https://github.com/rust-lang/crates.io-index)",
  "time 0.1.24 (registry+https://github.com/rust-lang/crates.io-index)",
  "zaldinar-core 0.1.1-dev",
@@ -83,14 +82,6 @@ version = "0.1.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
-name = "regex_macros"
-version = "0.1.14"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-dependencies = [
- "regex 0.1.26 (registry+https://github.com/rust-lang/crates.io-index)",
-]
-
-[[package]]
 name = "rustc-serialize"
 version = "0.3.12"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -111,7 +102,6 @@ dependencies = [
  "fern 0.3.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "log 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 0.1.26 (registry+https://github.com/rust-lang/crates.io-index)",
- "regex_macros 0.1.14 (registry+https://github.com/rust-lang/crates.io-index)",
  "rustc-serialize 0.3.12 (registry+https://github.com/rust-lang/crates.io-index)",
  "zaldinar-irclib 0.1.1-dev",
 ]
@@ -122,7 +112,6 @@ version = "0.1.1-dev"
 dependencies = [
  "log 0.3.1 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 0.1.26 (registry+https://github.com/rust-lang/crates.io-index)",
- "regex_macros 0.1.14 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
 
 [[package]]
@@ -138,7 +127,6 @@ version = "0.0.1"
 dependencies = [
  "rand 0.3.7 (registry+https://github.com/rust-lang/crates.io-index)",
  "regex 0.1.26 (registry+https://github.com/rust-lang/crates.io-index)",
- "regex_macros 0.1.14 (registry+https://github.com/rust-lang/crates.io-index)",
  "zaldinar-core 0.1.1-dev",
 ]
 

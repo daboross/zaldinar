@@ -1,6 +1,3 @@
-#![feature(plugin)] // For regex_macros
-#![plugin(regex_macros)]
-
 extern crate rustc_serialize;
 extern crate time;
 extern crate regex;
@@ -10,6 +7,10 @@ extern crate fern;
 extern crate zaldinar_irclib as irc;
 extern crate zaldinar_core as core;
 extern crate generated_plugins_crate;
+
+macro_rules! regex(
+    ($s:expr) => (::regex::Regex::new($s).unwrap());
+);
 
 pub use core::config::ClientConfiguration;
 pub use core::errors::InitializationError;

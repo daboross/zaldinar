@@ -7,4 +7,3 @@ authors = ["Dabo Ross <daboross@daboross.net>"]
 [dependencies]
 log = "0.3.*"
 regex = "0.1.*"
-regex_macros = "0.1.*"
