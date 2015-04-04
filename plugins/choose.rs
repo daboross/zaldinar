@@ -5,15 +5,14 @@ extern crate zaldinar_core;
 extern crate regex;
 extern crate rand;
 
-macro_rules! regex(
-    ($s:expr) => (regex::Regex::new($s).unwrap());
-);
-
 use rand::Rng;
 
 use zaldinar_core::client::PluginRegister;
 use zaldinar_core::events::CommandEvent;
 
+macro_rules! regex {
+    ($s:expr) => (::regex::Regex::new($s).unwrap())
+}
 
 fn choose(event: &CommandEvent) {
     let content = event.args.connect(" ");

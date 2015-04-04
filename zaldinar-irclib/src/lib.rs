@@ -2,9 +2,9 @@ extern crate regex;
 #[macro_use]
 extern crate log;
 
-macro_rules! regex(
-    ($s:expr) => (::regex::Regex::new($s).unwrap());
-);
+macro_rules! regex {
+    ($s:expr) => (::regex::Regex::new($s).unwrap())
+}
 
 use std::io::prelude::*;
 use std::ascii::AsciiExt;

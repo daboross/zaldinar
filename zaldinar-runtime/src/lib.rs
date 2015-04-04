@@ -8,9 +8,9 @@ extern crate zaldinar_irclib as irc;
 extern crate zaldinar_core as core;
 extern crate generated_plugins_crate;
 
-macro_rules! regex(
-    ($s:expr) => (::regex::Regex::new($s).unwrap());
-);
+macro_rules! regex {
+    ($s:expr) => (::regex::Regex::new($s).unwrap())
+}
 
 pub use core::config::ClientConfiguration;
 pub use core::errors::InitializationError;

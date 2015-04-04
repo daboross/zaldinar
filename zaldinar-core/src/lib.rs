@@ -5,9 +5,9 @@ extern crate log;
 extern crate fern;
 extern crate zaldinar_irclib as irc;
 
-macro_rules! regex(
-    ($s:expr) => (::regex::Regex::new($s).unwrap());
-);
+macro_rules! regex {
+    ($s:expr) => (::regex::Regex::new($s).unwrap())
+}
 
 pub use errors::InitializationError;
 pub use config::ClientConfiguration;
