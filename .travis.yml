@@ -1,9 +1,12 @@
 sudo: false
 language: rust
 rust: nightly
+env:
+  - BUILD_FILEWATCH=true
+  - BUILD_FILEWATCH=false
 script:
   - cd "$TRAVIS_BUILD_DIR/plugin-generator" && cargo run --release
-  - cd "$TRAVIS_BUILD_DIR/zaldinar-runtime" && cargo build
+  - cd "$TRAVIS_BUILD_DIR/zaldinar-runtime" && [[ "$BUILD_FILEWATCH" == true ]] && cargo build || cargo build --no-default-features
 cache:
   directories:
     # Cache compiled dependencies
