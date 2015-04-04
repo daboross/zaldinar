@@ -7,6 +7,11 @@ matrix:
       env:
         - RUST=1.0.0-beta
         - FILEWATCH=false
+    - rust: 1.0.0-beta
+      script: '"$TRAVIS_BUILD_DIR/build-binary"'
+      env:
+        - RUST=1.0.0-beta
+        - FILEWATCH=true
     - rust: nightly
       script: '"$TRAVIS_BUILD_DIR/build-binary" --no-default-features'
       env:
