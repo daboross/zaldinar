@@ -1,5 +1,4 @@
 #![feature(plugin)] // For regex_macros
-#![feature(into_cow)] // For borrow::IntoCow used in interface.rs
 #![plugin(regex_macros)]
 
 extern crate rustc_serialize;

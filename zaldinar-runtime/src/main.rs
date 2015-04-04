@@ -1,6 +1,4 @@
 #![feature(convert)] // For path::PathBuf::from()
-#![feature(std_misc)] // For ffi::AsOsStr & os::unix::OsStrExt
-#![feature(exit_status)] // For env::set_exit_status
 
 macro_rules! print_err {
     ($($arg:tt)*) => (
@@ -23,7 +21,6 @@ mod execv_linux;
 
 use std::env;
 use std::io;
-use std::ffi::AsOsStr;
 use std::path::PathBuf;
 use std::path::Path;
 
@@ -33,8 +30,9 @@ use execv_linux::execv_if_possible;
 const UNKNOWN_EXECUTABLE: &'static str = "<unknown executable>";
 
 #[cfg(not(feature = "binary-filewatch"))]
-fn execv_if_possible(_program_path: &Path) {
+fn execv_if_possible(_program_path: &Path) -> i32 {
     println!("Can't restart using execv on this platform!");
+    return 1;
 }
 
 fn get_program() -> io::Result<PathBuf> {
@@ -47,6 +45,13 @@ fn get_program() -> io::Result<PathBuf> {
 
 
 fn main() {
+    let result = main_exits();
+    std::process::exit(result);
+}
+
+/// Separate function from main to ensure that everything is cleaned up by exiting scope before
+/// program exits using std::process::exit();
+fn main_exits() -> i32 {
     // Because env::current_exe() will change if the executing file is moved, we need to get the
     // original program path as soon as we start.
     // We have two `program` variables because we still want to use the program gotten from
@@ -75,17 +80,17 @@ fn main() {
         Ok(v) => v,
         Err(e) => {
             print_err!("{}", e.to_string());
-            return;
+            return 0;
         }
     };
 
     if matches.opt_present("help") {
         let brief = format!("Usage: {} [options]", display_program);
         println!("{}", opts.usage(&brief));
-        return;
+        return 0;
     } else if matches.opt_present("version") {
         println!("zaldinar version {}", zaldinar::VERSION);
-        return;
+        return 0;
     }
 
     let current_dir = match env::current_dir() {
@@ -110,8 +115,7 @@ fn main() {
             Ok(v) => v,
             Err(e) => {
                 print_err!("Error loading configuration from `{}`: {}",config_path.display(), e);
-                env::set_exit_status(1);
-                return;
+                return 1;
             },
         };
 
@@ -127,8 +131,8 @@ fn main() {
             },
             Ok(zaldinar::client::ExecutingState::RestartExec) => {
                 println!("Restarting zaldinar using exec.");
-                execv_if_possible(&original_program);
-                return;
+                let result = execv_if_possible(&original_program);
+                return result;
             },
             Ok(zaldinar::client::ExecutingState::RestartTryExec) => {
                 println!("Restarting zaldinar using exec.");
@@ -137,10 +141,11 @@ fn main() {
                 continue;
             }
             Err(e) => {
-                println!("Error running client: {}", e);
-                env::set_exit_status(1);
-                return;
+                print_err!("Error running client: {}", e);
+                return 1;
             },
         };
     }
+
+    return 0;
 }

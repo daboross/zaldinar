@@ -2,7 +2,6 @@ extern crate libc;
 
 use std::env;
 use std::ffi;
-use std::ffi::AsOsStr;
 use std::ptr;
 use std::path;
 
@@ -10,12 +9,11 @@ use self::libc::funcs::posix88::unistd;
 
 use UNKNOWN_EXECUTABLE;
 
-pub fn execv_if_possible(program_path: &path::Path) {
+pub fn execv_if_possible(program_path: &path::Path) -> i32 {
     if program_path == path::Path::new(UNKNOWN_EXECUTABLE) {
         print_err!("Couldn't restart using exec: executable unknown!  See previous \"failed to \
             find current executable\" error.");
-        env::set_exit_status(1);
-        return;
+        return 1;
     }
 
     // We're just going to exit the program anyways if we succeed or fail, so this function won't do anything other than unwrap IO errors.
@@ -43,6 +41,6 @@ pub fn execv_if_possible(program_path: &path::Path) {
     unsafe {
         unistd ::execv(program.as_ptr(), argv_vec.as_mut_ptr());
     }
-    println!("Executing using execv failed!");
-    env::set_exit_status(1);
+    print_err!("Executing using execv failed!");
+    return 1;
 }
