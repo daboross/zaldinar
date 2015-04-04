@@ -9,8 +9,10 @@ extern crate regex;
 extern crate rand;
 
 use rand::Rng;
+
 use zaldinar_core::client::PluginRegister;
 use zaldinar_core::events::CommandEvent;
+
 
 fn choose(event: &CommandEvent) {
     let content = event.args.connect(" ");

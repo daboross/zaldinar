@@ -1,4 +1,3 @@
-#![allow(dead_code)] // this is for the things generated in resources/foods/cakes.rs
 //! depends: rand = "0.3.*"
 extern crate rand;
 extern crate zaldinar_core;
