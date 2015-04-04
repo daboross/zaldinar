@@ -1,4 +1,6 @@
 extern crate libc;
+extern crate inotify;
+
 use std::env;
 use std::io;
 use std::thread;
