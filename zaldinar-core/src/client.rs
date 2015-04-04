@@ -145,11 +145,12 @@ impl Client {
         }
     }
 }
+pub struct ArcClientWrapper(pub sync::Arc<Client>);
 
-impl irc::HasNick for sync::Arc<Client> {
+impl irc::HasNick for ArcClientWrapper {
     fn with_current_nick<T, F>(&self, fun: F) -> T
             where F: Fn(&str) -> T {
-        fun(&self.state.read().unwrap().nick)
+        fun(&self.0.state.read().unwrap().nick)
     }
 }
 

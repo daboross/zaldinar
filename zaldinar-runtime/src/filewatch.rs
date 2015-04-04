@@ -9,21 +9,6 @@ use interface;
 use client;
 use errors::InitializationError;
 
-/// This method was taken from
-/// https://github.com/rust-lang/rust/blob/3e4be02b80a3dd27bce20870958fe0aef7e7336d
-/// /src/libstd/sys/unix/timer.rs#L230
-/// We can keep using this until std::time::duration::Duration and std::thread::sleep() are stable.
-fn sleep(ms: u64) {
-    let mut to_sleep = libc::timespec {
-        tv_sec: (ms / 1000) as libc::time_t,
-        tv_nsec: ((ms % 1000) * 1000000) as libc::c_long,
-    };
-    while unsafe { libc::nanosleep(&to_sleep, &mut to_sleep) } != 0 {
-        if io::Error::last_os_error().kind() != io::ErrorKind::Interrupted {
-            panic!("failed to sleep, but not because of EINTR?");
-        }
-    }
-}
 
 pub fn watch_binary(client: interface::IrcInterface)
         -> Result<thread::JoinHandle, InitializationError> {
@@ -138,7 +123,7 @@ pub fn watch_binary(client: interface::IrcInterface)
                     debug!("\tevent is: ignored");
                 }
                 info!("Restarting to update to latest binary momentarily.");
-                sleep(1000u64); // 1000ms = 1 second
+                thread::sleep_ms(1000u32); // 1000ms = 1 second
                 client.quit(Some("Updating to latest binary"),
                     client::ExecutingState::RestartExec);
                 break 'thread_loop;

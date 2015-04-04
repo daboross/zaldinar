@@ -1,9 +1,9 @@
 use std::sync;
 use std::sync::mpsc;
-use std::error::FromError;
+use std::convert;
 
 use generated_plugins_crate;
-use chrono;
+use time;
 use fern;
 use log;
 
@@ -39,7 +39,7 @@ fn setup_logger(config: &config::ClientConfiguration) -> Result<(), Initializati
     };
     let config = fern::DispatchConfig {
         format: Box::new(|msg: &str, level: &log::LogLevel, _location: &log::LogLocation| {
-            return format!("[{}][{:?}] {}", chrono::Local::now().format("%Y-%m-%d][%H:%M:%S"),
+            return format!("[{}][{:?}] {}", time::now().strftime("%Y-%m-%d][%H:%M:%S").unwrap(),
                 level, msg);
         }),
         output: vec![fern::OutputConfig::stdout(), fern::OutputConfig::file(&config.log_file)],
@@ -48,7 +48,7 @@ fn setup_logger(config: &config::ClientConfiguration) -> Result<(), Initializati
     return match fern::init_global_logger(config, log::LogLevelFilter::Info) {
         Err(fern::InitError::SetLoggerError(_)) => Ok(()),
         Ok(()) => Ok(()),
-        Err(e) => Err(FromError::from_error(e)),
+        Err(e) => Err(convert::From::from(e)),
     };
 }
 
@@ -86,7 +86,8 @@ pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: client
     interface.send_command::<&str, &str>("USER", &[&client.user, "0", "*",
         &format!(":{}", client.real_name)]);
 
-    try!(irc::connect(&client.address, connection_data_out, connection_data_in, client.clone()));
+    try!(irc::connect(&client.address, connection_data_out, connection_data_in,
+        client::ArcClientWrapper(client.clone())));
 
     // Create dispatch, and start the worker threads for plugin execution
     let dispatch = dispatch::Dispatch::new(interface, client.clone(), data_in);

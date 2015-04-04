@@ -5,7 +5,6 @@ use std::ffi;
 use std::ffi::AsOsStr;
 use std::ptr;
 use std::path;
-use std::os::unix::prelude::OsStrExt;
 
 use self::libc::funcs::posix88::unistd;
 

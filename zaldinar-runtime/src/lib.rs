@@ -2,7 +2,7 @@
 #![plugin(regex_macros)]
 
 extern crate rustc_serialize;
-extern crate chrono;
+extern crate time;
 extern crate regex;
 #[macro_use]
 extern crate log;

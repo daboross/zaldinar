@@ -1,4 +1,4 @@
-use std::error;
+use std::convert;
 use std::io;
 use std::sync;
 use std::fmt;
@@ -26,38 +26,38 @@ impl InitializationError {
     }
 }
 
-impl error::FromError<io::Error> for InitializationError {
-    fn from_error(error: io::Error) -> InitializationError {
+impl convert::From<io::Error> for InitializationError {
+    fn from(error: io::Error) -> InitializationError {
         InitializationError::Io(error)
     }
 }
 
-impl error::FromError<regex::Error> for InitializationError {
-    fn from_error(error: regex::Error) -> InitializationError {
+impl convert::From<regex::Error> for InitializationError {
+    fn from(error: regex::Error) -> InitializationError {
         InitializationError::Regex(error)
     }
 }
 
-impl error::FromError<json::DecoderError> for InitializationError {
-    fn from_error(error: json::DecoderError) -> InitializationError {
+impl convert::From<json::DecoderError> for InitializationError {
+    fn from(error: json::DecoderError) -> InitializationError {
         InitializationError::Decoder(error)
     }
 }
 
-impl <T> error::FromError<sync::PoisonError<T>> for InitializationError {
-    fn from_error(error: sync::PoisonError<T>) -> InitializationError {
+impl <T> convert::From<sync::PoisonError<T>> for InitializationError {
+    fn from(error: sync::PoisonError<T>) -> InitializationError {
         InitializationError::Generic(format!("{}", error))
     }
 }
 
-impl error::FromError<fern::InitError> for InitializationError {
-    fn from_error(error: fern::InitError) -> InitializationError {
+impl convert::From<fern::InitError> for InitializationError {
+    fn from(error: fern::InitError) -> InitializationError {
         InitializationError::FernInit(error)
     }
 }
 
-impl error::FromError<String> for InitializationError {
-    fn from_error(error: String) -> InitializationError {
+impl convert::From<String> for InitializationError {
+    fn from(error: String) -> InitializationError {
         InitializationError::Generic(error)
     }
 }
