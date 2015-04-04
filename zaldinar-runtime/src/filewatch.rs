@@ -5,8 +5,6 @@ use std::env;
 use std::io;
 use std::thread;
 
-use inotify;
-
 use interface;
 use client;
 use errors::InitializationError;
