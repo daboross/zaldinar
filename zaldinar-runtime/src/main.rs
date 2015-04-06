@@ -1,3 +1,7 @@
+#![cfg(not(test))]
+extern crate zaldinar;
+extern crate getopts;
+
 macro_rules! print_err {
     ($($arg:tt)*) => (
         {
@@ -10,9 +14,6 @@ macro_rules! print_err {
         }
     )
 }
-
-extern crate zaldinar;
-extern crate getopts;
 
 #[cfg(feature = "binary-filewatch")]
 mod execv_linux;

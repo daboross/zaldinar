@@ -22,9 +22,9 @@ pub use core::events;
 pub use startup::run;
 pub use startup::run_with_plugins;
 
-mod startup;
+pub mod startup;
+pub mod dispatch;
 mod plugins;
-mod dispatch;
 #[cfg(feature = "binary-filewatch")]
 mod filewatch;
 

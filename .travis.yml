@@ -3,22 +3,22 @@ language: rust
 matrix:
   include:
     - rust: 1.0.0-beta
-      script: '"$TRAVIS_BUILD_DIR/build-binary" --no-default-features'
+      script: '"$TRAVIS_BUILD_DIR/test-runtime" --no-default-features'
       env:
         - RUST=1.0.0-beta
         - FILEWATCH=false
     - rust: 1.0.0-beta
-      script: '"$TRAVIS_BUILD_DIR/build-binary"'
+      script: '"$TRAVIS_BUILD_DIR/test-runtime"'
       env:
         - RUST=1.0.0-beta
         - FILEWATCH=true
     - rust: nightly
-      script: '"$TRAVIS_BUILD_DIR/build-binary" --no-default-features'
+      script: '"$TRAVIS_BUILD_DIR/test-runtime" --no-default-features'
       env:
         - RUST=nightly
         - FILEWATCH=false
     - rust: nightly
-      script: "$TRAVIS_BUILD_DIR/build-binary"
+      script: "$TRAVIS_BUILD_DIR/test-runtime"
       env:
         - RUST=nightly
         - FILEWATCH=true
