@@ -1,4 +1,3 @@
-use std::sync;
 use std::sync::mpsc;
 use std::convert;
 
@@ -18,7 +17,7 @@ use client;
 use filewatch;
 
 #[cfg(feature = "binary-filewatch")]
-fn start_file_watch(client: &sync::Arc<client::Client>, interface: &interface::IrcInterface) {
+fn start_file_watch(client: &client::Client, interface: &interface::IrcInterface) {
     if client.watch_binary {
         if let Err(e) = filewatch::watch_binary(interface.clone()) {
             warn!("Failed to start binary watch thread: {}", e);
@@ -27,7 +26,7 @@ fn start_file_watch(client: &sync::Arc<client::Client>, interface: &interface::I
 }
 
 #[cfg(not(feature = "binary-filewatch"))]
-fn start_file_watch(_client: &sync::Arc<client::Client>, _interface: &interface::IrcInterface) {
+fn start_file_watch(_client: &client::Client, _interface: &interface::IrcInterface) {
     // TODO: Maybe support this?
 }
 
@@ -52,21 +51,26 @@ fn setup_logger(config: &config::ClientConfiguration) -> Result<(), Initializati
     };
 }
 
+fn prepare_client(mut plugins: client::PluginRegister, config: config::ClientConfiguration)
+        -> client::Client {
+    // Register built-in plugins
+    plugins::register_plugins(&mut plugins);
+    generated_plugins_crate::register(&mut plugins);
+
+    return client::Client::new(plugins, config);
+}
+
 pub fn run(config: config::ClientConfiguration)
         -> Result<client::ExecutingState, InitializationError> {
     run_with_plugins(config, client::PluginRegister::new())
 }
 
-pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: client::PluginRegister)
+pub fn run_with_plugins(config: config::ClientConfiguration, plugins: client::PluginRegister)
         -> Result<client::ExecutingState, InitializationError> {
 
     try!(setup_logger(&config));
 
-    // Register built-in plugins
-    plugins::register_plugins(&mut plugins);
-    generated_plugins_crate::register(&mut plugins);
-
-    let client = sync::Arc::new(client::Client::new(plugins, config));
+    let client = prepare_client(plugins, config);
 
     let (data_out, connection_data_in) = mpsc::channel();
     let (connection_data_out, data_in) = mpsc::channel();
@@ -86,8 +90,7 @@ pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: client
     interface.send_command::<&str, &str>("USER", &[&client.user, "0", "*",
         &format!(":{}", client.real_name)]);
 
-    try!(irc::connect(&client.address, connection_data_out, connection_data_in,
-        client::ArcClientWrapper(client.clone())));
+    try!(irc::connect(&client.address, connection_data_out, connection_data_in, client.clone()));
 
     // Create dispatch, and start the worker threads for plugin execution
     let dispatch = dispatch::Dispatch::new(interface, client.clone(), data_in);
@@ -98,7 +101,7 @@ pub fn run_with_plugins(config: config::ClientConfiguration, mut plugins: client
     }
 
     let done = {
-        let state = try!(client.state.read());
+        let state = try!(client.state().read());
         state.done_executing
     };
 

@@ -21,7 +21,7 @@ fn on_connect(event: &MessageEvent) {
         event.client.send_command("JOIN", &[&**channel]);
     }
     {
-        let mut state = event.client.state.write().unwrap();
+        let mut state = event.client.state().write().unwrap();
         state.channels.extend(event.client.channels.iter().map(|s: &String| s.clone()));
     }
 }
@@ -32,11 +32,11 @@ fn on_join(event: &MessageEvent) {
     }
     if let Some(nick) = event.mask.nick() {
         let same = {
-            let state = event.client.state.read().unwrap();
+            let state = event.client.state().read().unwrap();
             nick == state.nick
         };
         if same {
-            let mut state = event.client.state.write().unwrap();
+            let mut state = event.client.state().write().unwrap();
             state.channels.push(event.channel().unwrap().to_string());
         }
     }
@@ -45,11 +45,11 @@ fn on_join(event: &MessageEvent) {
 fn on_nick(event: &MessageEvent) {
     if let Some(nick) = event.mask.nick() {
         let same = {
-            let state = event.client.state.read().unwrap();
+            let state = event.client.state().read().unwrap();
             nick == state.nick
         };
         if same {
-            let mut state = event.client.state.write().unwrap();
+            let mut state = event.client.state().write().unwrap();
             state.nick = event.args[0].to_string();
         }
     }

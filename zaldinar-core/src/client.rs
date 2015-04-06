@@ -129,25 +129,40 @@ impl ClientState {
     }
 }
 
-pub struct Client {
-    pub plugins: sync::RwLock<PluginRegister>,
-    pub config: config::ClientConfiguration,
-    pub state: sync::RwLock<ClientState>,
+struct ClientInner {
+    plugins: sync::RwLock<PluginRegister>,
+    config: config::ClientConfiguration,
+    state: sync::RwLock<ClientState>,
 }
+
+#[derive(Clone)]
+pub struct Client(sync::Arc<ClientInner>);
 
 impl Client {
     pub fn new(plugins: PluginRegister, config: config::ClientConfiguration) -> Client {
         let state = sync::RwLock::new(ClientState::new(config.nick.clone()));
-        return Client {
+        let inner = ClientInner {
             plugins: sync::RwLock::new(plugins),
             config: config,
             state: state,
-        }
+        };
+        return Client(sync::Arc::new(inner));
+    }
+
+    pub fn plugins(&self) -> &sync::RwLock<PluginRegister> {
+        return &self.0.plugins;
+    }
+
+    pub fn config(&self) -> &config::ClientConfiguration {
+        return &self.0.config;
+    }
+
+    pub fn state(&self) -> &sync::RwLock<ClientState> {
+        return &self.0.state;
     }
 }
-pub struct ArcClientWrapper(pub sync::Arc<Client>);
 
-impl irc::HasNick for ArcClientWrapper {
+impl irc::HasNick for Client {
     fn with_current_nick<T, F>(&self, fun: F) -> T
             where F: Fn(&str) -> T {
         fun(&self.0.state.read().unwrap().nick)
@@ -158,7 +173,7 @@ impl irc::HasNick for ArcClientWrapper {
 impl ops::Deref for Client {
     type Target = config::ClientConfiguration;
 
-    fn deref<'a>(&'a self) -> &'a config::ClientConfiguration {
-        return &self.config;
+    fn deref(&self) -> &config::ClientConfiguration {
+        return self.config();
     }
 }

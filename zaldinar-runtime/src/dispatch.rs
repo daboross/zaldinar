@@ -12,13 +12,13 @@ use irc;
 
 pub struct Dispatch {
     interface: interface::IrcInterface,
-    state: sync::Arc<client::Client>,
+    state: client::Client,
     data_in: mpsc::Receiver<irc::IrcMessage>,
     workers_out: mpsc::Sender<PluginThunk>,
 }
 
 impl Dispatch {
-    pub fn new(interface: interface::IrcInterface, state: sync::Arc<client::Client>,
+    pub fn new(interface: interface::IrcInterface, state: client::Client,
             data_in: mpsc::Receiver<irc::IrcMessage>) -> Dispatch {
         let (dispatch_out, workers_in) = mpsc::channel();
         let workers_in_arc = sync::Arc::new(sync::Mutex::new(workers_in));
@@ -57,7 +57,7 @@ impl Dispatch {
 
     fn process_message<'a>(&self, message: &'a irc::IrcMessage)
             -> Result<(), mpsc::SendError<PluginThunk>> {
-        let plugins = self.state.plugins.read().unwrap();
+        let plugins = self.state.plugins().read().unwrap();
 
         // PING
         if message.command.eq_ignore_ascii_case("PING") {
@@ -110,7 +110,7 @@ impl Dispatch {
                 if let Some(captures) = regex!(r"^:([^\s]+?)[:;,]?\s+(.+)$").captures(
                                             &message.args[1..].connect(" ")) {
                     let same = {
-                        let state = self.state.state.read().unwrap();
+                        let state = self.state.state().read().unwrap();
                         captures.at(1) == Some(&state.nick)
                     };
                     if same {
