@@ -47,7 +47,7 @@ pub struct IrcRead<T: io::BufRead, C: HasNick> {
 }
 
 impl <T: io::BufRead + Send + 'static, C: HasNick + Send + 'static> IrcRead<T, C> {
-    fn spawn_reading_thread(mut self) -> io::Result<thread::JoinHandle> {
+    fn spawn_reading_thread(mut self) -> io::Result<thread::JoinHandle<()>> {
         thread::Builder::new().name("irc_read_thread".to_string()).spawn(move || {
             self.read_loop();
         })
@@ -138,7 +138,7 @@ pub struct IrcWrite<T: io::Write> {
 }
 
 impl <T: io::Write + Send + 'static> IrcWrite<T> {
-    fn spawn_writing_thread(mut self) -> io::Result<thread::JoinHandle> {
+    fn spawn_writing_thread(mut self) -> io::Result<thread::JoinHandle<()>> {
         thread::Builder::new().name("irc_write_thread".to_string()).spawn(move || {
             if let Err(e) = self.write_loop() {
                 error!("Error writing to irc socket: {}", e);

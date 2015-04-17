@@ -3,7 +3,6 @@ use std::sync;
 use std::sync::mpsc;
 use std::thread;
 use std::fmt;
-use std::io;
 
 use core::interface;
 use core::client;
@@ -46,13 +45,6 @@ impl Dispatch {
                 return;
             }
         }
-    }
-
-    pub fn start_dispatch_loop(self) -> io::Result<()> {
-        try!(thread::Builder::new().name("dispatch".to_string()).scoped(move || {
-            self.dispatch_loop();
-        })).join();
-        return Ok(());
     }
 
     fn process_message<'a>(&self, message: &'a irc::IrcMessage)

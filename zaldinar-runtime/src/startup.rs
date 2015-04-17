@@ -105,9 +105,7 @@ pub fn run_with_plugins(config: config::ClientConfiguration, plugins: client::Pl
     try!(irc::connect(&client.address, conn_data_out, conn_data_in, client.clone()));
 
     // This statement will run until the bot exists
-    if let Err(..) = dispatch.start_dispatch_loop() {
-        error!("Dispatch loop panicked!");
-    }
+    dispatch.dispatch_loop();
 
     let done = {
         let state = try!(client.state().read());

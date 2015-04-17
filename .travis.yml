@@ -2,15 +2,15 @@ sudo: false
 language: rust
 matrix:
   include:
-    - rust: 1.0.0-beta
+    - rust: 1.0.0-beta.2
       script: '"$TRAVIS_BUILD_DIR/test-runtime" --no-default-features'
       env:
-        - RUST=1.0.0-beta
+        - RUST=1.0.0-beta.2
         - FILEWATCH=false
-    - rust: 1.0.0-beta
+    - rust: 1.0.0-beta.2
       script: '"$TRAVIS_BUILD_DIR/test-runtime"'
       env:
-        - RUST=1.0.0-beta
+        - RUST=1.0.0-beta.2
         - FILEWATCH=true
     - rust: nightly
       script: '"$TRAVIS_BUILD_DIR/test-runtime" --no-default-features'

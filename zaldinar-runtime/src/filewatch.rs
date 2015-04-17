@@ -11,7 +11,7 @@ use errors::InitializationError;
 
 
 pub fn watch_binary(client: interface::IrcInterface)
-        -> Result<thread::JoinHandle, InitializationError> {
+        -> Result<thread::JoinHandle<()>, InitializationError> {
     let mut watch = try!(inotify::INotify::init());
     let program = match env::current_exe() {
         Ok(v) => v,
