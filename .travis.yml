@@ -3,11 +3,7 @@ language: rust
 rust:
 - beta
 - nightly
-matrix:
-  include:
-    - script: '"$TRAVIS_BUILD_DIR/test-runtime" --no-default-features'
-      env:
-        - FILEWATCH=false
-    - script: '"$TRAVIS_BUILD_DIR/test-runtime"'
-      env:
-        - FILEWATCH=true
+script: '"$TRAVIS_BUILD_DIR/test-runtime" $ARGS'
+env:
+- ARGS="--no-default-features"
+- ARGS="--features binary-filewatch"
