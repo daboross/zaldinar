@@ -1,6 +1,7 @@
 sudo: false
 language: rust
 rust:
+- stable
 - beta
 - nightly
 script: '"$TRAVIS_BUILD_DIR/test-runtime" $ARGS'
