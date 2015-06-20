@@ -1,5 +1,5 @@
-//! depends: rand = "0.3.*"
-//! depends: regex = "0.1.*"
+//! depends: rand = "0.3"
+//! depends: regex = "0.1"
 
 extern crate zaldinar_core;
 extern crate regex;

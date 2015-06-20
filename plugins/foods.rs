@@ -1,4 +1,4 @@
-//! depends: rand = "0.3.*"
+//! depends: rand = "0.3"
 extern crate rand;
 extern crate zaldinar_core;
 

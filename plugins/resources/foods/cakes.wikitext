@@ -1,948 +1,881 @@
-{
-    {
-        "name": "Angel cake",
-        "file": "Angel cake slice.jpg",
-        "location": "United Kingdom",
-        "info": "Sponge cake, cream"
-    },
-    {
-        "name": "Angel food cake",
-        "file": "AngelFoodCake.jpg",
-        "location": "United States",
-        "info": "Egg whites, vanilla and Potassium bitartrate|cream of tartar"
-    },
-    {
-        "name": "Apple cake",
-        "file": "Hollandse appeltaart.jpg",
-        "location": "Unknown",
-        "info": "Apple, caramel icing"
-    },
-    {
-        "name": "Aranygaluska",
-        "file": "Arany-galuska.jpg",
-        "location": "Hungary, Romania",
-        "info": "A cake with yeasty dough and vanilla custard"
-    },
-    {
-        "name": "Babka (cake)|Babka",
-        "file": "Baba or babka wielkanocna.jpg",
-        "location": "Poland",
-        "info": "Easter Cake with icing"
-    },
-    {
-        "name": "Ballokume",
-        "location": "Albania",
-        "info": "Corn flour, butter, sugar and vanilla"
-    },
-    {
-        "name": "Basbousa",
-        "file": "Basboosa.jpg",
-        "location": "Somalia",
-        "info": "A traditional Somali sweet cake that is made of cooked semolina or farina soaked in simple syrup. Coconut is a popular addition. The syrup may also optionally contain orange flower water or rose water."
-    },
-    {
-        "name": "Better than sex cake",
-        "location": "United States",
-        "info": "Chocolate or yellow cake, sugar mixture, various fillings"
-    },
-    {
-        "name": "Boston cream pie",
-        "file": "Bostoncreampie.jpg",
-        "location": "United States",
-        "info": "Egg custard, chocolate"
-    },
-    {
-        "name": "Banana bread|Banana cake/bread",
-        "file": "Banananutbread.jpg",
-        "location": "United States",
-        "info": "Banana, sometimes nuts and chocolate"
-    },
-    {
-        "name": "Banoffee pie",
-        "file": "Banoffeepie.jpg",
-        "location": "United Kingdom",
-        "info": "Bananas, toffee, biscuits"
-    },
-    {
-        "name": "Bara brith",
-        "file": "Bara Brith.jpg",
-        "location": "United Kingdom (Wales)",
-        "info": "Raisins, Ribes|currants and candied peel"
-    },
-    {
-        "name": "Battenberg cake",
-        "file": "Lyons battenberg cake.jpg",
-        "location": "United Kingdom",
-        "info": "Marzipan and apricot jam"
-    },
-    {
-        "name": "Baumkuchen",
-        "file": "Baumkuchen.jpg",
-        "location": "Germany",
-        "info": "A kind of layered cake and a traditional dessert that is in many countries throughout Europe and it is also a popular snack and dessert in Japan. The characteristic rings that appear when sliced resemble tree rings, and give the cake its German name, Baumkuchen, which literally translates to "tree cake"."
-    },
-    {
-        "name": "Bibingka",
-        "file": "Large bibinka.jpg",
-        "location": "Philippines",
-        "info": "Coconut milk and rice flour"
-    },
-    {
-        "name": "Bienenstich (Bee Sting)
-        "file": "Bienenstich.jpg",
-        "location": "Germany",
-        "info": "Almonds, honey, custard cream"
-    },
-    {
-        "name": "Birthday cake",
-        "file": "Birthday cake.jpg",
-        "location": "Worldwide",
-        "info": "A cake that has various ingredients, usually chocolate or sponge, and is often topped with Icing (food)|icing and candles; number of candles on top of the cake is often said to represent some one's age, for example, a birthday cake for a nine year old will have nine candles on top of it."
-    },
-    {
-        "name": "Black Forest cake, often known as "Black Forest gâteau",
-        "file": "Kirschtorte.jpg",
-        "location": "Germany",
-        "info": "Cherries, Kirschwasser|kirsch, and chocolate"
-    },
-    {
-        "name": "Blondie (confection)|Blondie",
-        "file": "Toffee blondies.jpg",
-        "location": "United States",
-        "info": "A rich, sweet dessert bar. It is made from flour, brown sugar, butter, eggs, baking powder, and vanilla, and may also contain walnuts or pecans. It may contain white or dark chocolate chips and it can have a taste reminiscent of butterscotch."
-    },
-    {
-        "name": "Chocolate brownie|Brownie",
-        "file": "Chocolate brownie.jpg",
-        "location": "United States, Canada",
-        "info": "A flat, baked square or bar developed in the United States at the end of the 19th century and popularized in both the U.S. and Canada during the first half of the 20th century."
-    },
-    {
-        "name": "Buccellato",
-        "file": "Buccellato 1.jpg",
-        "location": "Sicily",
-        "info": "Honey, marsala, aniseed, and raisins"
-    },
-    {
-        "name": "Budapestlängd",
-        "file": "Budapestbakelse BÅn.JPG",
-        "location": "Sweden",
-        "info": "Rolled meringue-hazelnut cake filled with whipped cream and pieces of tin can|canned peach, apricot or mandarin orange."
-    },
-    {
-        "name": "Bundt cake",
-        "file": "BundtCake.JPG",
-        "location": "United States",
-        "info": "A cake that is baked in a Bundt pan, shaping it into a distinctive ring shape. The shape is inspired by a traditional European fruit cake known as Gugelhupf, but Bundt cakes are not generally associated with any single recipe, but they are often made with chocolate."
-    },
-    {
-        "name": "Butter cake",
-        "file": "Hazelnut brown butter cake.jpg",
-        "location": "United Kingdom",
-        "info": "Butter"
-    },
-    {
-        "name": "Butterfly cake",
-        "file": "Plain butterfly cake.jpg",
-        "location": "United Kingdom",
-        "info": "A variant of cupcake, also called fairy cake for its fairy-like "wings". They can be made from any flavor of cake. The top of the fairy cake is cut off or carved out with a spoon, and cut in half. Then, butter cream, whipped cream or other sweet filling like jam is spread into the hole. Finally, the two cut halves are stuck into the butter cream to look like butterfly wings. The wings of the cake are often decorated using icing to form various patterns."
-    },
-    {
-        "name": "Carrot cake",
-        "file": "Carrot cake.jpg",
-        "location": "United Kingdom",
-        "info": "Carrots"
-    },
-    {
-        "name": "Cheesecake (cake)|Cheesecake",
-        "location": "Greece",
-        "info": "Thin base made from crushed biscuits, with a thicker top layer of soft cheese, eggs and sugar. It can be baked or unbaked (in which case it is refrigerated.)"
-    },
-    {
-        "name": "Chiffon cake",
-        "file": "Chiffon cake 02.jpg",
-        "location": "United States",
-        "info": "Vegetable oil, eggs, sugar, flour"
-    },
-    {
-        "name": "Chocolate cake",
-        "file": "Chocolate cake with chocolate frosting topped with chocolate.jpg",
-        "location": "Unknown",
-        "info": "Chocolate"
-    },
-    {
-        "name": "Christmas cake",
-        "file": "Christmas cake, Boxing Day 2008.jpg",
-        "location": "United Kingdom",
-        "info": "Dried fruit such as sultana (grape)|sultanas or raisins; cinnamon, treacle, cherries, and almond; is quite often topped with Icing (food)|icing. If topped with icing, the icing may be decorated with decorations, such as models of Santa Claus, or may have labels such as "Happy Christmas"."
-    },
-    {
-        "name": "Cinco leches cake",
-        "location": "Mexico",
-        "info": "A cake that consists of five milks."
-    },
-    {
-        "name": "Coconut cake",
-        "location": "United States",
-        "info": "A popular dessert in the Southern region of the United States. It is a cake frosted with a white frosting and covered in coconut flakes."
-    },
-    {
-        "name": "Coffee cake",
-        "file": "Walnut cinnamon coffee cake.jpg",
-        "location": "Germany",
-        "info": "Cinnamon"
-    },
-    {
-        "name": "Cremeschnitte",
-        "file": "Kremna rezina.jpg",
-        "location": "Slovenia, Croatia, Germany",
-        "info": "A vanilla and custard cream cake dessert popular in several central-European countries. There are many regional variations, but they all include puff pastry base and custard cream."
-    },
-    {
-        "name": "Croquembouche",
-        "file": "Croquembouche wedding cake.jpg",
-        "location": "France",
-        "info": "Caramel, almond, and chocolate"
-    },
-    {
-        "name": "Crystal cake",
-        "file": "Crystal cake.jpg",
-        "location": "China",
-        "info": "One of the traditional desserts in China. It has more than 800 years of history. It was first invented in Xiagui during the Song Dynasty, then it spread far and wide. People named it as Crystal Cake, because its filling shines brightly, and its appearance is glittering and translucent, like a crystal."
-    },
-    {
-        "name": "Cuatro leches cake",
-        "location": "Spain, Mexico",
-        "info": "A cake that consists of four milks and it is similar to the tres leches cake."
-    },
-    {
-        "name": "Cupcake",
-        "file": "Chocolate cupcakes.jpg",
-        "location": "Worldwide",
-        "info": "A small cake with various ingredients, usually topped with icing"
-    },
-    {
-        "name": "Dacquoise",
-        "file": "Eggnog mousse cake with almond dacquoise.jpg",
-        "location": "France",
-        "info": "Almonds, hazelnut, and chocolate"
-    },
-    {
-        "name": "Date and walnut loaf",
-        "file": "Date and walnut bread.jpg",
-        "location": "United Kingdom",
-        "info": "Phoenix dactylifera|Dates, walnuts, Molasses|treacle, and tea"
-    },
-    {
-        "name": "Date square",
-        "file": "Date squares.jpg",
-        "location": "Canada (probably)",
-        "info": "Also known as Matrimonial Cake, is a layer of minced dates with oat crumble"
-    },
-    {
-        "name": "Depression cake",
-        "location": "United States",
-        "info": "Made without milk, sugar, butter, or eggs"
-    },
-    {
-        "name": "Devil's food cake",
-        "file": "Devil's Food Cake.jpg",
-        "location": "United States",
-        "info": "Chocolate and/or Cocoa solids|cocoa, and baking soda"
-    },
-    {
-        "name": "Dobos cake",
-        "file": "Dobos cake (Gerbeaud Confectionery Budapest Hungary).jpg",
-        "location": "Hungary",
-        "info": "A sponge cake that is layered with chocolate butter cream and topped with thin caramel slices"
-    },
-    {
-        "name": "Dundee cake",
-        "file": "Dundee_cake.jpg",
-        "location": "United Kingdom (Scotland)",
-        "info": "Fruit cake with almonds on it but without glace cherries."
-    },
-    {
-        "name": "Eccles cake",
-        "file": "Eccles cake.jpg",
-        "location": "United Kingdom",
-        "info": "Zante currants"
-    },
-    {
-        "name": "Esterházy torte",
-        "file": "Eszterházy Torte.JPG",
-        "location": "Hungary, Austria",
-        "info": "A Hungarian cake (torta) named after Prince Paul III Anton Esterházy de Galántha (1786–1866). It was invented by Budapest confectioners in the late 19th century. It consists of cognac or vanilla buttercream, sandwiched between layers of almond meringue (macaroon) dough. The torte is iced with a fondant glaze and decorated with a characteristic chocolate striped pattern."
-    },
-    {
-        "name": "Fat rascal",
-        "file": "Fat Rascal cookies.jpg",
-        "location": "United Kingdom",
-        "info": "Dried fruit, peel, oats"
-    },
-    {
-        "name": "Faworki",
-        "file": "Faworkib.jpg",
-        "location": "Poland",
-        "info": "Sweet crisp cake in shape of a bow"
-    },
-    {
-        "name": "Financier (cake)|Financier",
-        "file": "Two rectangular financiers.jpg",
-        "location": "France",
-        "info": "A small French cake. The financier is light and moist, similar to sponge cake, and usually contains almond flour, crushed or ground almonds, or almond flavoring. The distinctive feature of the recipe is beurre noisette (brown butter). Other ingredients include egg whites, flour, and powdered sugar. They are baked in shaped molds, usually small rectangular loaves similar in size to petits fours. In terms of texture, it is springy with a crisp, eggshell-like exterior."
-    },
-    {
-        "name": "Flourless chocolate cake",
-        "file": "Flourless Chocolate Cake with Bourbon Vanilla Ice Cream.jpg",
-        "location": "Unknown",
-        "info": "Chocolate"
-    },
-    {
-        "name": "Fondant Fancy",
-        "file": "White Mr Kipling French fancy cake (82524785).jpg",
-        "location": "United Kingdom",
-        "info": "Icing (food)|Icing (any of a number of colors), cream"
-    },
-    {
-        "name": "Fragelité",
-        "file": "Konditor kager 1.JPG",
-        "location": "Denmark",
-        "info": "Meringue, almonds, butter, coffee"
-    },
-    {
-        "name": "Frog cake",
-        "file": "Frog cakes.jpg",
-        "location": "Australia",
-        "info": "Cream, icing"
-    },
-    {
-        "name": "Fruitcake",
-        "file": "Traditional fruitcake.jpg",
-        "location": "Ancient Rome",
-        "info": "Candied fruit; many versions of the fruit cake contain currants, sultanas and glace cherries."
-    },
-    {
-        "name": "Funing big cake",
-        "location": "China (Funing County, Jiangsu|Funing County, Jiangsu province)",
-        "info": "Sticky rice, white sugar and refined lard. Due to health concerns associated with lard consumption, sometimes vegetable oil is used instead of lard."
-    },
-    {
-        "name": "Genoa cake",
-        "file": "Genoa-cake.jpg",
-        "location": "Italy (Genoa, probably)",
-        "info": "Sultanas, raisins, glacé cherries"
-    },
-    {
-        "name": "Genoise (Genoese cake)
-        "file": "Génoise cake with buttercream frosting.jpg",
-        "location": "Italy (Genoa, probably)",
-        "info": "Whole egg (food)|egg"
-    },
-    {
-        "name": "Gingerbread",
-        "file": "Cakegingerbread.jpg",
-        "location": "United Kingdom (probably)",
-        "info": "Ginger"
-    },
-    {
-        "name": "Gooey butter cake",
-        "file": "Gooey Pumpkin Butter Cake.jpg",
-        "location": "United States",
-        "info": "Butter"
-    },
-    {
-        "name": "Goose Breast",
-        "file": "Flickr - cyclonebill - Gåsebryst.jpg",
-        "location": "Denmark",
-        "info": "A cream cake known as ''Gåsebryst'' in Denmark. A Danish pastry bottom, topped with whipped cream, custard and jam, wrapped in marzipan."
-    },
-    {
-        "name": "Hash brownies",
-        "file": "KCCS Cookie.JPG",
-        "location": "Netherlands, Belgium",
-        "info": "Also known as space cakes, are bakery products made using one of the forms of cannabis, including hashish."
-    },
-    {
-        "name": "Hot milk cake",
-        "location": "United States (probably)",
-        "info": "Milk, and Cafe mocha|mocha"
-    },
-    {
-        "name": "Ice cream cake",
-        "file": "Three inch ice cream cake with fruit from Singapore.jpg",
-        "location": "Unknown",
-        "info": "Ice cream"
-    },
-    {
-        "name": "Jaffa Cakes",
-        "file": "Jaffa cake.jpg",
-        "location": "United Kingdom",
-        "info": "A biscuit-sized cake introduced by MacVitie and Price in 1927 and named after Jaffa oranges. The most common form of Jaffa Cakes are circular, 2 1⁄2 inches (64&nbsp;mm) in diameter and have three layers: a Genoise sponge base, a layer of orange flavored jelly and a coating of chocolate."
-    },
-    {
-        "name": "Kabuni",
-        "location": "Albania",
-        "info": "Rice, butter, mutton broth, raisins, sugar, cinnamon, cloves"
-    },
-    {
-        "name": "Karpatka",
-        "file": "Karpatka.jpg",
-        "location": "Poland",
-        "info": "Two to eight layers of very flattened sweet bake pastry with cream and sweet cheese, normally served with fruit and budyn  and cardamom and ice cream which may have alcohol also on the side of this luxurious dessert"
-    },
-    {
-        "name": "Kiev cake",
-        "file": "Київський торт без коробки.JPG",
-        "location": "Ukraine",
-        "info": "Two airy layers of meringue with hazelnuts, chocolate glaze, and a buttercream-like filling"
-    },
-    {
-        "name": "King cake",
-        "file": "Kingcake.jpg",
-        "location": "France, Spain",
-        "info": "Sugar, cinnamon, milk, and butter"
-    },
-    {
-        "name": "Kladdkaka",
-        "file": "Kaffereptarta.jpg",
-        "location": "Sweden",
-        "info": "Chocolate"
-    },
-    {
-        "name": "Kliņģeris",
-        "location": "Latvia",
-        "info": "Yeast, raisins, spices"
-    },
-    {
-        "name": "Kolacz",
-        "file": "Kolacz (cake).JPG",
-        "location": "Poland",
-        "info": "Sweet cheese and cream"
-    },
-    {
-        "name": "Kolaczki",
-        "file": "Kolaczki - A Polish Pastry Type Of Cake.jpg",
-        "location": "Poland",
-        "info": "Butter, sugar, jam, egg whites, different sweet sugar powder"
-    },
-    {
-        "name": "Kouign-amann",
-        "file": "Kouignamann.JPG",
-        "location": "France (Brittany)",
-        "info": "Butter"
-    },
-    {
-        "name": "Kutia",
-        "file": "Koljivo from wheat.jpg",
-        "location": "Poland, Belarus, Ukraine, Lithuania, Russia",
-        "info": "Various nuts and raisins"
-    },
-    {
-        "name": "Kransekake",
-        "file": "Kransekake.jpg",
-        "location": "Denmark, Norway",
-        "info": "Almonds, sugar, egg whites"
-    },
-    {
-        "name": "Kremówka",
-        "file": "Kremowki dwie.JPG",
-        "location": "Germany, Slovakia",
-        "info": "A Polish type of cream pie. It is made of two layers of puff pastry, filled with whipped cream, creamy buttercream, vanilla pastry cream (custard cream) or sometimes egg white cream, and is usually sprinkled with powdered sugar. It also can be decorated with cream or covered with a layer of icing."
-    },
-    {
-        "name": "Krówki|Krowka",
-        "file": "Boza krowka.jpg",
-        "location": "Poland",
-        "info": "Chocolate, sponge base, caramel and coconut"
-    },
-    {
-        "name": "Lady Baltimore Cake",
-        "location": "United States",
-        "info": "Dried fruit, nuts, frosting"
-    },
-    {
-        "name": "Lamanki or Klamäti",
-        "file": "Łamańce.JPG",
-        "location": "Poland",
-        "info": "Chocolate, cinnamon"
-    },
-    {
-        "name": "Lamington",
-        "file": "Lamington.png",
-        "location": "Australia",
-        "info": "Chocolate icing, and desiccated coconut"
-    },
-    {
-        "name": "Layer cake",
-        "file": "Meyer lemon chiffon cake, chocolate.jpg",
-        "location": "Worldwide",
-        "info": "Yolk, sugar, butter, flour"
-    },
-    {
-        "name": "Lemon cake",
-        "location": "Unknown",
-        "info": "Lemon"
-    },
-    {
-        "name": "Madeira cake",
-        "file": "Cherry madeira cake.jpg",
-        "location": "United Kingdom",
-        "info": "Butter and sugar"
-    },
-    {
-        "name": "Poppy seed roll|Makowiec",
-        "file": "MakowiecCakb.jpg",
-        "location": "Poland",
-        "info": "Poppy seed cake normally decorated with icing and orange"
-    },
-    {
-        "name": "Muffin|Magdalena",
-        "file": "Madalenas caseras-Madrid.jpg",
-        "location": "Spain",
-        "info": "Eggs, granulated sugar, unsalted butter, unbleached white flour, lemon zest, baking powder and milk"
-    },
-    {
-        "name": "Mantecada",
-        "file": "Mantecadas de Tuesta-Valdegovía8.JPG",
-        "location": "Spain",
-        "info": "Eggs, flour, sugar and butter (cow fat in the Mantecadas de Astorga; Cornmeal|corn flour in Colombia)"
-    },
-    {
-        "name": "Marble cake",
-        "file": "Marmorkuchen.jpg",
-        "location": "Denmark",
-        "info": "Vanilla, coffee, and/or chocolate"
-    },
-    {
-        "name": "Mazurek (cake)|Mazurek",
-        "file": "Mazurek 1.JPG",
-        "location": "Poland",
-        "info": "Easter cake with a type of shortcrust tart and topping"
-    },
-    {
-        "name": "Mille-feuille",
-        "file": "Mille-feuille français 1.jpg",
-        "location": "France",
-        "info": "Also known as a Napoleon, is three layers of puff pastry alternating with two layers of pastry cream. The top is glazed in white (icing) and brown (chocolate) strips, and combed."
-    },
-    {
-        "name": "Molten chocolate cake",
-        "file": "Chocolate Fondant.jpg",
-        "location": "United States",
-        "info": "Also known as lava cake is a popular dessert that combines the elements of a flourless chocolate cake (sometimes called a chocolate decadence cake) and a soufflé. Some other names used are chocolate fondant, chocolate moelleux and chocolate lava cake."
-    },
-    {
-        "name": "Mooncake",
-        "file": "Mooncake1.jpg",
-        "location": "China",
-        "info": "A Chinese bakery product traditionally eaten during the Mid-Autumn Festival (Zhongqiujie)."
-    },
-    {
-        "name": "Muffin",
-        "file": "Muffins in oven.jpg",
-        "location": "Unknown",
-        "info": "An individual sized quick bread product which can be sweet or savory. The typical American muffin is similar to a cupcake in size and cooking methods. These can come in both savory varieties, such as corn or cheese muffins, or sweet varieties such as blueberry or banana. It also refers to a flatter disk-shaped bread of English origin, commonly referred to as an English muffin outside the United Kingdom. These muffins are also popular in Commonwealth countries and the United States."
-    },
-    {
-        "name": "Napoleonshat",
-        "file": "Napoleonshat.jpg",
-        "location": "Denmark",
-        "info": "A marzipan based cake, shaped like a Napoleon's Hat and dipped in dark chocolate."
-    },
-    {
-        "name": "Napeleonskake",
-        "location": "Norway, Denmark, Iceland",
-        "info": "A cake that is similar to tompouce, but it has different flavors like caramel or carob."
-    },
-    {
-        "name": "Nasturtium cake",
-        "location": "Spain",
-        "info": "A cake made primarily with egg yolk and syrup. The cake is usually presented in a cylindrical shape or a rectangle, depending on the mold. This is a cake that is made by a water bath. It can often be served at room temperature."
-    },
-    {
-        "name": "Oponki or Paczki",
-        "file": "Tisto.jpg",
-        "location": "Poland",
-        "info": "Round spongy yeast cake with sweet topping and other chocolate"
-    },
-    {
-        "name": "Opera cake",
-        "file": "Tartine_bakery_opera_cake_in_2007.jpg",
-        "location": "France",
-        "info": "Ganache, sponge cake, and coffee syrup"
-    },
-    {
-        "name": "Orange and polenta cake",
-        "location": "Italy",
-        "info": "Oranges and polenta"
-    },
-    {
-        "name": "Othellolagkage",
-        "file": "Othello-lagkager.jpg",
-        "location": "Denmark",
-        "info": "A layer cake with sponge cake, cream, chocolate, raspberry, egg, vanilla, marzipan,"
-    },
-    {
-        "name": "Paczki",
-        "file": "Polish paczki.jpg",
-        "location": "Poland",
-        "info": "Round cake with spongy yeast containing strawberry, liqueur, budyn and ( sweet ) cheese and other chocolate"
-    },
-    {
-        "name": "Pancake",
-        "file": "Blueberry pancakes (1).jpg",
-        "location": "Ancient Rome",
-        "info": "Flat, round cake, made with Egg_(food)|eggs, milk, and Flour|plain flour"
-    },
-    {
-        "name": "Panpepato",
-        "file": "Panpepato-small.jpg",
-        "location": "Italy",
-        "info": "Varies, almonds, hazelnuts, pine nuts"
-    },
-    {
-        "name": "Panettone",
-        "file": "Panettone.jpg",
-        "location": "Italy",
-        "info": "Raisins, orange peel, and lemon peel"
-    },
-    {
-        "name": "Parkin (cake)|Parkin",
-        "file": "Darkparkin.JPG",
-        "location": "United Kingdom",
-        "info": "Treacle and oats"
-    },
-    {
-        "name": "Pavlova (food)|Pavlova",
-        "file": "Christmas pavlova.jpg",
-        "location": "New Zealand",
-        "info": "Egg white and sugar (meringue); named after Anna Pavlova"
-    },
-    {
-        "name": "Petit Gâteau",
-        "file": "Gastro petit-gateau-delicia.jpeg",
-        "location": "France",
-        "info": "Chocolate and served with Ice-cream"
-    },
-    {
-        "name": "Petits fours",
-        "file": "Petits.fours.wmt.jpg",
-        "location": "France",
-        "info": "Butter cream"
-    },
-    {
-        "name": "Piernik",
-        "file": "PiernikCakeb.jpg",
-        "location": "Poland",
-        "info": "Gingerbread with cinnamon, ginger, cloves and cardamom"
-    },
-    {
-        "name": "Pineapple upside-down cake",
-        "file": "Pineapple upsidedown cake 9.jpg",
-        "location": "United Kingdom",
-        "info": "Pineapple"
-    },
-    {
-        "name": "Pound cake",
-        "file": "Pound layer cake.jpg",
-        "location": "United Kingdom",
-        "info": "Butter, sugar"
-    },
-    {
-        "name": "Princess Cake",
-        "file": "Prinsesstårta.JPG",
-        "location": "Sweden",
-        "info": "Alternating layers of sponge cake and whipped cream, a layer of berry jam and a layer of custard, all topped with a layer of (green) marzipan."
-    },
-    {
-        "name": "Prinzregententorte",
-        "file": "Prinzregententorte.jpg",
-        "location": "Germany",
-        "info": "Sponge cake, buttercream and dark chocolate glaze"
-    },
-    {
-        "name": "Pumpkin bread",
-        "file": "Pumpkin bread.jpg",
-        "location": "United States",
-        "info": "Pumpkin, sometimes chocolate"
-    },
-    {
-        "name": "Punschkrapfen",
-        "file": "Image-Punschkrapfen.jpg",
-        "location": "Austria",
-        "info": "Cake crumbs, nougat chocolate, apricot jam, and rum"
-    },
-    {
-        "name": "Queen Elizabeth cake",
-        "location": "Canada (Quebec)",
-        "info": "Coconut, Phoenix dactylifera|dates"
-    },
-    {
-        "name": "Qumeshtore me pete",
-        "location": "Albania",
-        "info": "Cream, vanilla, syrup, lemon juice, and lemon skin"
-    },
-    {
-        "name": "Red bean cake",
-        "file": "RedbeanCake Cantoversion.jpg",
-        "location": "Japan, China",
-        "info": "Azuki bean and red bean paste"
-    },
-    {
-        "name": "Red velvet cake",
-        "file": "Red velvet cake slice.jpg",
-        "location": "United States",
-        "info": "Red coloring and cocoa"
-    },
-    {
-        "name": "Rum cake",
-        "file": "Rum cake.jpg",
-        "location": "Jamaica, Trinidad and Tobago",
-        "info": "Rum, dried fruit"
-    },
-    {
-        "name": "Rum baba
-        "file": "Rum baba.jpg",
-        "location": "Italy|Italian",
-        "info": "Rum, yeast, whipped cream"
-    },
-    {
-        "name": "Ruske kape",
-        "file": "RuskeKapa.jpg",
-        "location": "Bosnia, Serbia",
-        "info": "Chocolate, and coconut"
-    },
-    {
-        "name": "Sachertorte",
-        "file": "Sachertorte DSC03027 retouched.jpg",
-        "location": "Austria",
-        "info": "Apricot, and cream"
-    },
-    {
-        "name": "Šakotis",
-        "file": "Šakotis 3799.jpg",
-        "location": "Lithuania, Poland",
-        "info": "Traditional cake created by painting layers of dough onto a rotating spit while being baked."
-    },
-    {
-        "name": "Salzburger Nockerl",
-        "file": "Salzburger Nockerln 04 gastronomie 001.jpg",
-        "location": "Austria",
-        "info": "Egg yolk, flour and milk"
-    },
-    {
-        "name": "Sandwich loaf",
-        "file": "SandwichLoaf4.jpg",
-        "location": "United States",
-        "info": "A stacked party entrée that looks like a cake. While rare today, the food was quite popular during the mid 20th century in the United States. In order to create a sandwich loaf, the bread is cut horizontally and spread with layers of filling. Common fillings include egg salad, chicken salad, ham salad, tuna salad, and Cheez Whiz, but other fillings are possible, including peanut butter and jelly and mock egg salad made from tofu."
-    },
-    {
-        "name": "Seis leches cake",
-        "location": "Mexico, Spain",
-        "info": "A cake that was invented with six milks."
-    },
-    {
-        "name": "Sekacz",
-        "file": "Sekacz (1).jpg",
-        "location": "Poland",
-        "info": "Sponge cake with chocolate"
-    },
-    {
-        "name": "Sernik",
-        "file": "PolskiSernik.jpg",
-        "location": "Poland",
-        "info": "Cream cheese, sponge cake, raisins and different spices"
-    },
-    {
-        "name": "Sesame seed cake",
-        "file": "Sesame seed cakes.jpg",
-        "location": "Worldwide",
-        "info": "Sesame seeds, often with honey as a sweetener"
-    },
-    {
-        "name": "Sfouf",
-        "location": "Lebanon",
-        "info": "Almond and semolina"
-    },
-    {
-        "name": "Simnel cake",
-        "file": "Simnel cake 1.jpg",
-        "location": "United Kingdom",
-        "info": "Marzipan and dried fruit"
-    },
-    {
-        "name": "Smoked salmon cheesecake",
-        "file": "Smoked salmon cheesecake.jpg",
-        "location": "United Kingdom (Scotland)",
-        "info": "Savory cheesecake containing smoked salmon"
-    },
-    {
-        "name": "Smörgåstårta",
-        "file": "Smorgatarta.JPG",
-        "location": "Sweden, Estonia, Finland",
-        "info": "A cake that literally means "sandwich-cake" or "sandwich gateau" and it is a Scandinavian cuisine dish that is popular in Sweden, Estonia (as "võileivatort") and Finland (as "voileipäkakku"). This savoury cake is compositionally similar to a sandwich, but it has such a large amount of filling that it more resembles a layered cream cake with garnished top."
-    },
-    {
-        "name": "Snowball cake",
-        "file": "Hostess-Sno-Ball-WS.jpg",
-        "location": "United States",
-        "info": "Marshmallow and coconut frosting"
-    },
-    {
-        "name": "Snow skin mooncake",
-        "file": "SnowSkinMooncake1.JPG",
-        "location": "Hong Kong, China",
-        "info": "A Chinese food eaten during the Mid-Autumn Festival. It is a non-baked mooncake which originated in Hong Kong. The snow skin mooncake was developed by a bakery in Hong Kong, because the traditional mooncakes were made with salted duck egg yolks and lotus seed paste, resulting in very high sugar and oil content. It is also known as snowy mooncake, icy mooncake, and crystal mooncake."
-    },
-    {
-        "name": "Soufflé",
-        "file": "Choco souffle.jpg",
-        "location": "France",
-        "info": "Cream sauce or purée with beaten egg whites"
-    },
-    {
-        "name": "Spekkoek",
-        "file": "Spekkoek naturel en pandan.jpg",
-        "location": "Dutch East Indies",
-        "info": "Multi-layered, containing cinnamon, clove, mace and anise."
-    },
-    {
-        "name": "Spice cake",
-        "file": "Spice Cake with sea foam frosting.jpg",
-        "location": "North America",
-        "info": "Spices such as cinnamon, cloves, allspice, ginger and/or mace"
-    },
-    {
-        "name": "Spit cake",
-        "file": "Kürtőskalács Budapest 2008.jpg",
-        "info": "A term for hollow, cylindrical cakes prepared in several countries"
-    },
-    {
-        "name": "Sponge cake",
-        "file": "Sponge cake.jpg",
-        "location": "United Kingdom",
-        "info": "Flour, sugar and eggs."
-    },
-    {
-        "name": "Saint Honoré cake",
-        "location": "France",
-        "info": "Caramel and Chiboust cream"
-    },
-    {
-        "name": "Stack cake",
-        "file": "Apple Stack Cake.jpg",
-        "location": "United States",
-        "info": "A cake that replaces a wedding cake."
-    },
-    {
-        "name": "Streuselkuchen",
-        "file": "Streuselkuchen7.jpg",
-        "location": "Germany",
-        "info": "Streusel (butter, flour and sugar)"
-    },
-    {
-        "name": "Studenterbrød",
-        "file": "Studenterbrød 2.jpg",
-        "location": "Denmark",
-        "info": "Trøffelmasse (crumbled cakes, cocoa-powder, sugar, butter, liquor), raspberry and chocolate."
-    },
-    {
-        "name": "Sultana and cherry cake",
-        "location": "United Kingdom",
-        "info": "Sultanas and glace cherries"
-    },
-    {
-        "name": "Suncake (Taiwan)|Suncake",
-        "file": "Taichung Sun Cake.JPG",
-        "location": "Taiwan",
-        "info": "A popular Taiwanese dessert originally from the city of Taichung in Taiwan. The typical fillings consist of maltose (condensed malt sugar), and they are usually sold in special gift boxes as souvenirs for visitors."
-    },
-    {
-        "name": "Swiss roll",
-        "file": "Swiss roll.jpg",
-        "location": "United Kingdom, not Switzerland as the name implies",
-        "info": "Jam and creamy filling; may come in different colors"
-    },
-    {
-        "name": "Tarte Tatin",
-        "file": "Tarte tatin.jpg",
-        "location": "France",
-        "info": "Varies, commonly apple or pear"
-    },
-    {
-        "name": "Tea loaf",
-        "location": "United Kingdom",
-        "info": "Currants, sultanas and tea"
-    },
-    {
-        "name": "Teacake",
-        "file": "Teacake.jpg",
-        "location": "United Kingdom",
-        "info": "Currants and sultana (grape)|sultanas"
-    },
-    {
-        "name": "Tiramisu",
-        "file": "Tiramisu Fanes.jpg",
-        "location": "Italy",
-        "info": "Savoiardi and espresso"
-    },
-    {
-        "name": "Tompouce",
-        "file": "Tom Pouce Dutch pastry.JPG",
-        "location": "Netherlands",
-        "info": "Cream, icing"
-    },
-    {
-        "name": "Torta Tre Monti",
-        "location": "Italy (San Marino)",
-        "info": "Hazelnuts"
-    },
-    {
-        "name": "Tres leches cake",
-        "file": "Tres Leches.jpg",
-        "location": "Mexico, Costa Rica, Nicaragua",
-        "info": "Evaporated milk, condensed milk, and heavy cream or sour cream"
-    },
-    {
-        "name": "Tunis cake",
-        "location": "Scotland, Northern Ireland",
-        "info": "Chocolate and marzipan"
-    },
-    {
-        "name": "Træstammer",
-        "file": "Træstammer 3.jpg",
-        "location": "Denmark",
-        "info": "Literally "wooden-logs". Trøffelmasse (crumbled cakes, cocoa-powder, sugar, butter, rum), marzipan and chocolate  Sweden has a similar cake known as Punsch-rolls."
-    },
-    {
-        "name": "Upside-down cake",
-        "file": "Pineapple-upside-down-cake.jpg",
-        "location": "United Kingdom",
-        "info": "A cake that various ingredients like kiwi fruit or guava."
-    },
-    {
-        "name": "Victoria sponge cake",
-        "file": "Cake_from_WHR(P).jpg",
-        "location": "United Kingdom",
-        "info": "A cake that was named after the Queen Victoria, who was known to enjoy a slice of the sponge cake with her afternoon tea. It is often referred to simply as "sponge cake", though it contains additional fat. A typical Victoria sponge consists of raspberry jam and whipped double cream or vanilla cream. The jam and cream are sandwiched between two sponge cakes; the top of the cake is not iced or decorated apart from a dusting of icing sugar. The Women's Institute publishes a variation on the Victoria sandwich that has raspberry jam as the filling and is dusted with caster sugar, not icing sugar."
-    },
-    {
-        "name": "Wedding cake",
-        "file": "Whitweddingcake.jpg",
-        "location": "Unknown",
-        "info": "A traditional cake that is served at wedding receptions following dinner. In some parts of England, the wedding cake is served at a wedding breakfast, on the morning following the ceremony. In modern Western culture, the cake is usually on display and served to guests at the reception."
-    },
-    {
-        "name": "Welsh cake",
-        "file": "Wesh cakes.jpg",
-        "location": "United Kingdom (Wales)",
-        "info": "Currants"
-    },
-    {
-        "name": "Whoopie pies",
-        "file": "Whoopiepies1.jpg",
-        "location": "United States",
-        "info": "Cocoa, vanilla"
-    }
-}
+The following is a '''list of types of dessert [[cake]]s''' by country of origin and distinctive ingredients. The majority of cakes contain some kind of flour, egg and sugar, and these ingredients are not listed.
+<!--                                                    EDITORIAL NOTES:
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Do NOT add pies, tarts, pastries, breads, or fried dough foods here.  There are separate "List of..." articles for these 
+categories that should be added to instead.
+
+Please add entries in ALPHABETICAL ORDER,  to make duplicate entries less likely.
+
+New food entries here require a Wikilink to an EXISTING article for the food item described.  
+This List article relies on the references and Talk discussion in the backup article.  If necessary, create and
+add references to a backup article first, then Wikilink to it from a brief summary entry added here.
+
+In the Description, mention the main ingredients, plus any special ingredients or other notable aspects.
+DO NOT OVERLINK any common ingredients listed in the article lead, but do Wikilink DISTINCTIVE 
+ingredients, flavorings, or customs.
+
+Keep the entry concise, and use Wikilinks for any additional information with references.
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+Sample entry:
+
+|[[Food_name]]
+|[[File:Image_name|120px]]
+|[[Country_of_origin]] ([[Region_of_origin]])
+|Brief description, listing essential ingredients, plus [[distinctive ingredient]]s, [[flavoring]]s, or [[custom]]s 
+that make the dish unique. It is NOT necessary to repeat the name of the food or place of origin.
+|-
++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+-->
+==Cakes==
+{{dynamic list}}
+{| class="wikitable sortable" style="width:100%"
+!Name
+!Image
+!Origin
+!Main ingredients
+|-
+|[[Angel cake]]
+|[[File:Angel cake slice.jpg|120px]]
+|[[United Kingdom]]
+|Sponge cake, cream
+|-
+|[[Angel food cake]]
+|[[File:AngelFoodCake.jpg|120px]]
+|[[United States]]
+|Egg whites, vanilla and [[Potassium bitartrate|cream of tartar]]
+|-
+|[[Apple cake]]
+|[[File:Hollandse appeltaart.jpg|120px]]
+|Unknown
+|[[Apple]], caramel icing
+|-
+|[[Aranygaluska]]
+|[[File:Arany-galuska.jpg|120px]]
+|[[Hungary]], [[Romania]]
+|A cake with yeasty dough and vanilla custard
+|-
+|[[Babka (cake)|Babka]]
+|[[File:Baba or babka wielkanocna.jpg|120px]]
+|[[Poland]]
+|Easter Cake with icing 
+|-
+|[[Ballokume]]
+|
+|[[Albania]]
+|Corn flour, butter, sugar and vanilla
+|-
+|[[Basbousa]]
+|[[File:Basboosa.jpg|120px]]
+|[[Somalia]]
+|A traditional Somali sweet cake that is made of cooked semolina or farina soaked in simple syrup. Coconut is a popular addition. The syrup may also optionally contain orange flower water or rose water.
+|-
+|[[Better than sex cake]]
+|
+|[[United States]]
+|Chocolate or yellow cake, sugar mixture, various fillings
+|-
+|[[Boston cream pie]]
+|[[File:Bostoncreampie.jpg|120px]]
+|[[United States]]
+|Egg custard, chocolate
+|-
+|[[Banana bread|Banana cake/bread]]
+|[[File:Banananutbread.jpg|120px]]
+|[[United States]]
+|[[Banana]], sometimes nuts and chocolate
+|-
+|[[Banoffee pie]]
+|[[File:Banoffeepie.jpg|120px]]
+|[[United Kingdom]]
+|Bananas, toffee, biscuits
+|-
+|[[Bara brith]]
+|[[File:Bara Brith.jpg|120px]]
+|United Kingdom ([[Wales]])
+|[[Raisins]], [[Ribes|currants]] and [[candied peel]]
+|-
+|[[Battenberg cake]]
+|[[File:Lyons battenberg cake.jpg|120px]]
+|[[United Kingdom]]
+|[[Marzipan]] and [[apricot]] jam
+|-
+|[[Baumkuchen]]
+|[[File:Baumkuchen.jpg|120px]]
+|[[Germany]]
+|A kind of layered cake and a traditional dessert that is in many countries throughout Europe and it is also a popular snack and dessert in Japan. The characteristic rings that appear when sliced resemble tree rings, and give the cake its German name, Baumkuchen, which literally translates to "tree cake".
+|-
+|[[Bibingka]]
+|[[File:Large bibinka.jpg|120px]]
+|[[Philippines]]
+|Coconut milk and [[rice flour]]
+|-
+|[[Bienenstich]] (Bee Sting)
+|[[File:Bienenstich.jpg|120px]]
+|[[Germany]]
+|[[Almond]]s, [[honey]], custard cream
+|-
+|[[Birthday cake]]
+|[[File:Birthday cake.jpg|120px]]
+|Unknown
+|A cake that has various ingredients, usually chocolate or sponge, and is often topped with [[Icing (food)|icing]] and [[candles]]; number of candles on top of the cake is often said to represent some one's age, for example, a birthday cake for a nine-year-old will have nine candles on top of it.
+|-
+|[[Black Forest cake]], often known as "Black Forest gâteau"
+|[[File:Kirschtorte.jpg|120px]]
+|[[Germany]]
+|Cherries, [[Kirschwasser|kirsch]], and [[chocolate]]
+|-
+|[[Blondie (confection)|Blondie]]
+|[[File:Toffee blondies.jpg|120px]]
+|[[United States]]
+|A rich, sweet dessert bar. It is made from flour, brown sugar, butter, eggs, baking powder, and vanilla, and may also contain walnuts or pecans. It may contain white or dark chocolate chips and it can have a taste reminiscent of butterscotch.
+|-
+|[[Chocolate brownie|Brownie]]
+|[[File:Chocolate brownie.jpg|120px]]
+|[[United States]], [[Canada]]
+|A flat, baked square or bar developed in the United States at the end of the 19th century and popularized in both the U.S. and Canada during the first half of the 20th century.
+|-
+|[[Buccellato]]
+|[[File:Buccellato 1.jpg|120px]]
+|[[Sicily]]
+|[[Honey]], [[marsala]], [[aniseed]], and [[raisins]]
+|-
+|[[Budapestlängd]]
+|[[File:Budapestbakelse BÅn.JPG|120px]]
+|[[Sweden]]
+|Rolled [[meringue]]-[[hazelnut]] cake filled with [[whipped cream]] and pieces of [[tin can|canned]] [[peach]], [[apricot]] or [[mandarin orange]].
+|-
+|[[Bundt cake]]
+|[[File:BundtCake.JPG|120px]]
+|[[United States]]
+|A cake that is baked in a Bundt pan, shaping it into a distinctive ring shape. The shape is inspired by a traditional European fruit cake known as Gugelhupf, but Bundt cakes are not generally associated with any single recipe, but they are often made with chocolate.
+|-
+|[[Butter cake]]
+|[[File:Hazelnut brown butter cake.jpg|120px]]
+|[[United Kingdom]]
+|[[Butter]]
+|-
+|[[Butterfly cake]]
+|[[File:Plain butterfly cake.jpg|120px]]
+|[[United Kingdom]]
+|A variant of cupcake, also called fairy cake for its fairy-like "wings". They can be made from any flavor of cake. The top of the fairy cake is cut off or carved out with a spoon, and cut in half. Then, butter cream, whipped cream or other sweet filling like jam is spread into the hole. Finally, the two cut halves are stuck into the butter cream to look like butterfly wings. The wings of the cake are often decorated using icing to form various patterns.
+|-
+|[[Cassata]]
+|[[File:Cassata siciliana.jpg|120px]]
+|[[Italy]]
+|Cassata consists of round sponge cake moistened with fruit juices or liqueur and layered with ricotta cheese, candied peel, and a chocolate or vanilla filling similar to cannoli cream. It is covered with a shell of marzipan, pink and green pastel colored icing, and decorative designs. The cassata is topped withcandied fruit depicting cherries and slices of citrus fruit characteristic of Sicily.
+|-
+|[[Carrot cake]]
+|[[File:Carrot cake.jpg|120px]]
+|[[United Kingdom]]
+|[[Carrots]]
+|-
+|[[Cheesecake (cake)|Cheesecake]]
+|
+|[[Greece]]
+|Thin base made from crushed biscuits, with a thicker top layer of soft cheese, eggs and sugar. It can be baked or unbaked (in which case it is refrigerated.)
+|-
+|[[Chiffon cake]]
+|[[File:Chiffon cake 02.jpg|120px]]
+|[[United States]]
+|[[Vegetable oil]], eggs, sugar, flour
+|-
+|[[Chocolate cake]]
+|[[File:Chocolate cake with chocolate frosting topped with chocolate.jpg|120px]]
+|Unknown
+|[[Chocolate]]
+|-
+|[[Christmas cake]]
+|[[File:Christmas cake, Boxing Day 2008.jpg|120px]]
+|[[United Kingdom]]
+|[[Dried fruit]] such as [[sultana (grape)|sultana]]s or [[raisins]]; [[cinnamon]], [[treacle]], [[cherries]], and [[almond]]; is quite often topped with [[Icing (food)|icing]]. If topped with icing, the icing may be decorated with decorations, such as models of [[Santa Claus]], or may have labels such as "Happy Christmas".
+|-
+|[[Cinco leches cake]]
+|
+|[[Mexico]]
+|A cake that consists of five milks.
+|-
+|[[Coconut cake]]
+|
+|[[United States]]
+|A popular dessert in the Southern region of the United States. It is a cake frosted with a white frosting and covered in coconut flakes.
+|-
+|[[Coffee cake]]
+|[[File:Walnut cinnamon coffee cake.jpg|120px]]
+|[[Germany]]
+|[[Cinnamon]]
+|-
+|[[Cremeschnitte]]
+|[[File:Kremna rezina.jpg|120px]]
+|[[Slovenia]], [[Croatia]], [[Germany]]
+|A vanilla and custard cream cake dessert popular in several central-European countries. There are many regional variations, but they all include puff pastry base and custard cream.
+|-
+|[[Croquembouche]]
+|[[File:Croquembouche wedding cake.jpg|120px]]
+|[[France]]
+|[[Caramel]], [[almond]], and [[chocolate]]
+|-
+|[[Crystal cake]]
+|[[File:Crystal cake.jpg|120px]]
+|[[China]]
+|One of the traditional desserts in China. It has more than 800 years of history. It was first invented in Xiagui during the Song Dynasty, then it spread far and wide. People named it as Crystal Cake, because its filling shines brightly, and its appearance is glittering and translucent, like a crystal.
+|-
+|[[Cuatro leches cake]]
+|
+|[[Spain]], [[Mexico]]
+|A cake that consists of four milks and it is similar to the tres leches cake.
+|-
+|[[Cupcake]]
+|[[File:Chocolate cupcakes.jpg|120px]]
+|Unknown
+|A small cake with various ingredients, usually topped with icing
+|-
+|[[Dacquoise]]
+|[[File:Eggnog mousse cake with almond dacquoise.jpg|120px]]
+|[[France]]
+|Almonds, hazelnut, and chocolate
+|-
+|[[Date and walnut loaf]]
+|[[File:Date and walnut bread.jpg|120px]]
+|[[United Kingdom]]
+|[[Phoenix dactylifera|Dates]], [[walnuts]], [[Molasses|treacle]], and [[tea]]
+|-
+|[[Date square]]
+|[[File:Date squares.jpg|120px]]
+|[[Canada]] (probably)
+|Also known as Matrimonial Cake, is a layer of minced dates with oat crumble
+|-
+|[[Depression cake]]
+|
+|[[United States]]
+|Made without milk, sugar, butter, or eggs
+|-
+|[[Devil's food cake]]
+|[[File:Devil's Food Cake.jpg|120px]]
+|[[United States]]
+|[[Chocolate]] and/or [[Cocoa solids|cocoa]], and [[baking soda]]
+|-
+|[[Dobos cake]]
+|[[File:Dobos cake (Gerbeaud Confectionery Budapest Hungary).jpg|120px]]
+|[[Hungary]]
+|A sponge cake that is layered with chocolate butter cream and topped with thin caramel slices
+|-
+|[[Dundee cake]]
+|[[File:Dundee_cake.jpg|120px]]
+|[[United Kingdom]] ([[Scotland]])
+|Fruit cake with [[almonds]] on it but without [[glace cherries]].
+|-
+|[[Eccles cake]]
+|[[File:Eccles cake.jpg|120px]]
+|[[United Kingdom]]
+|[[Zante currants]]
+|-
+|[[Esterházy torte]]
+|[[File:Eszterházy Torte.JPG|120px]]
+|[[Hungary]]<br>[[Austria]]
+|A Hungarian cake (torta) named after Prince Paul III Anton Esterházy de Galántha (1786–1866). It was invented by Budapest confectioners in the late 19th century. It consists of cognac or vanilla buttercream, sandwiched between layers of almond meringue (macaroon) dough. The torte is iced with a fondant glaze and decorated with a characteristic chocolate striped pattern. 
+|-
+|[[Fat rascal]]
+|[[File:Fat Rascal cookies.jpg|120px]]
+|[[United Kingdom]]
+|Dried fruit, peel, oats
+|-
+|[[Faworki]]
+|[[File:Faworkib.jpg|120px]]
+|[[Poland]]
+|Sweet crisp cake in shape of a bow
+|-
+|[[Financier (cake)|Financier]]
+|[[File:Two rectangular financiers.jpg|120px]]
+|[[France]]
+|A small French cake. The financier is light and moist, similar to sponge cake, and usually contains almond flour, crushed or ground almonds, or almond flavoring. The distinctive feature of the recipe is beurre noisette (brown butter). Other ingredients include egg whites, flour, and powdered sugar. They are baked in shaped molds, usually small rectangular loaves similar in size to petits fours. In terms of texture, it is springy with a crisp, eggshell-like exterior.
+|-
+|[[Flourless chocolate cake]]
+|[[File:Flourless Chocolate Cake with Bourbon Vanilla Ice Cream.jpg|120px]]
+|Unknown
+|Chocolate
+|-
+|[[Fondant Fancy]]
+|[[File:White Mr Kipling French fancy cake (82524785).jpg|120px]]
+|[[United Kingdom]]
+|[[Icing (food)|Icing]] (any of a number of colors), cream
+|-
+|-
+|[[Fragelité]]
+|[[File:Konditor kager 1.JPG|120px]]
+|[[Denmark]]
+|[[Meringue]], almonds, butter, coffee
+|-
+|[[Frog cake]]
+|[[File:Frog cakes.jpg|120px]]
+|[[Australia]]
+|Cream, icing
+|-
+|[[Fruitcake]]
+|[[File:Traditional fruitcake.jpg|120px]]
+|[[Ancient Rome]]
+|[[Candied fruit]]; many versions of the fruit cake contain currants, sultanas and glace cherries.
+|-
+|[[Funing big cake]]
+|
+|[[China]] ([[Funing County, Jiangsu|Funing County]], [[Jiangsu province]])
+|[[Sticky rice]], [[white sugar]] and refined [[lard]]. Due to health concerns associated with lard consumption, sometimes vegetable oil is used instead of lard.<ref name="ChineseNetworkNews">{{cite web | url=http://news.china.com.cn/local/2012-02/01/content_24525039.htm | title=The Funing cake was traced from the workshop black and doping a variety of low-quality additives | publisher=[http://news.china.com.cn Chinese network news] | date=February 1, 2012 | accessdate=May 20, 2012|language=zh}}</ref>
+|-
+|[[Genoa cake]]
+|[[File:Genoa-cake.jpg|120px]]
+|[[Italy]] ([[Genoa]], probably)
+|Sultanas, raisins, glacé cherries
+|-
+|[[Genoise]] (Genoese cake)
+|[[File:Génoise cake with buttercream frosting.jpg|120px]]
+|[[Italy]] ([[Genoa]], probably)
+|Whole [[egg (food)|egg]]
+|-
+|[[Gingerbread]]
+|[[File:Cakegingerbread.jpg|120px]]
+|[[United Kingdom]] (probably)
+|[[Ginger]]
+|-
+|[[Gooey butter cake]]
+|[[File:Gooey Pumpkin Butter Cake.jpg|120px]]
+|[[United States]]
+|Butter
+|-
+|[[Goose Breast]]
+|[[File:Flickr - cyclonebill - Gåsebryst.jpg|120px]]
+|[[Denmark]]
+|A cream cake known as ''Gåsebryst'' in Denmark. A Danish pastry bottom, topped with whipped cream, custard and jam, wrapped in marzipan.
+|-
+|[[Hash brownies]]
+|[[File:KCCS Cookie.JPG|120px]]
+|[[Netherlands]], [[Belgium]]
+|Also known as space cakes, are bakery products made using one of the forms of cannabis, including hashish.
+|-
+|[[Hot milk cake]]
+|
+|[[United States]] (probably)
+|[[Milk]], and [[Cafe mocha|mocha]]
+|-
+|[[Ice cream cake]]
+|[[File:Three inch ice cream cake with fruit from Singapore.jpg|120px]]
+|Unknown
+|[[Ice cream]]
+|-
+|[[Jaffa Cakes]]
+|[[File:Jaffa cake.jpg|120px]]
+|[[United Kingdom]]
+|A biscuit-sized cake introduced by MacVitie and Price in 1927 and named after Jaffa oranges. The most common form of Jaffa Cakes are circular, 2 1⁄2 inches (64&nbsp;mm) in diameter and have three layers: a Genoise sponge base, a layer of orange flavored jelly and a coating of chocolate.
+|-
+|[[Kabuni]]
+|
+|[[Albania]]
+|Rice, butter, mutton broth, raisins, sugar, cinnamon, cloves
+|-
+|[[Karpatka]]
+|[[File:Karpatka.jpg|120px]]
+|[[Poland]]
+|Two to eight layers of very flattened sweet bake pastry with cream and sweet cheese, normally served with fruit and budyn  and cardamom and ice cream which may have alcohol also on the side of this luxurious dessert  
+|-
+|[[Kiev cake]]
+|[[File:Київський торт без коробки.JPG|120px]]
+|[[Ukraine]]
+|Two airy layers of [[meringue]] with [[hazelnuts]], chocolate glaze, and a [[buttercream]]-like filling
+|-
+|[[King cake]]
+|[[File:Kingcake.jpg|120px]]
+|[[France]]<br>[[Spain]]
+|Sugar, cinnamon, milk, and butter
+|-
+|[[Kladdkaka]]
+|[[File:Kaffereptarta.jpg|120px]]
+|[[Sweden]]
+|Chocolate
+|-
+|[[Kliņģeris]]
+|
+|[[Latvia]]
+|Yeast, raisins, spices
+|-
+|[[Kolacz]]
+|[[File:Kolacz (cake).JPG|120px]]
+|[[Poland]]
+|Sweet cheese and cream
+|-
+|[[Kolaczki]]
+|[[File:Kolaczki - A Polish Pastry Type Of Cake.jpg|120px]]
+|[[Poland]]
+|Butter, sugar, jam, egg whites, different sweet sugar powder
+|-
+|[[Kouign-amann]]
+|[[File:Kouignamann.JPG|120px]]
+|[[France]] ([[Brittany]])
+|Butter
+|-
+|[[Kutia]]
+|[[File:Koljivo from wheat.jpg|120px]]
+|[[Poland]]<br>[[Belarus]]<br>[[Ukraine]]<br>[[Lithuania]]<br>[[Russia]]
+|Various nuts and raisins
+|-
+|[[Kransekake]]
+|[[File:Kransekake.jpg|120px]]
+|[[Denmark]], [[Norway]]
+|Almonds, sugar, egg whites
+|-
+|[[Kremówka]]
+|[[File:Kremowki dwie.JPG|120px]]
+|[[Germany]], [[Slovakia]]
+|A Polish type of cream pie. It is made of two layers of puff pastry, filled with whipped cream, creamy buttercream, vanilla pastry cream (custard cream) or sometimes egg white cream, and is usually sprinkled with powdered sugar. It also can be decorated with cream or covered with a layer of icing.
+|-
+|[[Krówki|Krowka]]
+|[[File:Boza krowka.jpg|120px]]
+|[[Poland]]
+|Chocolate, sponge base, caramel and coconut
+|-
+|[[Lady Baltimore Cake]]
+|
+|[[United States]]
+|Dried fruit, nuts, frosting
+|-
+|[[Lamanki]] or [[Klamäti]]
+|[[File:Łamańce.JPG|120px]]
+|[[Poland]]
+|Chocolate, cinnamon 
+|-
+|[[Lamington]]
+|[[File:Lamington.png|120px]]
+|[[Australia]]
+|Chocolate icing, and [[desiccated coconut]]
+|-
+|[[Layer cake]]
+|[[File:Meyer lemon chiffon cake, chocolate.jpg|120px]]
+|Unknown
+|Yolk, sugar, butter, flour
+|-
+|[[Lemon cake]]
+|
+|Unknown
+|[[Lemon]]
+|-
+|[[Madeira cake]]
+|[[File:Cherry madeira cake.jpg|120px]]
+|[[United Kingdom]]
+|Butter and sugar
+|-
+|[[Poppy seed roll|Makowiec]]
+|[[File:MakowiecCakb.jpg|120px]]
+|[[Poland]]
+|Poppy seed cake normally decorated with icing and orange 
+|-
+|[[Muffin|Magdalena]]
+|[[File:Madalenas caseras-Madrid.jpg|120px]]
+|[[Spain]]
+|Eggs, granulated sugar, unsalted butter, unbleached white flour, lemon zest, baking powder and milk
+|-
+|[[Mantecada]]
+|[[File:Mantecadas de Tuesta-Valdegovía8.JPG|120px]]
+|[[Spain]]
+|Eggs, flour, sugar and butter ([[cow fat]] in the [[Mantecadas de Astorga]]; [[Cornmeal|corn flour]] in [[Colombia]])
+|-
+|[[Marble cake]]
+|[[File:Marmorkuchen.jpg|120px]]
+|[[Denmark]]
+|[[Vanilla]], [[coffee]], and/or [[chocolate]]
+|-
+|[[Mazurek (cake)|Mazurek]]
+|[[File:Mazurek 1.JPG|120px]]
+|[[Poland]]
+|Easter cake with a type of shortcrust tart and topping
+|-
+|[[Mille-feuille]]
+|[[File:Mille-feuille français 1.jpg|120px]]
+|[[France]]
+|Also known as a Napoleon, is three layers of puff pastry alternating with two layers of pastry cream. The top is glazed in white (icing) and brown (chocolate) strips, and combed.
+|-
+|[[Molten chocolate cake]]
+|[[File:Chocolate Fondant.jpg|120px]]
+|[[United States]]
+|Also known as lava cake is a popular dessert that combines the elements of a flourless chocolate cake (sometimes called a chocolate decadence cake) and a soufflé. Some other names used are chocolate fondant, chocolate moelleux and chocolate lava cake.
+|-
+|[[Mooncake]]
+|[[File:Mooncake1.jpg|120px]]
+|[[China]]
+|A Chinese bakery product traditionally eaten during the Mid-Autumn Festival (Zhongqiujie).
+|-
+|[[Muffin]]
+|[[File:Muffins in oven.jpg|120px]]
+|Unknown
+|An individual sized quick bread product which can be sweet or savory. The typical American muffin is similar to a cupcake in size and cooking methods. These can come in both savory varieties, such as corn or cheese muffins, or sweet varieties such as blueberry or banana. It also refers to a flatter disk-shaped bread of English origin, commonly referred to as an English muffin outside the United Kingdom. These muffins are also popular in Commonwealth countries and the United States.
+|-
+|[[Napoleonshat]]
+|[[File:Napoleonshat.jpg|120px]]
+|[[Denmark]]
+|A [[marzipan]] based cake, shaped like a [[Napoleon's Hat]] and dipped in dark chocolate.
+|-
+|[[Napeleonskake]]
+|
+|[[Norway]], [[Denmark]], [[Iceland]]
+|A cake that is similar to tompouce, but it has different flavors like caramel or carob.
+|-
+|[[Nasturtium cake]]
+|
+|[[Spain]]
+|A cake made primarily with egg yolk and syrup. The cake is usually presented in a cylindrical shape or a rectangle, depending on the mold. This is a cake that is made by a water bath. It can often be served at room temperature.
+|-
+|[[Oponki]] or [[Paczki]]
+|[[File:Tisto.jpg|120px]]
+|[[Poland]]
+|Round spongy yeast cake with sweet topping and other chocolate
+|-
+|[[Opera cake]]
+|[[File:Tartine_bakery_opera_cake_in_2007.jpg|120px]]
+|[[France]]
+|[[Ganache]], [[sponge cake]], and [[coffee]] syrup
+|-
+|[[Orange and polenta cake]]
+|
+|[[Italy]]
+|Oranges and polenta
+|-
+|-
+|[[Othellolagkage]]
+|[[File:Othello-lagkager.jpg|120px]]
+|[[Denmark]]
+|A [[layer cake]] with sponge cake, cream, chocolate, raspberry, egg, vanilla, marzipan, 
+|-
+|[[Paczki]]
+|[[File:Polish paczki.jpg|120px]]
+|[[Poland]]
+|Round cake with spongy yeast containing strawberry, liqueur, budyn and ( sweet ) cheese and other chocolate
+|-
+|[[Pancake]]
+|[[File:Blueberry pancakes (1).jpg|120px]]
+|[[Ancient Rome]]
+|Flat, round cake, made with [[Egg_(food)|eggs]], [[milk]], and [[Flour|plain flour]]
+|-
+|[[Panpepato]]
+|[[File:Panpepato-small.jpg|120px]]
+|[[Italy]]
+|Varies, almonds, hazelnuts, pine nuts
+|-
+|[[Panettone]]
+|[[File:Panettone.jpg|120px]]
+|[[Italy]]
+|Raisins, orange peel, and [[lemon]] peel
+|-
+|[[Parkin (cake)|Parkin]]
+|[[File:Darkparkin.JPG|120px]]
+|[[United Kingdom]]
+|Treacle and oats
+|-
+|[[Pavlova (food)|Pavlova]]
+|[[File:Christmas pavlova.jpg|120px]]
+|[[New Zealand]]
+|[[Egg white]] and [[sugar]] (meringue); named after [[Anna Pavlova]]
+|-
+|[[Petit Gâteau]]
+|[[File:Gastro petit-gateau-delicia.jpeg|120px]]
+|[[France]]
+|[[Chocolate]] and served with [[Ice-cream]]
+|-
+|[[Petits fours]]
+|[[File:Petits.fours.wmt.jpg|120px]]
+|[[France]]
+|[[Butter cream]]
+|-
+|[[Piernik]]
+|[[File:PiernikCakeb.jpg|120px]]
+|[[Poland]]
+|Gingerbread with cinnamon, ginger, cloves and cardamom
+|-
+|[[Pineapple upside-down cake]]
+|[[File:Pineapple upsidedown cake 9.jpg|120px]]
+|[[United Kingdom]]
+|[[Pineapple]]
+|-
+|[[Plum cake]]
+|[[File:Plum cake 08 ies.jpg|120px]]
+|[[United Kingdom]] (England)
+|Referred to fruitcake prepared with raisins and currants in England since around 1700. Today it refers to a cake prepared with [[plum]] as a primary ingredient.
+|-
+|[[Pound cake]]
+|[[File:Pound layer cake.jpg|120px]]
+|[[United Kingdom]]
+|Butter, sugar
+|-
+|[[Princess Cake]]
+|[[File:Prinsesstårta.JPG|120px]]
+|[[Sweden]]
+|Alternating layers of [[sponge cake]] and [[whipped cream]], a layer of berry [[jam]] and a layer of [[custard]], all topped with a layer of (green) [[marzipan]].
+|-
+|[[Prinzregententorte]]
+|[[File:Prinzregententorte.jpg|120px]]
+|[[Germany]]
+|Sponge cake, buttercream and dark chocolate glaze
+|-
+|[[Pumpkin bread]]
+|[[File:Pumpkin bread.jpg|120px]]
+|[[United States]]
+|[[Pumpkin]], sometimes chocolate
+|-
+|[[Punschkrapfen]]
+|[[File:Image-Punschkrapfen.jpg|120px]]
+|[[Austria]]
+|Cake crumbs, [[nougat]] chocolate, [[apricot]] jam, and [[rum]]
+|-
+|[[Queen Elizabeth cake]]
+|
+|[[Canada]] ([[Quebec]])
+|Coconut, [[Phoenix dactylifera|dates]]
+|-
+|[[Qumeshtore me pete]]
+|
+|[[Albania]]
+|Cream, vanilla, syrup, lemon juice, and lemon skin
+|-
+|[[Red bean cake]]
+|[[File:RedbeanCake Cantoversion.jpg|120px]]
+|[[Japan]], [[China]]
+|[[Azuki bean]] and [[red bean paste]]
+|-
+|[[Red velvet cake]]
+|[[File:Red velvet cake slice.jpg|120px]]
+|[[United States]]
+|Red coloring and cocoa
+|-
+|[[Rum cake]]
+|[[File:Rum cake.jpg|120px]]
+|[[Jamaica]], [[Trinidad and Tobago]]
+|Rum, dried fruit
+|-
+|[[Rum baba]]
+||[[File:Rum baba.jpg|120px]]
+|[[Italy|Italian]]
+|Rum, yeast, whipped cream
+|-
+|[[Ruske kape]]
+|[[File:RuskeKapa.jpg|120px]]
+|[[Bosnia]], [[Serbia]]
+|Chocolate, and coconut
+|-
+|[[Sachertorte]]
+|[[File:Sachertorte DSC03027 retouched.jpg|120px]]
+|[[Austria]]
+|[[Apricot]], and [[cream]]
+|-
+|[[Šakotis]]
+|[[File:Šakotis 3799.jpg|120px]]
+|[[Lithuania]], [[Poland]]
+|Traditional cake created by painting layers of dough onto a rotating spit while being baked.
+|-
+|[[Salzburger Nockerl]]
+|[[File:Salzburger Nockerln 04 gastronomie 001.jpg|120px]]
+|[[Austria]]
+|Egg yolk, flour and [[milk]]
+|-
+|[[Seis leches cake]]
+|
+|[[Mexico]], [[Spain]]
+|A cake that was invented with six milks.
+|-
+|[[Sekacz]]
+|[[File:Sekacz (1).jpg|120px]]
+|[[Poland]]
+|Sponge cake with chocolate
+|-
+|[[Sernik]]
+|[[File:PolskiSernik.jpg|120px]]
+|[[Poland]]
+|Cream cheese, sponge cake, raisins and different spices
+|-
+|[[Sesame seed cake]]
+|[[File:Sesame seed cakes.jpg|120px]]
+|Unknown
+|Sesame seeds, often with honey as a sweetener
+|-
+|[[Sfouf]]
+|
+|[[Lebanon]]
+|[[Almond]] and [[semolina]]
+|-
+|[[Simnel cake]]
+|[[File:Simnel cake 1.jpg|120px]]
+|[[United Kingdom]]
+|Marzipan and [[dried fruit]]
+|-
+|[[Smoked salmon cheesecake]]
+|[[File:Smoked salmon cheesecake.jpg|120px]]
+|[[United Kingdom]] ([[Scotland]])
+|Savory [[cheesecake]] containing [[smoked salmon]]
+|-
+|[[Smörgåstårta]]
+|[[File:Smorgatarta.JPG|120px]]
+|[[Sweden]], [[Estonia]], [[Finland]]
+|A cake that literally means "sandwich-cake" or "sandwich gateau" and it is a Scandinavian cuisine dish that is popular in Sweden, Estonia (as "võileivatort") and Finland (as "voileipäkakku"). This savoury cake is compositionally similar to a sandwich, but it has such a large amount of filling that it more resembles a layered cream cake with garnished top.
+|-
+|[[Snowball cake]]
+|[[File:Hostess-Sno-Ball-WS.jpg|120px]]
+|[[United States]]
+|Marshmallow and coconut frosting
+|-
+|[[Snow skin mooncake]]
+|[[File:SnowSkinMooncake1.JPG|120px]]
+|[[Hong Kong]], [[China]]
+|A Chinese food eaten during the Mid-Autumn Festival. It is a non-baked mooncake which originated in Hong Kong. The snow skin mooncake was developed by a bakery in Hong Kong, because the traditional mooncakes were made with salted duck egg yolks and lotus seed paste, resulting in very high sugar and oil content. It is also known as snowy mooncake, icy mooncake, and crystal mooncake.
+|-
+|[[Soufflé]]
+|[[File:Choco souffle.jpg|120px]]
+|[[France]]
+|Cream sauce or purée with beaten egg whites
+|-
+|[[Spekkoek]]
+|[[File:Spekkoek naturel en pandan.jpg|120px]]
+|[[Dutch East Indies]]
+|Multi-layered, containing cinnamon, clove, mace and anise.
+|-
+|[[Spice cake]]
+|[[File:Spice Cake with sea foam frosting.jpg|120px]]
+|[[North America]]
+|Spices such as cinnamon, cloves, allspice, ginger and/or mace
+|-
+|[[Spit cake]]
+|[[File:Kürtőskalács Budapest 2008.jpg|120px]]
+|
+|A term for hollow, cylindrical cakes prepared in several countries
+|-
+|[[Sponge cake]]
+|[[File:Sponge cake.jpg|120px]]
+|[[United Kingdom]]
+|Flour, sugar and eggs.
+|-
+|[[St. Honoré cake]]
+|[[File:Saint-honoré (pâtisserie).JPG|120px]]
+|[[France]]
+|Caramel and [[Chiboust cream]]
+|-
+|[[Stack cake]]
+|[[File:Apple Stack Cake.jpg|120px]]
+|[[United States]]
+|A cake that replaces a wedding cake.
+|-
+|[[Streuselkuchen]]
+|[[File:Streuselkuchen7.jpg|120px]]
+|[[Germany]]
+|[[Streusel]] (butter, flour and sugar)
+|-
+|-
+|[[Studenterbrød]]
+|[[File:Studenterbrød 2.jpg|120px]]
+|[[Denmark]]
+|Trøffelmasse (crumbled cakes, cocoa-powder, sugar, butter, liquor), raspberry and chocolate.
+|-
+|[[Sultana and cherry cake]]
+|
+|[[United Kingdom]]
+|Sultanas and glace cherries
+|-
+|[[Suncake (Taiwan)|Suncake]]
+|[[File:Taichung Sun Cake.JPG|120px]]
+|[[Taiwan]]
+|A popular Taiwanese dessert originally from the city of Taichung in Taiwan. The typical fillings consist of maltose (condensed malt sugar), and they are usually sold in special gift boxes as souvenirs for visitors.
+|-
+|[[Swiss roll]]
+|[[File:Swiss roll.jpg|120px]]
+|[[United Kingdom]], not Switzerland as the name implies
+|Jam and creamy filling; may come in different colors
+|-
+|[[Tarte Tatin]]
+|[[File:Tarte tatin.jpg|120px]]
+|[[France]]
+|Varies, commonly apple or pear
+|-
+|[[Tea loaf]]
+|
+|[[United Kingdom]]
+|Currants, sultanas and tea
+|-
+|[[Teacake]]
+|[[File:Teacake.jpg|120px]]
+|[[United Kingdom]]
+|Currants and [[sultana (grape)|sultana]]s
+|-
+|[[Tiramisu]]
+|[[File:Tiramisu Fanes.jpg|120px]]
+|[[Italy]]
+|Savoiardi and espresso
+|-
+|[[Tompouce]]
+|[[File:Tom Pouce Dutch pastry.JPG|120px]]
+|[[Netherlands]]
+|Cream, icing
+|-
+|[[Torta Tre Monti]]
+|
+|[[Italy]] ([[San Marino]])
+|[[Hazelnut]]s
+|-
+|[[Tres leches cake]]
+|[[File:Tres Leches.jpg|120px]]
+|[[Mexico]], [[Costa Rica]], [[Nicaragua]]
+|[[Evaporated milk]], [[condensed milk]], and [[heavy cream]] or [[sour cream]]
+|-
+|[[Tunis cake]]
+|
+|[[Scotland]], [[Northern Ireland]]
+|Chocolate and marzipan
+|-
+|[[Træstammer]]
+|[[File:Træstammer 3.jpg|120px]]
+|[[Denmark]]
+|Literally "wooden-logs". Trøffelmasse (crumbled cakes, cocoa-powder, sugar, butter, rum), marzipan and chocolate  [[Sweden]] has a similar cake known as [[Punsch-roll]]s.
+|-
+|[[Upside-down cake]]
+|[[File:Pineapple-upside-down-cake.jpg|120px]]
+|[[United Kingdom]]
+|A cake that various ingredients like kiwi fruit or guava.
+|-
+|[[Victoria sponge cake]]
+|[[File:Cake_from_WHR(P).jpg|120px]]
+|[[United Kingdom]]
+|A cake that was named after the Queen Victoria, who was known to enjoy a slice of the sponge cake with her afternoon tea. It is often referred to simply as "sponge cake", though it contains additional fat. A typical Victoria sponge consists of raspberry jam and whipped double cream or vanilla cream. The jam and cream are sandwiched between two sponge cakes; the top of the cake is not iced or decorated apart from a dusting of icing sugar. The Women's Institute publishes a variation on the Victoria sandwich that has raspberry jam as the filling and is dusted with caster sugar, not icing sugar.
+|-
+|[[Wedding cake]]
+|[[File:Whitweddingcake.jpg|120px]]
+|Unknown
+|A traditional cake that is served at wedding receptions following dinner. In some parts of England, the wedding cake is served at a wedding breakfast, on the morning following the ceremony. In modern Western culture, the cake is usually on display and served to guests at the reception.
+|-
+|[[Welsh cake]]
+|[[File:Wesh cakes.jpg|120px]]
+|United Kingdom ([[Wales]])
+|Currants
+|-
+|[[Whoopie pies]]
+|[[File:Whoopiepies1.jpg|120px]]
+|[[United States]]
+|Cocoa, vanilla
+|-
+|[[Wine cake]]
+|
+|[[Colombia]]
+|[[Wine]]
+|}
+
+==Unsorted==
+* [[Merveilleux (cake)]]
+
+==See also==
+{{portal|Food|Lists}}
+* [[List of breads]]
+* [[Bun#List of buns|List of buns]]
+* [[List of desserts]]
+* [[List of pancakes]]
+* [[List of pastries]]
+
+==References==
+{{Reflist}}
+
+{{Cakes}}
+{{Lists of prepared foods|state=expanded}}
+
+[[Category:Cakes]]
+[[Category:Lists of foods|Cakes]]
+[[Category:World cuisine|Cakes]]
+[[Category:Dessert-related lists|Cakes]]
