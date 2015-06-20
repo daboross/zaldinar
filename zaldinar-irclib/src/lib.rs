@@ -1,6 +1,8 @@
 extern crate regex;
 #[macro_use]
 extern crate log;
+#[macro_use]
+extern crate throw;
 
 macro_rules! regex {
     ($s:expr) => (::regex::Regex::new($s).unwrap())
@@ -22,10 +24,10 @@ pub trait HasNick {
 
 pub fn connect<T>(addr: &str, data_out: mpsc::Sender<IrcMessage>,
         data_in: mpsc::Receiver<Option<String>>, client: T)
-        -> io::Result<()> where T: HasNick + Send + 'static {
-    let socket = try!(net::TcpStream::connect(addr));
+        -> throw::Result<(), io::Error> where T: HasNick + Send + 'static {
+    let socket = throw!(net::TcpStream::connect(addr));
     let irc_read = IrcRead {
-        socket: io::BufReader::new(try!(socket.try_clone())),
+        socket: io::BufReader::new(throw!(socket.try_clone())),
         data_out: data_out,
         client: client,
     };
@@ -34,8 +36,8 @@ pub fn connect<T>(addr: &str, data_out: mpsc::Sender<IrcMessage>,
         data_in: data_in,
     };
 
-    try!(irc_read.spawn_reading_thread());
-    try!(irc_write.spawn_writing_thread());
+    throw!(irc_read.spawn_reading_thread());
+    throw!(irc_write.spawn_writing_thread());
 
     return Ok(());
 }

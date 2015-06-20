@@ -6,6 +6,9 @@ use std::fmt;
 use rustc_serialize::json;
 use regex;
 use fern;
+use throw;
+
+pub type ThrowInitError = throw::Error<InitializationError>;
 
 #[derive(Debug)]
 pub enum InitializationError {

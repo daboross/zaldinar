@@ -4,6 +4,8 @@ extern crate regex;
 #[macro_use]
 extern crate log;
 extern crate fern;
+#[macro_use]
+extern crate throw;
 extern crate zaldinar_irclib as irc;
 extern crate zaldinar_core as core;
 extern crate generated_plugins_crate;

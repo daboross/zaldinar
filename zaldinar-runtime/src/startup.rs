@@ -1,12 +1,11 @@
 use std::sync::mpsc;
-use std::convert;
 
 use generated_plugins_crate;
 use time;
 use fern;
 use log;
 
-use errors::InitializationError;
+use errors::ThrowInitError;
 use plugins;
 use interface;
 use config;
@@ -30,11 +29,10 @@ pub fn start_file_watch(_client: &client::Client, _interface: &interface::IrcInt
     // TODO: Maybe support this?
 }
 
-fn setup_logger(config: &config::ClientConfiguration) -> Result<(), InitializationError> {
+fn setup_logger(config: &config::ClientConfiguration) -> Result<(), ThrowInitError> {
     let level = match config.log_level.parse() {
         Ok(v) => v,
-        Err(_) => return Err(InitializationError::from_string(
-            format!("Failed to parse log_level '{}'", config.log_level))),
+        Err(_) => throw_new!(format!("Failed to parse log_level '{}'", config.log_level)),
     };
     let config = fern::DispatchConfig {
         format: Box::new(|msg: &str, level: &log::LogLevel, _location: &log::LogLocation| {
@@ -47,7 +45,7 @@ fn setup_logger(config: &config::ClientConfiguration) -> Result<(), Initializati
     return match fern::init_global_logger(config, log::LogLevelFilter::Info) {
         Err(fern::InitError::SetLoggerError(_)) => Ok(()),
         Ok(()) => Ok(()),
-        Err(e) => Err(convert::From::from(e)),
+        Err(e) => throw_new!(e),
     };
 }
 
@@ -58,7 +56,7 @@ fn setup_logger(config: &config::ClientConfiguration) -> Result<(), Initializati
 /// Returns `(client, interface, dispatch, irc_data_in, irc_data_out)`
 pub fn prepare(mut plugins: client::PluginRegister, config: config::ClientConfiguration)
         -> Result<(client::Client, interface::IrcInterface, dispatch::Dispatch,
-            mpsc::Sender<irc::IrcMessage>, mpsc::Receiver<Option<String>>), InitializationError> {
+            mpsc::Sender<irc::IrcMessage>, mpsc::Receiver<Option<String>>), ThrowInitError> {
     // Register built-in plugins
     plugins::register_plugins(&mut plugins);
     generated_plugins_crate::register(&mut plugins);
@@ -68,7 +66,7 @@ pub fn prepare(mut plugins: client::PluginRegister, config: config::ClientConfig
     let (data_out, connection_data_in) = mpsc::channel();
     let (connection_data_out, data_in) = mpsc::channel();
 
-    let interface = try!(interface::IrcInterface::new(data_out, client.clone()));
+    let interface = up!(interface::IrcInterface::new(data_out, client.clone()));
 
     // Create dispatch, and start the worker threads for plugin execution
     let dispatch = dispatch::Dispatch::new(interface.clone(), client.clone(), data_in);
@@ -77,17 +75,18 @@ pub fn prepare(mut plugins: client::PluginRegister, config: config::ClientConfig
 }
 
 pub fn run(config: config::ClientConfiguration)
-        -> Result<client::ExecutingState, InitializationError> {
-    run_with_plugins(config, client::PluginRegister::new())
+        -> Result<client::ExecutingState, ThrowInitError> {
+    let result = up!(run_with_plugins(config, client::PluginRegister::new()));
+
+    Ok(result)
 }
 
 pub fn run_with_plugins(config: config::ClientConfiguration, plugins: client::PluginRegister)
-        -> Result<client::ExecutingState, InitializationError> {
+        -> Result<client::ExecutingState, ThrowInitError> {
 
-    try!(setup_logger(&config));
+    up!(setup_logger(&config));
 
-    let (client, interface, dispatch, conn_data_out, conn_data_in) =
-        try!(prepare(plugins, config));
+    let (client, interface, dispatch, conn_data_out, conn_data_in) = up!(prepare(plugins, config));
 
     // Load file watcher
     start_file_watch(&client, &interface);
@@ -102,13 +101,13 @@ pub fn run_with_plugins(config: config::ClientConfiguration, plugins: client::Pl
     interface.send_command::<&str, &str>("USER", &[&client.user, "0", "*",
         &format!(":{}", client.real_name)]);
 
-    try!(irc::connect(&client.address, conn_data_out, conn_data_in, client.clone()));
+    up!(irc::connect(&client.address, conn_data_out, conn_data_in, client.clone()));
 
     // This statement will run until the bot exists
     dispatch.dispatch_loop();
 
     let done = {
-        let state = try!(client.state().read());
+        let state = throw!(client.state().read());
         state.done_executing
     };
 

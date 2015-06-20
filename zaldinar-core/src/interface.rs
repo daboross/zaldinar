@@ -5,7 +5,7 @@ use std::ops;
 
 use regex;
 
-use errors::InitializationError;
+use errors::ThrowInitError;
 use client;
 use events;
 use irc;
@@ -19,10 +19,10 @@ pub struct IrcInterface {
 
 impl IrcInterface {
     pub fn new(data_out: mpsc::Sender<Option<String>>, client: client::Client)
-            -> Result<IrcInterface, InitializationError> {
+            -> Result<IrcInterface, ThrowInitError> {
         let mut admins = Vec::new();
         for admin_str in client.admins.iter() {
-            admins.push(try!(regex::Regex::new(&format!("^{}$", &admin_str))));
+            admins.push(throw!(regex::Regex::new(&format!("^{}$", &admin_str))));
         }
         let interface = IrcInterface {
             data_out: data_out,

@@ -5,5 +5,6 @@ version = "0.1.1-dev"
 authors = ["Dabo Ross <daboross@daboross.net>"]
 
 [dependencies]
-log = "0.3.*"
-regex = "0.1.*"
+log = "0.3"
+regex = "0.1"
+throw = "0.1"

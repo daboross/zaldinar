@@ -1,5 +1,7 @@
 #![cfg(not(test))]
 extern crate zaldinar;
+#[macro_use]
+extern crate throw;
 extern crate getopts;
 
 macro_rules! print_err {
@@ -113,7 +115,7 @@ fn main_exits() -> i32 {
         let config = match zaldinar::ClientConfiguration::load_from_file(&config_path) {
             Ok(v) => v,
             Err(e) => {
-                print_err!("Error loading configuration from `{}`: {}",config_path.display(), e);
+                print_err!("Error loading configuration from `{}`: {}", config_path.display(), e);
                 return 1;
             },
         };
