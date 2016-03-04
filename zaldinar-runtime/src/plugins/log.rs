@@ -16,9 +16,9 @@ fn log_message(event: &MessageEvent) {
                         ctcp_message)
                 },
             },
-            None => format!("[{}] <{}> {}", event.args[0], nick, &event.args[1..].connect(" ")[1..]),
+            None => format!("[{}] <{}> {}", event.args[0], nick, &event.args[1..].join(" ")[1..]),
         },
-        "NOTICE" => format!("[{}] -{}- {}", event.args[0], nick, &event.args[1..].connect(" ")[1..]),
+        "NOTICE" => format!("[{}] -{}- {}", event.args[0], nick, &event.args[1..].join(" ")[1..]),
         "JOIN" => format!("[{}] *** {} joined", event.args[0], nick),
         "PART" => {
             if event.args.len() > 1 {
@@ -31,17 +31,17 @@ fn log_message(event: &MessageEvent) {
         "KICK" => {
             if event.args.len() > 2 {
                 format!("[{}] *** {} kicked {} ({})", event.args[0], nick, event.args[1],
-                    &event.args[2..].connect(" ")[1..])
+                    &event.args[2..].join(" ")[1..])
             } else {
                 format!("[{}] *** {} kicked {}", event.args[0], nick, event.args[1])
             }
         },
         "TOPIC" => format!("[{}] *** {} changed the topic to \"{}\"", event.args[0], nick,
-            &event.args[1..].connect(" ")[1..]),
+            &event.args[1..].join(" ")[1..]),
         "PING" => return, // don't log pings
         _ => match event.mask.mask() {
-            Some(mask) => format!("{} {} {}", mask, event.command, event.args.connect(" ")),
-            None => format!("{} {}", event.command, event.args.connect(" ")),
+            Some(mask) => format!("{} {} {}", mask, event.command, event.args.join(" ")),
+            None => format!("{} {}", event.command, event.args.join(" ")),
         }
     };
     info!("{}", message);

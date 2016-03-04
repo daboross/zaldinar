@@ -53,7 +53,7 @@ impl Dispatch {
 
         // PING
         if (*message.command).eq_ignore_ascii_case("PING") {
-            self.interface.send_raw(format!("PONG {}", message.args.connect(" ")));
+            self.interface.send_raw(format!("PONG {}", message.args.join(" ")));
         }
 
         let message_event = events::MessageTransport::from_internal(message);
@@ -100,7 +100,7 @@ impl Dispatch {
                 // it below.
                 let mut command_matched = false;
                 if let Some(captures) = regex!(r"^:([^\s]+?)[:;,]?\s+(.+)$").captures(
-                                            &message.args[1..].connect(" ")) {
+                                            &message.args[1..].join(" ")) {
                     let same = {
                         let state = self.state.state().read().unwrap();
                         captures.at(1) == Some(&state.nick)

@@ -15,7 +15,7 @@ macro_rules! regex {
 }
 
 fn choose(event: &CommandEvent) {
-    let content = event.args.connect(" ");
+    let content = event.args.join(" ");
     let mut rng = rand::thread_rng();
     let split = if content.contains(",") {
         regex!(r"\s*,\s*").split(&content).collect::<Vec<&str>>()

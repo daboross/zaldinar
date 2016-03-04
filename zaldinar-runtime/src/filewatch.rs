@@ -4,6 +4,7 @@ extern crate inotify;
 use std::env;
 use std::io;
 use std::thread;
+use std::time::Duration;
 
 use interface;
 use client;
@@ -123,7 +124,7 @@ pub fn watch_binary(client: interface::IrcInterface)
                     debug!("\tevent is: ignored");
                 }
                 info!("Restarting to update to latest binary momentarily.");
-                thread::sleep_ms(1000u32); // 1000ms = 1 second
+                thread::sleep(Duration::from_secs(1));
                 client.quit(Some("Updating to latest binary"),
                     client::ExecutingState::RestartExec);
                 break 'thread_loop;

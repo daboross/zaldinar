@@ -6,9 +6,9 @@ use zaldinar_core::client::ExecutingState;
 
 fn action(event: &CommandEvent) {
     if event.args[0].starts_with("#") {
-        event.client.send_ctcp(&*event.args[0], "ACTION", event.args[1..].connect(" "));
+        event.client.send_ctcp(&*event.args[0], "ACTION", event.args[1..].join(" "));
     } else {
-        event.client.send_ctcp(event.channel(), "ACTION", event.args.connect(" "));
+        event.client.send_ctcp(event.channel(), "ACTION", event.args.join(" "));
     }
 }
 
@@ -17,9 +17,9 @@ fn say(event: &CommandEvent) {
         return;
     }
     let (channel, message) = if event.args[0].starts_with("#") {
-        (&*event.args[0], event.args[1..].connect(" "))
+        (&*event.args[0], event.args[1..].join(" "))
     } else {
-        (event.channel(), event.args.connect(" "))
+        (event.channel(), event.args.join(" "))
     };
     event.client.send_message(channel, message);
     event.client.reply_notice(event, format!("Sent message to {}.", channel));
@@ -28,7 +28,7 @@ fn say(event: &CommandEvent) {
 fn quit(event: &CommandEvent) {
     event.client.reply_notice(event, format!("Leaving server."));
     if event.args.len() != 0 {
-        event.client.quit(Some(event.args.connect(" ")), ExecutingState::Done);
+        event.client.quit(Some(event.args.join(" ")), ExecutingState::Done);
     } else {
         event.client.quit::<&str>(None, ExecutingState::Done);
     }
@@ -37,14 +37,14 @@ fn quit(event: &CommandEvent) {
 fn restart(event: &CommandEvent) {
     event.client.reply_notice(event, format!("Restarting."));
     if event.args.len() != 0 {
-        event.client.quit(Some(event.args.connect(" ")), ExecutingState::RestartTryExec);
+        event.client.quit(Some(event.args.join(" ")), ExecutingState::RestartTryExec);
     } else {
         event.client.quit(Some("Restarting"), ExecutingState::RestartTryExec);
     }
 }
 
 fn raw(event: &CommandEvent) {
-    event.client.send_raw(event.args.connect(" "));
+    event.client.send_raw(event.args.join(" "));
     event.client.reply_notice(event, "Sent raw message.");
 }
 
@@ -62,12 +62,12 @@ fn part(event: &CommandEvent) {
         (event.channel(), None)
     } else if event.args[0].starts_with("#") {
         if event.args.len() > 1 {
-            (&*event.args[0], Some(event.args[1..].connect(" ")))
+            (&*event.args[0], Some(event.args[1..].join(" ")))
         } else {
             (&*event.args[0], None)
         }
     } else {
-        (event.channel(), Some(event.args.connect(" ")))
+        (event.channel(), Some(event.args.join(" ")))
     };
     event.client.part(channel, reason);
     event.client.reply_notice(event, format!("Parted {}.", channel));
@@ -78,7 +78,7 @@ fn message(event: &CommandEvent) {
         event.client.reply_notice(event, "Please specify both a channel and a message to send");
         return;
     }
-    event.client.send_message(&*event.args[0], event.args[1..].connect(" "));
+    event.client.send_message(&*event.args[0], event.args[1..].join(" "));
     event.client.reply_notice(event, format!("Sent message to {}.", event.args[0]));
 }
 
