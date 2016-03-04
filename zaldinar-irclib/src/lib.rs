@@ -91,7 +91,7 @@ impl <T: io::BufRead, C: HasNick> IrcRead<T, C> {
                 let mut ctcp_message;
                 if args.len() > 2 {
                     ctcp_command = args[1][2..].to_string(); // to remove :\x01
-                    ctcp_message = args[2..].connect(" ");
+                    ctcp_message = args[2..].join(" ");
                     ctcp_message.pop(); // to remove last \x01
                 } else {
                     // remove starting :\x01 and ending \x01

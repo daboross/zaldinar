@@ -201,13 +201,23 @@ fn create_plugin_crate(path: &Path, resource_path: &Path, output_dir: &Path, cor
         try!(write_file(&src_path.join("lib.rs"), &contents));
 
         // Link the resources dir to $crate/src/resources/
-        match fs::soft_link(resource_path, src_path.join("resources")) {
+        match symlink_dir(resource_path, src_path.join("resources")) {
             Ok(()) => (),
             Err(ref e) if e.kind() == io::ErrorKind::AlreadyExists => (),
             e @ Err(..) => try!(e)
         }
     }
     return Ok((name, output_directory));
+}
+
+#[cfg(unix)]
+fn symlink_dir<P: AsRef<Path>, Q: AsRef<Path>>(src: P, dst: Q) -> io::Result<()> {
+    std::os::unix::fs::symlink(src, dst)
+}
+
+#[cfg(windows)]
+fn symlink_dir<P: AsRef<Path>, Q: AsRef<Path>>(src: P, dst: Q) -> io::Result<()> {
+    std::os::windows::fs::symlink_dir(src, dst)
 }
 
 fn write_file(path: &Path, contents: &str) -> io::Result<()> {
