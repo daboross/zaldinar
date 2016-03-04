@@ -6,8 +6,6 @@ use std::ffi;
 use std::ptr;
 use std::path;
 
-use self::libc::funcs::posix88::unistd;
-
 use UNKNOWN_EXECUTABLE;
 
 pub fn execv_if_possible(program_path: &path::Path) -> i32 {
@@ -40,7 +38,7 @@ pub fn execv_if_possible(program_path: &path::Path) -> i32 {
     println!("Executing `{:?}` (arguments: `{:?}`", program_path, printable_args);
 
     unsafe {
-        unistd ::execv(program.as_ptr(), argv_vec.as_mut_ptr());
+        libc::execv(program.as_ptr(), argv_vec.as_mut_ptr());
     }
     print_err!("Executing using execv failed!");
     return 1;

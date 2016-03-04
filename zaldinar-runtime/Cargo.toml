@@ -14,11 +14,11 @@ fern = "0.3"
 throw = "0.1"
 
 [dependencies.libc]
-version = "0.1"
+version = "0.2"
 optional = true
 
 [dependencies.inotify]
-version = "0.1"
+version = "0.2"
 optional = true
 
 [dependencies.zaldinar-irclib]

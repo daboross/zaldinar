@@ -118,7 +118,7 @@ fn main_possibly_errors() -> io::Result<()> {
 
         {
             let cargo_toml_contents = TOP_CARGO_TEMPLATE
-                    .replace("{{dependency_lines}}", &dependency_lines.connect("\n"))
+                    .replace("{{dependency_lines}}", &dependency_lines.join("\n"))
                     .replace("{{zaldinar_core_path}}", &core_path_str);
 
             let cargo_toml_path = cumulative_crate_dir.join("Cargo.toml");
@@ -127,8 +127,8 @@ fn main_possibly_errors() -> io::Result<()> {
 
         {
             let lib_rs_contents = TOP_LIB_TEMPLATE
-                    .replace("{{extern_crate_lines}}", &extern_crate_lines.connect("\n"))
-                    .replace("{{register_lines}}", &register_lines.connect("\n"));
+                    .replace("{{extern_crate_lines}}", &extern_crate_lines.join("\n"))
+                    .replace("{{register_lines}}", &register_lines.join("\n"));
 
             let src_path = cumulative_crate_dir.join("src");
             debug!("Creating source directory {}", src_path.display());
@@ -154,7 +154,7 @@ fn create_plugin_crate(path: &Path, resource_path: &Path, output_dir: &Path, cor
 
     let mut dependency_lines = Vec::new();
 
-    for line in contents.lines_any() {
+    for line in contents.lines() {
         // If the line has `//! depends: `, .skip(1) will remove all content before the
         // `//! depends: `. If it doesn't, then .skip(1) will leave an empty iterator, and this if
         // let statement won't run due to .next() returning None.
@@ -181,7 +181,7 @@ fn create_plugin_crate(path: &Path, resource_path: &Path, output_dir: &Path, cor
     { // Scope for writing Cargo.toml
 
         // TODO: This could probably be done more efficiently
-        let dependencies_contents = dependency_lines.connect("\n");
+        let dependencies_contents = dependency_lines.join("\n");
         let cargo_contents = PLUGIN_CARGO_TEMPLATE.replace("{{name}}", &name)
                                 .replace("{{dependencies}}", &dependencies_contents)
                                 .replace("{{zaldinar_core_path}}", core_path_str);

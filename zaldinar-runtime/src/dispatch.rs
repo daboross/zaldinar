@@ -52,7 +52,7 @@ impl Dispatch {
         let plugins = self.state.plugins().read().unwrap();
 
         // PING
-        if message.command.eq_ignore_ascii_case("PING") {
+        if (*message.command).eq_ignore_ascii_case("PING") {
             self.interface.send_raw(format!("PONG {}", message.args.connect(" ")));
         }
 
@@ -70,7 +70,7 @@ impl Dispatch {
             }
         }
 
-        if message.command.eq_ignore_ascii_case("PRIVMSG") {
+        if (*message.command).eq_ignore_ascii_case("PRIVMSG") {
             // Channel always exists for PRIVMSG
             let channel = &message.channel.as_ref().unwrap();
 
