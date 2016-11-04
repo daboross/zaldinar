@@ -19,13 +19,8 @@ pub fn watch_binary(client: interface::IrcInterface)
         Err(e) => return Err(InitializationError::from_string(
             format!("Failed to get the path of the running executable: {}", e))),
     };
-
     let filename = match program.file_name() {
-        Some(v) => match v.to_str() {
-            Some(v) => v.to_string(),
-            None => return Err(InitializationError::from_string(
-                format!("Program filename invalid utf8!"))),
-        },
+        Some(v) => v.to_os_string(),
         None => return Err(InitializationError::from_string(
             format!("Failed to get filename from program Path ({})", program.display()))),
     };
@@ -64,11 +59,11 @@ pub fn watch_binary(client: interface::IrcInterface)
                         restarting.");
                 }
 
-                if event.is_dir() || filename != event.name {
+                if event.is_dir() || event.name.file_name() != Some(&filename) {
                     continue;
                 }
 
-                debug!("Event! \"{}\"", event.name);
+                debug!("Event! \"{}\"", event.name.display());
                 if event.is_access() {
                     debug!("\tevent is: access");
                 }

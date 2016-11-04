@@ -18,7 +18,7 @@ version = "0.2"
 optional = true
 
 [dependencies.inotify]
-version = "0.2"
+version = "0.3"
 optional = true
 
 [dependencies.zaldinar-irclib]

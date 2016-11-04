@@ -1,4 +1,4 @@
-use std::borrow::Borrow;
+use std::borrow::{Borrow, Cow};
 use std::sync;
 use std::sync::mpsc;
 use std::ops;
@@ -39,9 +39,9 @@ impl IrcInterface {
     }
 
     // TODO: replace CT: Borrow<str> with IntoCow or Into<Cow> when one of those becomes stable
-    pub fn send_command<'_, CT, I>(&self, command: CT, args: &[I]) where
-            CT: Borrow<str>, I: Borrow<str>, {
-        let mut line: String = command.borrow().to_string();
+    pub fn send_command<'a, CT, I>(&self, command: CT, args: &[I]) where
+            CT: Into<Cow<'a, str>>, I: Borrow<str> {
+        let mut line: String = command.into().into_owned();
         for item in args {
             line.push(' ');
             line.push_str(item.borrow());

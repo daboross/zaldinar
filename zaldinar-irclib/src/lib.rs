@@ -8,7 +8,6 @@ macro_rules! regex {
     ($s:expr) => (::regex::Regex::new($s).unwrap())
 }
 
-use std::io::prelude::*;
 use std::ascii::AsciiExt;
 use std::io;
 use std::net;
