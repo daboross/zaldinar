@@ -1,8 +1,7 @@
 [package]
-
 name = "zaldinar-core"
 version = "0.1.1-dev"
-authors = ["Dabo Ross <daboross@daboross.net>"]
+authors = ["David Ross <daboross@daboross.net>"]
 
 [dependencies]
 regex = "0.1"

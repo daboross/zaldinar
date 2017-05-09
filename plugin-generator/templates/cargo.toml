@@ -2,7 +2,7 @@
 
 name = "{{name}}"
 version = "0.0.1"
-authors = ["Dabo Ross <daboross@daboross.net>"]
+authors = ["Zaldinar Repository"]
 
 [dependencies]
 {{dependencies}}
