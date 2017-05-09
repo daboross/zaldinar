@@ -1,9 +1,8 @@
-extern crate zaldinar_irclib as irc;
-extern crate zaldinar;
-extern crate time;
-extern crate fern;
-#[macro_use]
+extern crate chrono;
 extern crate log;
+extern crate fern;
+extern crate zaldinar;
+extern crate zaldinar_irclib as irc;
 extern crate generated_plugins_crate;
 
 use std::path::Path;
@@ -12,18 +11,18 @@ use std::env;
 use std::thread;
 
 fn setup_logger() {
-    let log_config = fern::DispatchConfig {
-        format: Box::new(|msg: &str, level: &log::LogLevel, _location: &log::LogLocation| {
-            return format!("[{}][{:?}] {}", time::now().strftime("%Y-%m-%d][%H:%M:%S").unwrap(),
-                level, msg);
-        }),
-        output: vec![fern::OutputConfig::stdout()],
-        level: log::LogLevelFilter::Debug,
-    };
-    match fern::init_global_logger(log_config, log::LogLevelFilter::Debug) {
-        Err(fern::InitError::SetLoggerError(_)) | Ok(()) => (),
-        Err(e) => panic!("Setting up logger failed: {}", e),
-    };
+    fern::Dispatch::new()
+        .level(log::LogLevelFilter::Debug)
+        .format(|out, message, record| {
+            let now = chrono::Local::now();
+
+            out.finish(format_args!("{}[{}] {}", now.format("[%Y-%m-%d][%H:%M:%S]"),
+                record.level(), message));
+        })
+        .chain(std::io::stdout())
+        .apply()
+        // let this fail
+        .unwrap_or(());
 }
 
 fn setup() -> (zaldinar::client::Client, zaldinar::interface::IrcInterface,
