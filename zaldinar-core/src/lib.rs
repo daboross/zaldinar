@@ -2,7 +2,6 @@ extern crate rustc_serialize;
 extern crate regex;
 #[macro_use]
 extern crate log;
-extern crate fern;
 #[macro_use]
 extern crate throw;
 extern crate zaldinar_irclib as irc;

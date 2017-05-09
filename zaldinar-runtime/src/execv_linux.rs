@@ -1,10 +1,7 @@
-extern crate libc;
-
 use std::os::unix::ffi::OsStrExt;
-use std::env;
-use std::ffi;
-use std::ptr;
-use std::path;
+use std::{env, ffi, ptr, path};
+
+use libc;
 
 use UNKNOWN_EXECUTABLE;
 

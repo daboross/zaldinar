@@ -103,11 +103,14 @@ impl Dispatch {
                                             &message.args[1..].join(" ")) {
                     let same = {
                         let state = self.state.state().read().unwrap();
-                        captures.at(1) == Some(&state.nick)
+                        match captures.get(1) {
+                            Some(m) => m.as_str() == &state.nick,
+                            None => false,
+                        }
                     };
                     if same {
-                        if let Some(args_str) = captures.at(2) {
-                            let split = args_str.split(' ').collect::<Vec<&str>>();
+                        if let Some(args_str) = captures.get(2) {
+                            let split = args_str.as_str().split(' ').collect::<Vec<&str>>();
                             let command = split[0];
                             let args = split[1..].iter().map(|s| s.to_string())
                                         .collect::<Vec<String>>();

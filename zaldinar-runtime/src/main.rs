@@ -1,7 +1,5 @@
 #![cfg(not(test))]
 extern crate zaldinar;
-#[macro_use]
-extern crate throw;
 extern crate getopts;
 
 macro_rules! print_err {
@@ -16,6 +14,9 @@ macro_rules! print_err {
         }
     )
 }
+
+#[cfg(feature = "binary-filewatch")]
+extern crate libc;
 
 #[cfg(feature = "binary-filewatch")]
 mod execv_linux;

@@ -1,11 +1,15 @@
 extern crate rustc_serialize;
-extern crate time;
+extern crate chrono;
 extern crate regex;
 #[macro_use]
 extern crate log;
 extern crate fern;
 #[macro_use]
 extern crate throw;
+
+#[cfg(feature = "binary-filewatch")]
+extern crate inotify;
+
 extern crate zaldinar_irclib as irc;
 extern crate zaldinar_core as core;
 extern crate generated_plugins_crate;

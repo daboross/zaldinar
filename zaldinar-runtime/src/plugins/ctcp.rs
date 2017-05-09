@@ -1,4 +1,4 @@
-use time;
+use chrono;
 
 use client::PluginRegister;
 use events::CtcpEvent;
@@ -25,8 +25,7 @@ fn ctcp_time(event: &CtcpEvent) {
     if !event.mask.has_nick() {
         return; // CTCP must come from a user
     }
-    let message = format!("Current time: {}",
-        time::now().strftime("%Y-%m-%d - %H:%M:%S").unwrap());
+    let message = format!("Current time: {}", chrono::Local::now().format("%Y-%m-%d - %H:%M:%S"));
     event.client.send_ctcp_reply(event.mask.nick().unwrap(), event.command(), message);
 }
 

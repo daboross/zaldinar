@@ -20,11 +20,13 @@ fn main() {
 }
 
 fn setup_logger(out_dir: &Path) -> Result<(), fern::InitError> {
-    try!(fs::create_dir_all(out_dir));
-    fern::init_global_logger(
-        fern::OutputConfig::file(&out_dir.join("output.log")),
-        log::LogLevelFilter::Trace
-    )
+    fs::create_dir_all(out_dir)?;
+
+    fern::Dispatch::new()
+        .chain(fern::log_file(out_dir.join("output.log"))?)
+        .apply()?;
+
+    Ok(())
 }
 
 fn main_possibly_errors() -> io::Result<()> {

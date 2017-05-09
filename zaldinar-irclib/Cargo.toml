@@ -6,5 +6,5 @@ authors = ["David Ross <daboross@daboross.net>"]
 
 [dependencies]
 log = "0.3"
-regex = "0.1"
+regex = "0.2"
 throw = "0.1"

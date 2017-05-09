@@ -1,17 +1,10 @@
 use std::sync::mpsc;
+use std::io;
+use {fern, chrono};
 
 use generated_plugins_crate;
-use time;
-use fern;
-use log;
-
 use errors::ThrowInitError;
-use plugins;
-use interface;
-use config;
-use dispatch;
-use irc;
-use client;
+use {plugins, interface, config, dispatch, irc, client};
 #[cfg(feature = "binary-filewatch")]
 use filewatch;
 
@@ -34,19 +27,22 @@ fn setup_logger(config: &config::ClientConfiguration) -> Result<(), ThrowInitErr
         Ok(v) => v,
         Err(_) => throw_new!(format!("Failed to parse log_level '{}'", config.log_level)),
     };
-    let config = fern::DispatchConfig {
-        format: Box::new(|msg: &str, level: &log::LogLevel, _location: &log::LogLocation| {
-            return format!("[{}][{:?}] {}", time::now().strftime("%Y-%m-%d][%H:%M:%S").unwrap(),
-                level, msg);
-        }),
-        output: vec![fern::OutputConfig::stdout(), fern::OutputConfig::file(&config.log_file)],
-        level: level,
-    };
-    return match fern::init_global_logger(config, log::LogLevelFilter::Info) {
-        Err(fern::InitError::SetLoggerError(_)) => Ok(()),
-        Ok(()) => Ok(()),
-        Err(e) => throw_new!(e),
-    };
+
+    fern::Dispatch::new()
+        .level(level)
+        .format(|out, message, record| {
+            let now = chrono::Local::now();
+
+            out.finish(format_args!("{}[{}] {}", now.format("[%Y-%m-%d][%H:%M:%S]"),
+                record.level(), message));
+        })
+        .chain(io::stdout())
+        .chain(throw!(fern::log_file(&config.log_file)))
+        .apply()
+        // let this fail
+        .unwrap_or(());
+
+    Ok(())
 }
 
 /// Prepares for startup, performing all operations except for sending the initial on-connect
@@ -54,9 +50,14 @@ fn setup_logger(config: &config::ClientConfiguration) -> Result<(), ThrowInitErr
 /// loop.
 ///
 /// Returns `(client, interface, dispatch, irc_data_in, irc_data_out)`
-pub fn prepare(mut plugins: client::PluginRegister, config: config::ClientConfiguration)
-        -> Result<(client::Client, interface::IrcInterface, dispatch::Dispatch,
-            mpsc::Sender<irc::IrcMessage>, mpsc::Receiver<Option<String>>), ThrowInitError> {
+pub fn prepare(mut plugins: client::PluginRegister,
+               config: config::ClientConfiguration)
+               -> Result<(client::Client,
+                          interface::IrcInterface,
+                          dispatch::Dispatch,
+                          mpsc::Sender<irc::IrcMessage>,
+                          mpsc::Receiver<Option<String>>),
+                         ThrowInitError> {
     // Register built-in plugins
     plugins::register_plugins(&mut plugins);
     generated_plugins_crate::register(&mut plugins);
@@ -74,15 +75,15 @@ pub fn prepare(mut plugins: client::PluginRegister, config: config::ClientConfig
     return Ok((client, interface, dispatch, connection_data_out, connection_data_in));
 }
 
-pub fn run(config: config::ClientConfiguration)
-        -> Result<client::ExecutingState, ThrowInitError> {
+pub fn run(config: config::ClientConfiguration) -> Result<client::ExecutingState, ThrowInitError> {
     let result = up!(run_with_plugins(config, client::PluginRegister::new()));
 
     Ok(result)
 }
 
-pub fn run_with_plugins(config: config::ClientConfiguration, plugins: client::PluginRegister)
-        -> Result<client::ExecutingState, ThrowInitError> {
+pub fn run_with_plugins(config: config::ClientConfiguration,
+                        plugins: client::PluginRegister)
+                        -> Result<client::ExecutingState, ThrowInitError> {
 
     up!(setup_logger(&config));
 
@@ -98,8 +99,8 @@ pub fn run_with_plugins(config: config::ClientConfiguration, plugins: client::Pl
         interface.send_command::<&str, &str>("PASS", &[&pass]);
     }
     interface.send_command::<&str, &str>("NICK", &[&client.nick]);
-    interface.send_command::<&str, &str>("USER", &[&client.user, "0", "*",
-        &format!(":{}", client.real_name)]);
+    interface.send_command::<&str, &str>("USER",
+                                         &[&client.user, "0", "*", &format!(":{}", client.real_name)]);
 
     up!(irc::connect(&client.address, conn_data_out, conn_data_in, client.clone()));
 

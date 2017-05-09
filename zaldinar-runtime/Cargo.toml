@@ -4,21 +4,15 @@ version = "0.1.1-dev"
 authors = ["David Ross <daboross@daboross.net>"]
 
 [dependencies]
-regex = "0.1"
+regex = "0.2"
 rustc-serialize = "0.3"
-time = "0.1"
+chrono = "0.3"
 getopts = "0.2"
 log = "0.3"
-fern = "0.3"
+fern = "0.4"
 throw = "0.1"
-
-[dependencies.libc]
-version = "0.2"
-optional = true
-
-[dependencies.inotify]
-version = "0.3"
-optional = true
+inotify = { version = "0.4", optional = true }
+libc = { version = "0.2", optional = true }
 
 [dependencies.zaldinar-irclib]
 path = "../zaldinar-irclib"
@@ -30,9 +24,8 @@ path = "../zaldinar-core"
 path = "../build-out/cumulative-crate"
 
 [features]
+binary-filewatch = ["inotify", "libc"]
 default = ["binary-filewatch"]
-
-binary-filewatch = ["libc", "inotify"]
 
 [profile.release]
 lto = true

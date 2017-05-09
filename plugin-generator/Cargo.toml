@@ -5,4 +5,4 @@ authors = ["David Ross <daboross@daboross.net>"]
 
 [dependencies]
 log = "0.3"
-fern = "0.3"
+fern = "0.4"
