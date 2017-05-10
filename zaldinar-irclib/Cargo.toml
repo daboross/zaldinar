@@ -8,3 +8,4 @@ authors = ["David Ross <daboross@daboross.net>"]
 log = "0.3"
 regex = "0.2"
 throw = "0.1"
+lazy_static = "0.2"

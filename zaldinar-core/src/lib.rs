@@ -1,14 +1,13 @@
-extern crate rustc_serialize;
+extern crate serde;
+extern crate serde_json;
+#[macro_use]
+extern crate serde_derive;
 extern crate regex;
 #[macro_use]
 extern crate log;
 #[macro_use]
 extern crate throw;
 extern crate zaldinar_irclib as irc;
-
-macro_rules! regex {
-    ($s:expr) => (::regex::Regex::new($s).unwrap())
-}
 
 pub use errors::InitializationError;
 pub use config::ClientConfiguration;

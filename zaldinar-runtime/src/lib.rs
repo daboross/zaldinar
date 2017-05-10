@@ -1,6 +1,7 @@
-extern crate rustc_serialize;
 extern crate chrono;
 extern crate regex;
+#[macro_use]
+extern crate lazy_static;
 #[macro_use]
 extern crate log;
 extern crate fern;
@@ -15,7 +16,12 @@ extern crate zaldinar_core as core;
 extern crate generated_plugins_crate;
 
 macro_rules! regex {
-    ($s:expr) => (::regex::Regex::new($s).unwrap())
+    ($s:expr) => ({
+        lazy_static! {
+            static ref REGEX: ::regex::Regex = ::regex::Regex::new("...").unwrap();
+        }
+        &REGEX
+    })
 }
 
 pub use core::config::ClientConfiguration;

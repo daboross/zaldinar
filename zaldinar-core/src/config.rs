@@ -1,11 +1,11 @@
 use std::io::prelude::*;
 use std::fs;
-use rustc_serialize::json;
+use serde_json;
 use std::path::Path;
 
 use errors::ThrowInitError;
 
-#[derive(RustcDecodable)]
+#[derive(Deserialize)]
 pub struct NickServConf {
     pub name: String,
     pub command: String,
@@ -14,7 +14,7 @@ pub struct NickServConf {
     pub enabled: bool,
 }
 
-#[derive(RustcDecodable)]
+#[derive(Deserialize)]
 pub struct ClientConfiguration {
     pub nick: String,
     pub user: String,
@@ -38,21 +38,7 @@ impl ClientConfiguration {
             throw!(throw!(fs::File::open(path)).read_to_string(&mut buf));
             buf
         };
-        return Ok(throw!(match json::decode::<ClientConfiguration>(&config_contents) {
-            Err(json::DecoderError::MissingFieldError(s)) => {
-                throw_new!(format!("Field {} not found in {}", &s, path.display()));
-            },
-            Err(json::DecoderError::ParseError(
-                    json::ParserError::SyntaxError(error_code, line, col))) => {
-                throw_new!(format!(
-                    "Syntax error ({:?}) on line {} column {} in {}",
-                    error_code, line, col, path.display()));
-            },
-            Err(json::DecoderError::ParseError(json::ParserError::IoError(err))) => {
-                throw_new!(err);
-            },
-            Ok(v) => Ok(v),
-            Err(e) => Err(e),
-        }));
+
+        Ok(throw!(serde_json::from_str(&config_contents)))
     }
 }

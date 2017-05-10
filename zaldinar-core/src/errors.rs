@@ -1,8 +1,7 @@
 use std::io;
 use std::sync;
 use std::fmt;
-
-use rustc_serialize::json;
+use serde_json;
 use regex;
 use throw;
 
@@ -12,7 +11,7 @@ pub type ThrowInitError = throw::Error<InitializationError>;
 pub enum InitializationError {
     Io(io::Error),
     Regex(regex::Error),
-    Decoder(json::DecoderError),
+    Decoder(serde_json::Error),
     Generic(String),
 }
 
@@ -38,8 +37,8 @@ impl From<regex::Error> for InitializationError {
     }
 }
 
-impl From<json::DecoderError> for InitializationError {
-    fn from(error: json::DecoderError) -> InitializationError {
+impl From<serde_json::Error> for InitializationError {
+    fn from(error: serde_json::Error) -> InitializationError {
         InitializationError::Decoder(error)
     }
 }

@@ -4,13 +4,13 @@ version = "0.1.1-dev"
 authors = ["David Ross <daboross@daboross.net>"]
 
 [dependencies]
+throw = "0.1"
+lazy_static = "0.2"
 regex = "0.2"
-rustc-serialize = "0.3"
 chrono = "0.3"
 getopts = "0.2"
 log = "0.3"
 fern = "0.4"
-throw = "0.1"
 inotify = { version = "0.4", optional = true }
 libc = { version = "0.2", optional = true }
 

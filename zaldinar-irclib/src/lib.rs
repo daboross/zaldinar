@@ -1,18 +1,25 @@
 extern crate regex;
 #[macro_use]
+extern crate lazy_static;
+#[macro_use]
 extern crate log;
 #[macro_use]
 extern crate throw;
-
-macro_rules! regex {
-    ($s:expr) => (::regex::Regex::new($s).unwrap())
-}
 
 use std::ascii::AsciiExt;
 use std::io;
 use std::net;
 use std::thread;
 use std::sync::mpsc;
+
+macro_rules! regex {
+    ($s:expr) => ({
+        lazy_static! {
+            static ref REGEX: ::regex::Regex = ::regex::Regex::new("...").unwrap();
+        }
+        &REGEX
+    })
+}
 
 /// This trait represents something which store an internal string. However, in order to allow for
 /// the implementation to use an internal state like RwLock, this trait gives access using a
